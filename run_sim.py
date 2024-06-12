@@ -1,5 +1,4 @@
 import os
-import time
 from configparser import RawConfigParser
 from argparse import ArgumentParser
 from tqdm import tqdm
@@ -91,7 +90,6 @@ def main():
         except TypeError:
             num_failed += 1
             continue
-        # time.sleep(1.0)
 
     print(f"(failed/total) = ({num_failed}/{args.num_runs})")
 

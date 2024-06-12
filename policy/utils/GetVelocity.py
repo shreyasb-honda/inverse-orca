@@ -92,7 +92,7 @@ class InverseORCA:
                     return self.vB, self.u
 
             if np.pi/2 < angle_left < np.pi:
-                # print("Projecting on left leg")
+                print("Projecting on left leg")
                 self.u_hat = -np.array(self.vo.left_tangent.normal)
                 d = abs(self.u_hat.dot(current_to_desired))
                 self.u = d * self.u_hat
