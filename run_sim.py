@@ -88,7 +88,7 @@ def main():
 
             env.render()
         except TypeError as err:
-            # print("TypeError: ", err)
+            print("TypeError: ", err)
             num_failed += 1
             continue
 
