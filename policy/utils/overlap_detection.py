@@ -194,7 +194,6 @@ class VelocityObstacle:
         :param velocity_circle: The relative velocities circle
         :param which: whether dmax should be computed from the right or left leg
         """
-
         chosen_normal = self.right_tangent.normal
         if which == 'left':
             chosen_normal = self.left_tangent.normal
@@ -204,6 +203,17 @@ class VelocityObstacle:
 
         # slope of line from origin to cutoff circle center
         m = self.cutoff_circle.center[1] / self.cutoff_circle.center[0]
+
+        point = self.cutoff_circle.center
+        normal = np.array([m, -1.])
+        normal /= norm(normal)
+
+        line = Tangent(point, normal)
+
+        if not velocity_circle.line_overlap(line):
+            # If there is no overlap between the center line and the velocity circle,
+            # dmax is the radius of the velocity circle - distance of center from tangent
+            return velocity_circle.radius - abs(np.dot(chosen_normal, velocity_circle.center))
 
         point = self.cutoff_circle.center
         normal = np.array([m, -1.])
@@ -249,6 +259,7 @@ class VelocityObstacle:
         if cross2 > 0:
             return abs(np.dot(chosen_normal, point2))
 
+        print("Both intersection points are to the right of the normal. Impossibe case...")
         print("Both intersection points are to the right of the normal. Impossibe case...")
         print('Returning dmax = 0')
         return 0

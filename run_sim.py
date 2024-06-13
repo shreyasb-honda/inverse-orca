@@ -44,7 +44,7 @@ def main():
     max_speed = env_config.getfloat('human', 'max_speed')
     collision_responsibility = env_config.getfloat('human', 'collision_responsibility')
     human = Human(radius, max_speed, max_speed, time_step, collision_responsibility)
-    orca.agent = "Human"
+    orca.set_collision_responsiblity(collision_responsibility)
     human.set_policy(orca)
 
     # Configure the robot

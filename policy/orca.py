@@ -6,6 +6,10 @@ import rvo2
 from policy.policy import Policy
 
 class Orca(Policy):
+    """
+    Uses the official implementation of ORCA algorithm to generate velocity for
+    this agent given the current observation
+    """
 
     def __init__(self) -> None:
         super().__init__()
@@ -17,6 +21,7 @@ class Orca(Policy):
         self.radius = None
         self.max_speed = None
         self.sim = None
+        self.collision_responsibility = None
 
     def configure(self, config: RawConfigParser):
         self.neighbor_dist = config.getfloat('orca', 'neighbor_dist')
@@ -24,23 +29,35 @@ class Orca(Policy):
         self.time_horizon = config.getfloat('orca', 'time_horizon')
         self.time_horizon_obst = config.getfloat('orca', 'time_horizon_obst')
         self.radius = config.getfloat('orca', 'radius')
-        # self.max_speed = config.getfloat('orca', 'max_speed')
     
     def set_max_speed(self, max_speed: float):
+        """
+        Sets the max speed for the agent using this policy
+        :param max_speed - the maximum allowed speed for the agent using this policy
+        """
         self.max_speed = max_speed
 
+    def set_collision_responsiblity(self, collision_responsibility):
+        """
+        Sets the collision responsibility that the agent using this policy assumes
+        :param collision_responsibility - the fraction of collision avoidance the agent using
+                                        this policy does
+        """
+        self.collision_responsibility = collision_responsibility
 
     def predict(self, observation):
         params = self.neighbor_dist, self.max_neighbors, self.time_horizon, self.time_horizon_obst
 
         self.sim = rvo2.PyRVOSimulator(self.time_step, *params, self.radius,
-                                       self.max_speed, collisionResponsibility=1.0)
+                                       self.max_speed,
+                                       collisionResponsibility=self.collision_responsibility)
 
         # Add the robot
         robot_pos = tuple(observation['robot pos'])
         robot_vel = tuple(observation['robot vel'])
         self.sim.addAgent(robot_pos, *params, self.radius,
-                          self.max_speed, robot_vel, collisionResponsibility=1.0)
+                          self.max_speed, robot_vel,
+                          collisionResponsibility=self.collision_responsibility)
         # TODO: Assuming that the radius is the same for all agents
         # TODO: Assuming that the preferred speed is the max speed
 
@@ -48,7 +65,8 @@ class Orca(Policy):
         human_pos = tuple(observation['human pos'])
         human_vel = tuple(observation['human vel'])
         self.sim.addAgent(human_pos, *params, self.radius,
-                          self.max_speed, human_vel, collisionResponsibility=1.0)
+                          self.max_speed, human_vel,
+                          collisionResponsibility=self.collision_responsibility)
         # TODO: Assuming that the radius is the same for all agents
         # TODO: Assuming that the preferred speed is the max speed
 
