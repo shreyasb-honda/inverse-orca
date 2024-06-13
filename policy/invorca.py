@@ -91,7 +91,8 @@ class InvOrca(Policy):
                           collisionResponsibility=self.collision_responsibility)
 
             # Set the preferred velocity of the robot to be goal-directed maximum
-            self.sim.setAgentPrefVelocity(0, (self.max_speed, 0))
+            # self.sim.setAgentPrefVelocity(0, (self.max_speed-0.1, 0.1))
+            self.sim.setAgentPrefVelocity(0, (self.max_speed, 0.))
 
             # Set the preferred velocity of the human to be their current velocity
             self.sim.setAgentPrefVelocity(1, human_vel)
