@@ -187,6 +187,7 @@ def overlap_with_solution_3():
 
     return ax
 
+
 def different_pref_velocity_1():
     """
     In this case, the human's preferred velocity is different from its current velocity
@@ -227,3 +228,67 @@ def different_pref_velocity_1():
     print(f"vB (ours) {invorca.vB}")
 
     return ax
+
+
+def test_random(num_runs: int = 100, seed: int | None = None):
+    rng = np.random.default_rng(seed=seed)
+    num_failures = 0
+    i = 0
+
+    while i < num_runs:
+        # something in the interval of [-5, 5] x [-5, 5]
+        relative_position = 10 * rng.random(2) - 5
+        while np.linalg.norm(relative_position) < RADIUS_A + RADIUS_B + 0.5:
+            relative_position = 10 * rng.random(2) - 5   # To ensure that there is no collision to begin with
+        
+        # something in the interval of [-1, 1] x [-1, 1]
+        vA = 2 * rng.random(2) - 1
+        vA /= np.linalg.norm(vA)    # normalize it
+
+        # Convert to tuples
+        vA = tuple(vA)
+
+        # something in [0, 1.0)
+        collision_responsibility = rng.random()
+
+        time_horizon = rng.integers(2, 10)
+
+        cutoff_center = tuple(np.array(relative_position) / time_horizon)
+        cutoff_radius = (RADIUS_A + RADIUS_B) / time_horizon
+        cutoff_circle = Circle(cutoff_center, cutoff_radius)
+        vo = VelocityObstacle(cutoff_circle)
+        invorca = InverseORCA(vo, vB_max=VB_MAX, epsilon=EPSILON,
+                            collision_responsibility=collision_responsibility)
+        
+        dot1 = abs(np.dot(vA, invorca.vo.right_tangent.normal))
+        dot2 = abs(np.dot(vA, invorca.vo.left_tangent.normal))
+        if dot1 < dot2:
+            vA_d = vA + 0.4 * rng.random(2) * np.array(invorca.vo.right_tangent.normal)
+        else:
+            vA_d = vA + 0.4 * rng.random(2) * np.array(invorca.vo.left_tangent.normal)
+
+        vA_d = tuple(vA_d)
+
+        vB, _ = invorca.compute_velocity(vA, vA_d)
+        if vB is None:
+            i -= 1
+            continue
+
+        params = (20., 10, time_horizon, 2.0)
+        sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX, collisionResponsibility=collision_responsibility)
+        sim.addAgent(tuple(relative_position), *params, RADIUS_B, VB_MAX, invorca.vB, collision_responsibility)
+        sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA, collision_responsibility)
+
+        sim.setAgentPrefVelocity(0, invorca.vB)
+        sim.setAgentPrefVelocity(1, invorca.vA)
+        sim.doStep()
+        vA_new_official = sim.getAgentVelocity(1)
+        vA_new_ours = invorca.vA_new
+
+        diff = np.array(vA_new_official) - np.array(vA_new_ours)
+        if np.linalg.norm(diff) > 1e-3:
+            num_failures += 1
+
+        i += 1
+
+    print(f"(num_failures/num_runs) = ({num_failures}/{num_runs})")

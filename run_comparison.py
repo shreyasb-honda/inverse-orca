@@ -16,8 +16,11 @@ def main():
         overlap_with_solution_2()
     elif args.test_num == 2:
         overlap_with_solution_3()
+    elif args.test_num == 3:
+        # Run a bunch of random tests
+        test_random(1000, None)
     else:
-        print("Please enter test number between 0 and 2 (inclusive)...")
+        print("Please enter test number between 0 and 3 (inclusive)...")
         return
 
     # different_pref_velocity_1()

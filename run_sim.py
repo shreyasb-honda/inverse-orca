@@ -62,6 +62,7 @@ def main():
     env.unwrapped.configure(env_config, args.save_anim, args.render_mode)
 
     num_failed = 0
+    env.reset(seed=100)
 
     for _ in tqdm(range(args.num_runs)):
         try:
@@ -88,7 +89,7 @@ def main():
 
             env.render()
         except TypeError as err:
-            # print("TypeError: ", err)
+            print("TypeError: ", err)
             num_failed += 1
             continue
 
