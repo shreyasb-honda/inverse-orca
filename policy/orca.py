@@ -32,19 +32,21 @@ class Orca(Policy):
 
     def predict(self, observation):
         params = self.neighbor_dist, self.max_neighbors, self.time_horizon, self.time_horizon_obst
-        self.sim = rvo2.PyRVOSimulator(self.time_step, *params, self.radius, self.max_speed)
+
+        # TODO: update this to include the collision responsibility
+        self.sim = rvo2.PyRVOSimulator(self.time_step, *params, self.radius, self.max_speed, 1.0)
 
         # Add the robot
         robot_pos = tuple(observation['robot pos'])
         robot_vel = tuple(observation['robot vel'])
-        self.sim.addAgent(robot_pos, *params, self.radius, self.max_speed, robot_vel)
+        self.sim.addAgent(robot_pos, *params, self.radius, self.max_speed, robot_vel, 1.0)
         # TODO: Assuming that the radius is the same for all agents
         # TODO: Assuming that the preferred speed is the max speed
 
         # Add the human
         human_pos = tuple(observation['human pos'])
         human_vel = tuple(observation['human vel'])
-        self.sim.addAgent(human_pos, *params, self.radius, self.max_speed, human_vel)
+        self.sim.addAgent(human_pos, *params, self.radius, self.max_speed, human_vel, 1.0)
         # TODO: Assuming that the radius is the same for all agents
         # TODO: Assuming that the preferred speed is the max speed
 

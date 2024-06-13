@@ -5,7 +5,7 @@ from typing import Dict, Tuple, List
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
-from policy.utils.OverlapDetection import Circle, VelocityObstacle, Point
+from policy.utils.overlap_detection import Circle, VelocityObstacle, Point
 
 class Renderer:
     def __init__(self, hallway_dimensions: Dict,

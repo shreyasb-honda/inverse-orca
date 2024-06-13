@@ -1,8 +1,8 @@
 from configparser import RawConfigParser
 import numpy as np
 from policy.policy import Policy
-from policy.utils.GetVelocity import InverseORCA
-from policy.utils.OverlapDetection import Point, Circle, VelocityObstacle
+from policy.utils.get_velocity import InverseORCA
+from policy.utils.overlap_detection import Point, Circle, VelocityObstacle
 
 class InvOrca(Policy):
 

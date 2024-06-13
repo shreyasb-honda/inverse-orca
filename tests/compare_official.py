@@ -4,8 +4,8 @@ Compares our expected results with the official ORCA implementation
 import rvo2
 import matplotlib.pyplot as plt
 import numpy as np
-from policy.utils.GetVelocity import InverseORCA
-from policy.utils.OverlapDetection import Circle, VelocityObstacle, Point
+from policy.utils.get_velocity import InverseORCA
+from policy.utils.overlap_detection import Circle, VelocityObstacle, Point
 
 
 TAU = 5.0
@@ -13,7 +13,7 @@ RADIUS_A = 0.3
 RADIUS_B = 0.3
 VB_MAX = 2.0
 EPSILON = 1e-3
-COLLISION_RESPONSIBILITY = 1.0
+COLLISION_RESPONSIBILITY = 0.5
 
 
 def test(relative_position: Point, vA: Point, vA_d: Point, 
@@ -97,8 +97,8 @@ def overlap_with_solution_1():
     print(f"vA_new (official) {vA_new_official}")
     print(f"vA_new (ours) {vA_new_ours}")
 
-    print(f"vB (official) {sim.getAgentVelocity(0)}")
-    print(f"vB (ours) {invorca.vB}")
+    # print(f"vB (official) {sim.getAgentVelocity(0)}")
+    # print(f"vB (ours) {invorca.vB}")
 
 
     return ax
@@ -140,8 +140,8 @@ def overlap_with_solution_2():
     print(f"vA_new (official) {vA_new_official}")
     print(f"vA_new (ours) {vA_new_ours}")
 
-    print(f"vB (official) {sim.getAgentVelocity(0)}")
-    print(f"vB (ours) {invorca.vB}")
+    # print(f"vB (official) {sim.getAgentVelocity(0)}")
+    # print(f"vB (ours) {invorca.vB}")
 
     return ax
 

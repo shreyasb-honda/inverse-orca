@@ -39,6 +39,20 @@ class Tangent:
 
         return ax
 
+    def intersect(self, other: "Tangent"):
+        """
+        Returns a boolean and the intersection point between this ray and other.
+        The boolean is true if the two rays intersect and the returned point will be the
+        intersection with the two ras.
+        The boolean is false if the two rays do not intersect and the returned point will be None
+        """
+        # TODO: Do I really need this function?
+        # The intersection determination happens with a line passing through the origin
+        # If I really think about it, I do not care about the intersection point of the lines
+        # What I really want is the maximum possible distance d of the line parallel to the leg that 
+        # will result in a projection on the leg
+        return False, None
+
 class Circle:
     """
     A class representing a circle. Implements overlap checks with rays and other circles
@@ -172,3 +186,56 @@ class VelocityObstacle:
             return True
 
         return False
+
+    def find_dmax(self, velocity_circle: Circle, which: str):
+        """
+        Finds the maximum possible distance d of the projection line from the tangent line
+        If the projection line is further than this distance, the projection will be switched to the other leg
+        :param velocity_circle: The relative velocities circle
+        :param which: whether dmax should be computed from the right or left leg
+        """
+        va_x, va_y = velocity_circle.center
+        vb_max = velocity_circle.radius
+
+        # slope of line from origin to cutoff circle center
+        m = self.cutoff_circle.center[1] / self.cutoff_circle.center[0]
+
+        # Terms in the quadratic equation ax^2 - 2bx + c to get the point of intersection
+        # of y=mx and the velocity circle
+        a = 1 + m**2
+        b = va_x + m * va_y
+        c = va_x**2 + va_y**2 - vb_max**2
+        # print(a, b, c)
+
+        x1 = (b + np.sqrt(b**2 - a*c)) / (2*a)
+        x2 = (b - np.sqrt(b**2 - a*c)) / (2*a)
+
+        y1 = m * x1
+        y2 = m * x2
+
+        point1 = (x1, y1)
+        point2 = (x2, y2)
+
+        chosen_normal = self.right_tangent.normal
+        if which == 'left':
+            chosen_normal = self.left_tangent.normal
+
+        cross1 = chosen_normal[0] * y1 - chosen_normal[1] * x1
+        cross2 = chosen_normal[0] * y2 - chosen_normal[0] * x2
+
+        if cross1 > 0 and cross2 > 0:
+            # Both points to the left of the normal at origin
+            if norm(point1) > norm(point2):
+                return abs(np.dot(chosen_normal, point1))
+            else:
+                return abs(np.dot(chosen_normal, point2))
+
+        if cross1 > 0:
+            return abs(np.dot(chosen_normal, point1))
+
+        if cross2 > 0:
+            return abs(np.dot(chosen_normal, point2))
+
+        print("Both cross products are possible. Impossibe case...")
+        print('Returning dmax = 0')
+        return 0

@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from policy.utils.OverlapDetection import Circle, VelocityObstacle
+from policy.utils.overlap_detection import Circle, VelocityObstacle
 sns.set_theme(context='talk', style='dark')
 
 
