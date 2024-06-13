@@ -6,8 +6,8 @@ from os.path import expanduser
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from policy.utils.OverlapDetection import Circle, VelocityObstacle, Point
-from policy.utils.GetVelocity import InverseORCA
+from policy.utils.overlap_detection import Circle, VelocityObstacle, Point
+from policy.utils.get_velocity import InverseORCA
 sns.set_theme(context='talk', style='dark')
 
 

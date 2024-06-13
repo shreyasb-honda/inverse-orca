@@ -4,16 +4,16 @@ Compares our expected results with the official ORCA implementation
 import rvo2
 import matplotlib.pyplot as plt
 import numpy as np
-from policy.utils.GetVelocity import InverseORCA
-from policy.utils.OverlapDetection import Circle, VelocityObstacle, Point
+from policy.utils.get_velocity import InverseORCA
+from policy.utils.overlap_detection import Circle, VelocityObstacle, Point
 
 
 TAU = 5.0
 RADIUS_A = 0.3
 RADIUS_B = 0.3
-VB_MAX = 1.0
-EPSILON = 1e-5
-COLLISION_RESPONSIBILITY = 1.0
+VB_MAX = 2.0
+EPSILON = 1e-3
+COLLISION_RESPONSIBILITY = 0.5
 
 
 def test(relative_position: Point, vA: Point, vA_d: Point, 
@@ -82,8 +82,8 @@ def overlap_with_solution_1():
 
     params = (10., 10, TAU, 2.0)
     sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX)
-    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB)
-    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA)
+    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB, COLLISION_RESPONSIBILITY)
+    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA, COLLISION_RESPONSIBILITY)
 
     vA_0 = sim.getAgentVelocity(1)
 
@@ -97,8 +97,8 @@ def overlap_with_solution_1():
     print(f"vA_new (official) {vA_new_official}")
     print(f"vA_new (ours) {vA_new_ours}")
 
-    print(f"vB (official) {sim.getAgentVelocity(0)}")
-    print(f"vB (ours) {invorca.vB}")
+    # print(f"vB (official) {sim.getAgentVelocity(0)}")
+    # print(f"vB (ours) {invorca.vB}")
 
 
     return ax
@@ -125,8 +125,8 @@ def overlap_with_solution_2():
 
     params = (10., 10, TAU, 2.0)
     sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX)
-    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB)
-    sim.addAgent((0., 0.), *params, RADIUS_A, 5., invorca.vA)
+    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB, COLLISION_RESPONSIBILITY)
+    sim.addAgent((0., 0.), *params, RADIUS_A, 5., invorca.vA, COLLISION_RESPONSIBILITY)
 
     vA_0 = sim.getAgentVelocity(1)
 
@@ -140,8 +140,8 @@ def overlap_with_solution_2():
     print(f"vA_new (official) {vA_new_official}")
     print(f"vA_new (ours) {vA_new_ours}")
 
-    print(f"vB (official) {sim.getAgentVelocity(0)}")
-    print(f"vB (ours) {invorca.vB}")
+    # print(f"vB (official) {sim.getAgentVelocity(0)}")
+    # print(f"vB (ours) {invorca.vB}")
 
     return ax
 
@@ -167,8 +167,8 @@ def overlap_with_solution_3():
 
     params = (10., 10, TAU, 2.0)
     sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX)
-    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB)
-    sim.addAgent((0., 0.), *params, RADIUS_A, 5., invorca.vA)
+    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB, COLLISION_RESPONSIBILITY)
+    sim.addAgent((0., 0.), *params, RADIUS_A, 5., invorca.vA, COLLISION_RESPONSIBILITY)
 
     vA_0 = sim.getAgentVelocity(1)
 
@@ -182,8 +182,48 @@ def overlap_with_solution_3():
     print(f"vA_new (official) {vA_new_official}")
     print(f"vA_new (ours) {vA_new_ours}")
 
+    # print(f"vB (official) {sim.getAgentVelocity(0)}")
+    # print(f"vB (ours) {invorca.vB}")
+
+    return ax
+
+def different_pref_velocity_1():
+    """
+    In this case, the human's preferred velocity is different from its current velocity
+    We want to check if this affects the output of the official ORCA implementation
+    """
+
+    # Constants
+    relative_position = (-1., -1.)
+    vA = (0.1, 0.2)
+    vA_d = (0.3, 0.4)  # Possible to get there completely
+    # vA_d = (0.8, 0.9)  # Not possible to get there in one step
+
+    # vA = (-0.95, 0.1)
+    # vA_d = (-0.983, -0.156)
+    # relative_position = (-1.866 * 5, 0.161 * 5)
+    ax, invorca = test(relative_position, vA, vA_d, COLLISION_RESPONSIBILITY)
+
+
+    params = (10., 10, TAU, 2.0)
+    sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX)
+    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB)
+    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA)
+
+    vA_0 = sim.getAgentVelocity(1)
+
+    sim.setAgentPrefVelocity(0, invorca.vB)
+    sim.setAgentPrefVelocity(1, (1.0, 0))   # Goal directed
+    # sim.setAgentPrefVelocity(1, invorca.vA)   # Same as current
+    sim.doStep()
+    vA_new_official = sim.getAgentVelocity(1)
+    vA_new_ours = invorca.vA_new
+
+    print(f'vA (official) {vA_0}')
+    print(f"vA_new (official) {vA_new_official}")
+    print(f"vA_new (ours) {vA_new_ours}")
+
     print(f"vB (official) {sim.getAgentVelocity(0)}")
     print(f"vB (ours) {invorca.vB}")
 
     return ax
-
