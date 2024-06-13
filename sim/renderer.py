@@ -47,6 +47,7 @@ class Renderer:
                    c='black', lw=3)
         ax.axhline(y=self.hallway_dimensions['width'],
                    c='black', lw=3)
+        # ax.set_ylim([-0.05, self.hallway_dimensions['width'] + 0.05])
 
         # Add the human goal
         ax.axvline(x=0, ls='--', lw=1, c='red')
@@ -54,7 +55,6 @@ class Renderer:
         # Add the robot goal
         ax.axvline(x=self.hallway_dimensions['length'],
                    c='blue', lw=1, ls='--')
-        
 
         # Add the robot
         self.robot_circ = plt.Circle(robot_pos, self.robot_params['radius'],
@@ -66,10 +66,12 @@ class Renderer:
                                      color=self.human_params['color'])
         ax.add_patch(self.human_circ)
 
-        # Add the robot's goal for the human
+        # Add the robot's virtual goal for the human
         x = self.human_circ.center[0] - self.goal_dist
-        ymax = self.goal_height / self.hallway_dimensions['width']
-        self.virtual_goal = ax.axvline(x=x, ymax=ymax, lw=1, ls='--', c='gold')
+        ymax = self.goal_height #/ self.hallway_dimensions['width']
+        ymin = 0
+        # self.virtual_goal = ax.axvline(x=x, ymax=ymax, lw=1, ls='--', c='gold')
+        self.virtual_goal, = ax.plot([x, x], [ymin, ymax], lw=1, ls='--', color='gold')
 
         return ax
 
@@ -100,7 +102,7 @@ class Renderer:
         if frame_num < self.goal_frame:
             # print(f"frame_num: {frame_num}, goal_frame: {self.goal_frame}")
             x = self.human_circ.center[0] - self.goal_dist
-            self.virtual_goal.set_xdata(x)
+            self.virtual_goal.set_xdata([x, x])
 
         return self.robot_circ, self.human_circ, self.virtual_goal
 
@@ -117,7 +119,7 @@ class Renderer:
         for obs in self.observations:
             self.human_positions.append(obs['human pos'])
             self.robot_positions.append(obs['robot pos'])
-        
+
         human_pos_array = np.array(self.human_positions)
         robot_pos_array = np.array(self.robot_positions)
 
@@ -128,14 +130,19 @@ class Renderer:
 
         if self.goal_frame < self.num_frames:
             # Add the robot
-            self.robot_circ = plt.Circle(robot_pos_array[self.goal_frame, :], self.robot_params['radius'],
-                                        color=self.robot_params['color'])
+            self.robot_circ = plt.Circle(robot_pos_array[self.goal_frame, :],
+                                         self.robot_params['radius'],
+                                         color=self.robot_params['color'])
             ax.add_patch(self.robot_circ)
 
             # Add the human
-            self.human_circ = plt.Circle(human_pos_array[self.goal_frame, :], self.human_params['radius'],
-                                        color=self.human_params['color'])
+            self.human_circ = plt.Circle(human_pos_array[self.goal_frame, :],
+                                         self.human_params['radius'],
+                                         color=self.human_params['color'])
             ax.add_patch(self.human_circ)
+
+            x = self.human_circ.center[0]
+            self.virtual_goal.set_xdata([x, x])
 
             obs = self.observations[self.goal_frame]
             self.ax.annotate(f'{self.goal_frame}', tuple(obs['robot pos']), ha='center')

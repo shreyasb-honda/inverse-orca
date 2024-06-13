@@ -215,6 +215,17 @@ class VelocityObstacle:
             # dmax is the radius of the velocity circle - distance of center from tangent
             return velocity_circle.radius - abs(np.dot(chosen_normal, velocity_circle.center))
 
+        point = self.cutoff_circle.center
+        normal = np.array([m, -1.])
+        normal /= norm(normal)
+
+        line = Tangent(point, normal)
+
+        if not velocity_circle.line_overlap(line):
+            # If there is no overlap between the center line and the velocity circle,
+            # dmax is the radius of the velocity circle - distance of center from tangent
+            return velocity_circle.radius - abs(np.dot(chosen_normal, velocity_circle.center))
+
         # Terms in the quadratic equation ax^2 - 2bx + c to get the point of intersection
         # of y=mx and the velocity circle
         a = 1 + m**2
@@ -248,6 +259,7 @@ class VelocityObstacle:
         if cross2 > 0:
             return abs(np.dot(chosen_normal, point2))
 
+        print("Both intersection points are to the right of the normal. Impossibe case...")
         print("Both intersection points are to the right of the normal. Impossibe case...")
         print('Returning dmax = 0')
         return 0

@@ -69,13 +69,12 @@ class InverseORCA:
                 # print("Projecting on right leg")
                 self.u_hat = np.array(self.vo.right_tangent.normal)
                 d = abs(self.u_hat.dot(current_to_desired))
-                # TODO: Check if this value of d is lower than the permissible dmax value to project on the right leg
                 dmax = self.vo.find_dmax(self.velocity_circle, 'right')
-                # print(dmax, d)
                 d = min(dmax, d)
                 self.u = d * self.u_hat
 
                 # This point may not be the best to test for overlap (TODO: Check if this is correct)
+                # I believe that with the inclusion of dmax, this line does become the best to test for overlap
                 point = (self.vo.right_tangent.point[0] - self.u[0], self.vo.right_tangent.point[1] - self.u[1])
                 normal = self.vo.right_tangent.normal
                 line = Tangent(point, normal)
@@ -100,8 +99,8 @@ class InverseORCA:
                 self.u_hat = -np.array(self.vo.left_tangent.normal)
                 d = abs(self.u_hat.dot(current_to_desired))
                 # TODO: Check if this value of d is lower than the permissible dmax value to project on the left leg
+                # I believe that with the inclusion of dmax, this line does become the best to test for overlap
                 dmax = self.vo.find_dmax(self.velocity_circle, 'left')
-                # print(dmax, d)
                 d = min(dmax, d)
                 self.u = d * self.u_hat
 
@@ -139,6 +138,7 @@ class InverseORCA:
                 print('None of the conditions for getting best projection direction are satisfied...')
                 print(f"Angle with right leg: {np.rad2deg(angle_right):.2f}")
                 print(f"Angle with left leg: {np.rad2deg(angle_left):.2f}")
+                return None, None
 
         if not self.solution_exists:
             cutoff_center_to_current = tuple(-np.array(self.vo.cutoff_circle.center) + np.array(vA))

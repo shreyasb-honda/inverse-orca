@@ -151,15 +151,15 @@ class HallwayScene(gym.Env):
         self.renderer.set_goal_params(self.d_virtual_goal, self.y_virtual_goal)
 
         # Set the box for human start positions        
-        low = np.array([self.hallway_length * 0.9, self.hallway_width * 0.4 + self.human.radius])
+        low = np.array([self.hallway_length * 0.95, self.hallway_width * 0.4 + self.human.radius])
         high = np.array([self.hallway_length * 0.99 - self.human.radius,
-                         self.hallway_width * 0.9 - self.human.radius])
+                         self.hallway_width * 0.7 - self.human.radius])
         self.human_start_box = spaces.Box(low=low, high=high)
 
         # Set the box for robot start positions
-        low = np.array([self.hallway_length * 0.1 + self.robot.radius,
-                        self.hallway_width * 0.4 + self.robot.radius])
-        high = np.array([self.hallway_length * 0.19, self.hallway_width * 0.9 - self.robot.radius])
+        low = np.array([self.hallway_length * 0.05 + self.robot.radius,
+                        self.hallway_width * 0.6 + self.robot.radius])
+        high = np.array([self.hallway_length * 0.1, self.hallway_width * 0.9 - self.robot.radius])
         self.robot_start_box = spaces.Box(low=low, high=high)
 
         self.render_mode = render_mode
@@ -213,7 +213,7 @@ class HallwayScene(gym.Env):
                 anim = self.renderer.animate(fig, ax)
                 if self.save_anim:
                     writervideo = animation.FFMpegWriter(fps=5)
-                    ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    ts = datetime.datetime.now().strftime("%m-%d %H-%M-%S")
                     anim.save(f'media/videos/{ts}-{uuid.uuid4().hex}.mp4', writer=writervideo)
                     plt.close(fig)
                 # plt.show()
@@ -222,7 +222,7 @@ class HallwayScene(gym.Env):
                 ax.set_aspect('equal')
                 fig, ax = self.renderer.static_plot(fig, ax)
                 if self.save_anim:
-                    ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    ts = datetime.datetime.now().strftime("%m-%d %H-%M-%S")
                     plt.savefig(f'media/static-plots/{ts}-{uuid.uuid4().hex}.png')
                     plt.close(fig)
                 # plt.show()
