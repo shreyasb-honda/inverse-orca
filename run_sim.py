@@ -14,12 +14,12 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('--debug', type=bool, default=False,
                         help="Whether to run the simulation in debug mode (default: False)")
-    parser.add_argument('--save-anim', type=bool, default=False,
+    parser.add_argument('--save-anim', type=bool, default=True,
                         help="Whether to save the animation to a file (default: False)")
-    parser.add_argument('--render-mode', type=str, default='human', 
+    parser.add_argument('--render-mode', type=str, default='human',
                         help='The mode in which to render (human or static plot) (default: human)')
-    
-    parser.add_argument('--num-runs', type=int, default=1, 
+
+    parser.add_argument('--num-runs', type=int, default=1,
                         help='The number of times the simulation should be run (default: 1)')
 
     args = parser.parse_args()
@@ -87,7 +87,8 @@ def main():
                 human_action = human.policy.predict(obs)
 
             env.render()
-        except TypeError:
+        except TypeError as err:
+            print("TypeError: ", err)
             num_failed += 1
             continue
 
