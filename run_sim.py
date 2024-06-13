@@ -59,7 +59,7 @@ def main():
 
     env.unwrapped.set_human(human)
     env.unwrapped.set_robot(robot)
-    env.unwrapped.configure(env_config, args.debug, args.save_anim, args.render_mode)
+    env.unwrapped.configure(env_config, args.save_anim, args.render_mode)
 
     num_failed = 0
 
@@ -88,7 +88,7 @@ def main():
 
             env.render()
         except TypeError as err:
-            print("TypeError: ", err)
+            # print("TypeError: ", err)
             num_failed += 1
             continue
 
