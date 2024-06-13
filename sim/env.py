@@ -11,13 +11,13 @@ from matplotlib import animation
 import numpy as np
 from sim.agent import Human, Robot
 from sim.renderer import Renderer
-from policy.utils.OverlapDetection import Circle
+from policy.utils.overlap_detection import Circle
 
 
 
 class HallwayScene(gym.Env):
 
-    metadata = {"render_modes": ["human", "static"], "render_fps": 5}
+    metadata = {"render_modes": ["human", "static", "debug"], "render_fps": 5}
 
     def __init__(self) -> None:
         super().__init__()
@@ -87,7 +87,7 @@ class HallwayScene(gym.Env):
         self.render_mode = None
         self.save_anim = None
 
-    def configure(self, config: RawConfigParser, debug: bool, save_anim: bool, 
+    def configure(self, config: RawConfigParser, save_anim: bool,
                   render_mode: str = "human"):
         """
         Configures the environment
@@ -102,12 +102,14 @@ class HallwayScene(gym.Env):
         self.d_virtual_goal = config.getfloat('env', 'd_virtual_goal')
         self.y_virtual_goal = config.getfloat('env', 'y_virtual_goal')
 
-        if debug:
+        self.render_mode = render_mode
+
+        if render_mode == 'debug':
+            self.debug = True
             self.save_anim = False
         else:
             self.save_anim = save_anim
 
-        self.debug = debug
         if self.debug:
             self.vo_list = []
             self.vc_list = []
@@ -150,11 +152,13 @@ class HallwayScene(gym.Env):
 
         # Set the box for human start positions        
         low = np.array([self.hallway_length * 0.9, self.hallway_width * 0.4 + self.human.radius])
-        high = np.array([self.hallway_length * 0.99 - self.human.radius, self.hallway_width * 0.9 - self.human.radius])
+        high = np.array([self.hallway_length * 0.99 - self.human.radius,
+                         self.hallway_width * 0.9 - self.human.radius])
         self.human_start_box = spaces.Box(low=low, high=high)
 
         # Set the box for robot start positions
-        low = np.array([self.hallway_length * 0.1 + self.robot.radius, self.hallway_width * 0.4 + self.robot.radius])
+        low = np.array([self.hallway_length * 0.1 + self.robot.radius,
+                        self.hallway_width * 0.4 + self.robot.radius])
         high = np.array([self.hallway_length * 0.19, self.hallway_width * 0.9 - self.robot.radius])
         self.robot_start_box = spaces.Box(low=low, high=high)
 

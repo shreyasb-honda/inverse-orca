@@ -9,7 +9,7 @@ Steps:
 
 import numpy as np
 from numpy.linalg import norm
-from policy.utils.OverlapDetection import Circle, VelocityObstacle, Point, Tangent
+from policy.utils.overlap_detection import Circle, VelocityObstacle, Point, Tangent
 
 EPSILON = 1e-2
 
@@ -69,13 +69,17 @@ class InverseORCA:
                 # print("Projecting on right leg")
                 self.u_hat = np.array(self.vo.right_tangent.normal)
                 d = abs(self.u_hat.dot(current_to_desired))
+                # TODO: Check if this value of d is lower than the permissible dmax value to project on the right leg
+                dmax = self.vo.find_dmax(self.velocity_circle, 'right')
+                # print(dmax, d)
+                d = min(dmax, d)
                 self.u = d * self.u_hat
 
                 # This point may not be the best to test for overlap (TODO: Check if this is correct)
                 point = (self.vo.right_tangent.point[0] - self.u[0], self.vo.right_tangent.point[1] - self.u[1])
                 normal = self.vo.right_tangent.normal
                 line = Tangent(point, normal)
-                
+
                 # There is no overlap between the relative velocity circle and the line at a distance d from the tangent
                 if not self.velocity_circle.line_overlap(line):
                     # print("No overlap of right projection line and velocity circle")
@@ -95,6 +99,10 @@ class InverseORCA:
                 # print("Projecting on left leg")
                 self.u_hat = -np.array(self.vo.left_tangent.normal)
                 d = abs(self.u_hat.dot(current_to_desired))
+                # TODO: Check if this value of d is lower than the permissible dmax value to project on the left leg
+                dmax = self.vo.find_dmax(self.velocity_circle, 'left')
+                # print(dmax, d)
+                d = min(dmax, d)
                 self.u = d * self.u_hat
 
                 # This point may not be the best to test for overlap (TODO: Check if this is correct)
@@ -109,7 +117,7 @@ class InverseORCA:
                     dist_from_tangent = abs(np.array(vA).dot(self.u_hat))
                     dist_from_proj_line = dist_from_tangent + d
                     dist_along_line = np.sqrt(self.vB_max ** 2 - dist_from_proj_line ** 2)
-                    u_hat_perp = np.array([-self.u_hat[1], self.u_hat[0]])
+                    u_hat_perp = np.array([self.u_hat[1], -self.u_hat[0]])
                     relative_velocity = np.array(vA) - (dist_from_proj_line) * self.u_hat + dist_along_line * u_hat_perp
                     self.vB = tuple(np.array(vA) - relative_velocity)
                     self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
@@ -161,7 +169,7 @@ class InverseORCA:
                 self.u_hat /= l
                 d = min(self.vB_max, l - self.epsilon)
                 self.u = d * self.u_hat
-            
+
             self.vB = -self.u
             self.vB = tuple(self.vB)
             self.vA_new =  self.vA
