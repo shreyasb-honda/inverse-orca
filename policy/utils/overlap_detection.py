@@ -194,11 +194,27 @@ class VelocityObstacle:
         :param velocity_circle: The relative velocities circle
         :param which: whether dmax should be computed from the right or left leg
         """
+
+        chosen_normal = self.right_tangent.normal
+        if which == 'left':
+            chosen_normal = self.left_tangent.normal
+
         va_x, va_y = velocity_circle.center
         vb_max = velocity_circle.radius
 
         # slope of line from origin to cutoff circle center
         m = self.cutoff_circle.center[1] / self.cutoff_circle.center[0]
+
+        point = self.cutoff_circle.center
+        normal = np.array([m, -1.])
+        normal /= norm(normal)
+
+        line = Tangent(point, normal)
+
+        if not velocity_circle.line_overlap(line):
+            # If there is no overlap between the center line and the velocity circle,
+            # dmax is the radius of the velocity circle - distance of center from tangent
+            return velocity_circle.radius - abs(np.dot(chosen_normal, velocity_circle.center))
 
         # Terms in the quadratic equation ax^2 - 2bx + c to get the point of intersection
         # of y=mx and the velocity circle
@@ -216,9 +232,6 @@ class VelocityObstacle:
         point1 = (x1, y1)
         point2 = (x2, y2)
 
-        chosen_normal = self.right_tangent.normal
-        if which == 'left':
-            chosen_normal = self.left_tangent.normal
 
         cross1 = chosen_normal[0] * y1 - chosen_normal[1] * x1
         cross2 = chosen_normal[0] * y2 - chosen_normal[0] * x2
@@ -236,6 +249,6 @@ class VelocityObstacle:
         if cross2 > 0:
             return abs(np.dot(chosen_normal, point2))
 
-        print("Both cross products are possible. Impossibe case...")
+        print("Both intersection points are to the right of the normal. Impossibe case...")
         print('Returning dmax = 0')
         return 0
