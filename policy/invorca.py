@@ -2,7 +2,7 @@ from configparser import RawConfigParser
 import numpy as np
 import rvo2
 from policy.policy import Policy
-from policy.utils.get_velocity import InverseORCA
+from policy.utils.get_velocity import InverseORCAvpref
 from policy.utils.overlap_detection import Point, Circle, VelocityObstacle
 
 class InvOrca(Policy):
@@ -94,8 +94,8 @@ class InvOrca(Policy):
             # self.sim.setAgentPrefVelocity(0, (self.max_speed-0.1, 0.1))
             self.sim.setAgentPrefVelocity(0, (self.max_speed, 0.))
 
-            # Set the preferred velocity of the human to be their current velocity
-            self.sim.setAgentPrefVelocity(1, human_vel)
+            # Assume that we know the human's preferred velocity of (-1.0, 0)
+            self.sim.setAgentPrefVelocity(1, (-1.0, 0))
 
             # Perform a step
             self.sim.doStep()
@@ -110,9 +110,15 @@ class InvOrca(Policy):
         cutoff_circle = Circle(tuple(center), radius)
         self.vo = VelocityObstacle(cutoff_circle)
 
-        self.invorca = InverseORCA(self.vo, vB_max=self.max_speed, 
-                                   collision_responsibility=self.collision_responsibility)
+        # self.invorca = InverseORCA(self.vo, vB_max=self.max_speed, 
+        #                            collision_responsibility=self.collision_responsibility)
 
+        self.invorca = InverseORCAvpref(self.vo, vB_max=self.max_speed, 
+                                        collision_responsibility=self.collision_responsibility,
+                                        v_pref=(-1.0, 0))
+
+
+        # Assume that we know the preferred velocity of the human
         self.robot_vel, self.u = self.invorca.compute_velocity(human_vel, self.desired_velocity)
 
         return self.robot_vel
