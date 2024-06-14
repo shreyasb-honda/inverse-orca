@@ -201,7 +201,7 @@ class InverseORCAvpref(InverseORCA):
 
         if self.overlap:
             self.solution_exists = True
-            # current_to_desired = tuple(np.array(vA_d) - np.array(vA))
+            current_to_desired = tuple(np.array(vA_d) - np.array(vA))
             preferred_to_desired = tuple(np.array(vA_d) - np.array(self.v_pref))
             # Angle with the left tangent's normal
             angle_left = get_angle(self.vo.left_tangent.normal, preferred_to_desired)
@@ -211,7 +211,7 @@ class InverseORCAvpref(InverseORCA):
             if 0 < angle_right < np.pi / 2:
                 # print("Projecting on right leg")
                 self.u_hat = np.array(self.vo.right_tangent.normal)
-                d = abs(self.u_hat.dot(preferred_to_desired))
+                d = abs(self.u_hat.dot(current_to_desired))
                 dmax = self.vo.find_dmax(self.velocity_circle, 'right')
                 d = min(dmax, d)
                 self.u = d * self.u_hat
@@ -240,7 +240,7 @@ class InverseORCAvpref(InverseORCA):
             if np.pi/2 < angle_left < np.pi:
                 # print("Projecting on left leg")
                 self.u_hat = -np.array(self.vo.left_tangent.normal)
-                d = abs(self.u_hat.dot(preferred_to_desired))
+                d = abs(self.u_hat.dot(current_to_desired))
                 # TODO: Check if this value of d is lower than the permissible dmax value to project on the left leg
                 # I believe that with the inclusion of dmax, this line does become the best to test for overlap
                 dmax = self.vo.find_dmax(self.velocity_circle, 'left')
@@ -269,7 +269,7 @@ class InverseORCAvpref(InverseORCA):
                 # print("Projecting on cutoff circle")
                 l = norm(preferred_to_desired)
                 self.u_hat = preferred_to_desired / l
-                d = min(l, self.vo.cutoff_circle.radius - self.epsilon)
+                d = min(norm(current_to_desired), self.vo.cutoff_circle.radius - self.epsilon)
                 self.u = d * self.u_hat
                 self.vB = np.array(vA) - np.array(self.vo.cutoff_circle.center) + (d - self.vo.cutoff_circle.radius) * self.u
                 self.vB = tuple(self.vB)

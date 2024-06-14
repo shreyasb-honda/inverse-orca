@@ -65,33 +65,33 @@ def main():
     env.reset(seed=100)
 
     for _ in tqdm(range(args.num_runs)):
-        try:
-            obs, _ = env.reset()
+        # try:
+        obs, _ = env.reset()
+        robot.set_vh_desired(obs)
+        robot_action = robot.policy.predict(obs)
+        obs['robot vel'] = np.array(robot_action)
+        human_action = human.get_velocity()
+
+        done = False
+        while not done:
+            action = {
+                "robot vel": np.array(robot_action),
+                "human vel": np.array(human_action)
+            }
+            obs, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             robot.set_vh_desired(obs)
+            # obs["human vel"] = np.array([-1.0, 0.])
             robot_action = robot.policy.predict(obs)
             obs['robot vel'] = np.array(robot_action)
-            human_action = human.get_velocity()
+            # Update the observation to include the current velocity of the robot
+            human_action = human.policy.predict(obs)
 
-            done = False
-            while not done:
-                action = {
-                    "robot vel": np.array(robot_action),
-                    "human vel": np.array(human_action)
-                }
-                obs, reward, terminated, truncated, _ = env.step(action)
-                done = terminated or truncated
-                robot.set_vh_desired(obs)
-                # obs["human vel"] = np.array([-1.0, 0.])
-                robot_action = robot.policy.predict(obs)
-                obs['robot vel'] = np.array(robot_action)
-                # Update the observation to include the current velocity of the robot
-                human_action = human.policy.predict(obs)
-
-            env.render()
-        except TypeError as err:
-            print("TypeError: ", err)
-            num_failed += 1
-            continue
+        env.render()
+        # except TypeError as err:
+        #     print("TypeError: ", err)
+        #     num_failed += 1
+        #     continue
 
     print(f"(failed/total) = ({num_failed}/{args.num_runs})")
 
