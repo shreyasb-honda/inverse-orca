@@ -17,6 +17,8 @@ def main():
     elif args.test_num == 2:
         overlap_with_solution_3()
     elif args.test_num == 3:
+        different_pref_velocity_1()
+    elif args.test_num == 4:
         # Run a bunch of random tests
         test_random(1000, None)
     else:

@@ -208,8 +208,8 @@ def different_pref_velocity_1():
 
     params = (10., 10, TAU, 2.0)
     sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX)
-    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB)
-    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA)
+    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB, COLLISION_RESPONSIBILITY)
+    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA, COLLISION_RESPONSIBILITY)
 
     vA_0 = sim.getAgentVelocity(1)
 
