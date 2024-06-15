@@ -4,7 +4,7 @@ Compares our expected results with the official ORCA implementation
 import rvo2
 import matplotlib.pyplot as plt
 import numpy as np
-from policy.utils.get_velocity import InverseORCA
+from policy.utils.get_velocity import InverseORCAvpref
 from policy.utils.overlap_detection import Circle, VelocityObstacle, Point
 
 
@@ -29,7 +29,7 @@ def test(relative_position: Point, vA: Point, vA_d: Point,
     cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     cutoff_circle = Circle(cutoff_center, cutoff_radius)
     vo = VelocityObstacle(cutoff_circle)
-    invorca = InverseORCA(vo, vB_max=VB_MAX, epsilon=EPSILON, 
+    invorca = InverseORCAvpref(vo, vB_max=VB_MAX, epsilon=EPSILON, 
                           collision_responsibility=collision_responsibility)
     invorca.compute_velocity(vA, vA_d)
 
@@ -208,19 +208,19 @@ def different_pref_velocity_1():
 
     params = (10., 10, TAU, 2.0)
     sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX)
-    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB)
-    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA)
+    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB, COLLISION_RESPONSIBILITY)
+    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA, COLLISION_RESPONSIBILITY)
 
     vA_0 = sim.getAgentVelocity(1)
 
     sim.setAgentPrefVelocity(0, invorca.vB)
-    sim.setAgentPrefVelocity(1, (1.0, 0))   # Goal directed
+    sim.setAgentPrefVelocity(1, (-1.0, 0))   # Goal directed
     # sim.setAgentPrefVelocity(1, invorca.vA)   # Same as current
     sim.doStep()
     vA_new_official = sim.getAgentVelocity(1)
     vA_new_ours = invorca.vA_new
 
-    print(f'vA (official) {vA_0}')
+    # print(f'vA (official) {vA_0}')
     print(f"vA_new (official) {vA_new_official}")
     print(f"vA_new (ours) {vA_new_ours}")
 
@@ -257,7 +257,7 @@ def test_random(num_runs: int = 100, seed: int | None = None):
         cutoff_radius = (RADIUS_A + RADIUS_B) / time_horizon
         cutoff_circle = Circle(cutoff_center, cutoff_radius)
         vo = VelocityObstacle(cutoff_circle)
-        invorca = InverseORCA(vo, vB_max=VB_MAX, epsilon=EPSILON,
+        invorca = InverseORCAvpref(vo, vB_max=VB_MAX, epsilon=EPSILON,
                             collision_responsibility=collision_responsibility)
         
         dot1 = abs(np.dot(vA, invorca.vo.right_tangent.normal))

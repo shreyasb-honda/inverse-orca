@@ -234,7 +234,9 @@ class InverseORCAvpref(InverseORCA):
                     u_hat_perp = np.array([-self.u_hat[1], self.u_hat[0]])
                     relative_velocity = np.array(vA) - (dist_from_proj_line) * self.u_hat + dist_along_line * u_hat_perp
                     self.vB = tuple(np.array(vA) - relative_velocity)
-                    self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+                    current_to_preferred = np.array(self.v_pref) - np.array(self.vA)
+                    # self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+                    self.vA_new = tuple(np.array(self.v_pref) + (self.collision_responsibility * d + abs(current_to_preferred.dot(self.u_hat))) * self.u_hat)
                     return self.vB, self.u
 
             if np.pi/2 < angle_left < np.pi:
@@ -262,7 +264,9 @@ class InverseORCAvpref(InverseORCA):
                     u_hat_perp = np.array([self.u_hat[1], -self.u_hat[0]])
                     relative_velocity = np.array(vA) - (dist_from_proj_line) * self.u_hat + dist_along_line * u_hat_perp
                     self.vB = tuple(np.array(vA) - relative_velocity)
-                    self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+                    # self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+                    current_to_preferred = np.array(self.v_pref) - np.array(self.vA)
+                    self.vA_new = tuple(np.array(self.v_pref) + (self.collision_responsibility * d + abs(current_to_preferred.dot(self.u_hat))) * self.u_hat)
                     return self.vB, self.u
 
             if angle_right < 0 and angle_left < 0:
@@ -273,7 +277,9 @@ class InverseORCAvpref(InverseORCA):
                 self.u = d * self.u_hat
                 self.vB = np.array(vA) - np.array(self.vo.cutoff_circle.center) + (d - self.vo.cutoff_circle.radius) * self.u
                 self.vB = tuple(self.vB)
-                self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+                current_to_preferred = np.array(self.v_pref) - np.array(self.vA)
+                # self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+                self.vA_new = tuple(np.array(self.v_pref) + (self.collision_responsibility * d + abs(current_to_preferred.dot(self.u_hat))) * self.u_hat)
                 return self.vB, self.u
             
             if self.solution_exists:
