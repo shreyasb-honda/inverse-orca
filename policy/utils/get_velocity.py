@@ -268,8 +268,8 @@ class InverseORCAvpref(InverseORCA):
             if angle_right < 0 and angle_left < 0:
                 # print("Projecting on cutoff circle")
                 l = norm(preferred_to_desired)
-                self.u_hat = preferred_to_desired / l
-                d = min(norm(current_to_desired), self.vo.cutoff_circle.radius - self.epsilon)
+                self.u_hat = np.array(preferred_to_desired) / l
+                d = min(abs(self.u_hat.dot(current_to_desired)), self.vo.cutoff_circle.radius - self.epsilon)
                 self.u = d * self.u_hat
                 self.vB = np.array(vA) - np.array(self.vo.cutoff_circle.center) + (d - self.vo.cutoff_circle.radius) * self.u
                 self.vB = tuple(self.vB)
