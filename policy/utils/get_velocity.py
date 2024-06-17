@@ -179,8 +179,9 @@ class InverseORCA:
 
 class InverseORCAvpref(InverseORCA):
 
-    def __init__(self, vo: VelocityObstacle | None = None, epsilon: float = 0.00001, vB_max: float = 1,
-                 collision_responsibility: float = 0.5, v_pref: Point = (-1.0, 0)):
+    def __init__(self, vo: VelocityObstacle | None = None, epsilon: float = 0.00001,
+                 vB_max: float = 1, collision_responsibility: float = 0.5,
+                 v_pref: Point = (-1.0, 0)):
         super().__init__(vo, epsilon, vB_max, collision_responsibility)
         self.v_pref = v_pref
 
