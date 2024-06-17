@@ -49,21 +49,18 @@ class InverseORCA:
         d = min(dmax, d)
         self.u = d * self.u_hat
 
-        point = (self.vo.right_tangent.point[0] - self.u[0], self.vo.right_tangent.point[1] - self.u[1])
+        point = (self.vo.right_tangent.point[0] - self.u[0],
+                 self.vo.right_tangent.point[1] - self.u[1])
         normal = self.vo.right_tangent.normal
         line = Tangent(point, normal)
 
-        # There is no overlap between the relative velocity circle and the line at a distance d from the tangent
+        # There is no overlap between the relative velocity circle and 
+        # the line at a distance d from the tangent
         if not self.velocity_circle.line_overlap(line):
             # print("No overlap of right projection line and velocity circle")
             self.solution_exists = False
 
         if self.solution_exists:
-            # dist_from_tangent = abs(np.array(self.vA).dot(self.u_hat))
-            # # TODO: this is wrong. The distance can be d - dist_from_tangent as well, depending on the location of vA (inside vs outside the vo)
-            # # TODO: better to just define a new line and find distance from it
-            # dist_from_proj_line = dist_from_tangent + d
-
             dist_from_proj_line = line.dist(self.vA)
             dist_along_line = np.sqrt(self.vB_max ** 2 - dist_from_proj_line ** 2)
             u_hat_perp = np.array([-self.u_hat[1], self.u_hat[0]])
@@ -72,7 +69,7 @@ class InverseORCA:
             self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
 
             return self.vB, self.u
-        
+
         return None, None
 
     def handle_left_leg(self, current_to_desired):
@@ -83,7 +80,8 @@ class InverseORCA:
         d = min(dmax, d)
         self.u = d * self.u_hat
 
-        point = (self.vo.left_tangent.point[0] - self.u[0], self.vo.left_tangent.point[1] - self.u[1])
+        point = (self.vo.left_tangent.point[0] - self.u[0], 
+                 self.vo.left_tangent.point[1] - self.u[1])
         normal = self.vo.left_tangent.normal
         line = Tangent(point, normal)
         if not self.velocity_circle.line_overlap(line):
@@ -91,8 +89,6 @@ class InverseORCA:
             self.solution_exists = False
 
         if self.solution_exists:
-            # dist_from_tangent = abs(np.array(self.vA).dot(self.u_hat))
-            # dist_from_proj_line = dist_from_tangent + d
             dist_from_proj_line = line.dist(self.vA)
             dist_along_line = np.sqrt(self.vB_max ** 2 - dist_from_proj_line ** 2)
             u_hat_perp = np.array([self.u_hat[1], -self.u_hat[0]])
@@ -100,7 +96,7 @@ class InverseORCA:
             self.vB = tuple(np.array(self.vA) - relative_velocity)
             self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
             return self.vB, self.u
-        
+
         return None, None
 
     def handle_cutoff_circle(self, current_to_desired):
@@ -208,7 +204,7 @@ class InverseORCA:
 
             if self.solution_exists:
                 print("Something has gone terribly wrong....")
-                print('None of the conditions for getting best projection direction are satisfied...')
+                print('None of the conditions for getting best projection direction are satisfied')
                 print(f"Angle with right leg: {np.rad2deg(angle_right):.2f}")
                 print(f"Angle with left leg: {np.rad2deg(angle_left):.2f}")
                 return None, None
