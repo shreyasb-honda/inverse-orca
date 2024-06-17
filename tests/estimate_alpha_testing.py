@@ -189,13 +189,13 @@ def test_case_B_3():
 #       Not sure why ORCA is not selecting v_pref as the new velocity
 #       ORCA seems to have flipped the direction of u and then projected, for some reason
 #       Not sure why this is happening
-def test_case_vA_feasible():
+def test_case_vA_feasible_1():
     relative_position = (1., 1.)
     v_pref = (-0.42, -0.1)
     alpha_hat = 0.5
     alpha = 0.9
 
-    vA = (0.5, 0)
+    vA = (0.1, 0)
     # vA = (-0.42, -0.1)
     vB = (-0.3, -0.1)
 
@@ -207,6 +207,30 @@ def test_case_vA_feasible():
     vo = VelocityObstacle(cutoff_circle)
     vo.plot(ax)
     relative_velocity = np.array(vA) - np.array(vB)
-    print(relative_velocity)
+    rel_vel_pref = np.array(v_pref) - np.array(vB)
     ax.scatter(relative_velocity[0], relative_velocity[1], color='red', s=25, label='relvel')
+    ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
+    ax.legend(bbox_to_anchor=(1.05, 0.5))
+
+def test_case_vA_feasible_2():
+    relative_position = (1., 1.)
+    v_pref = (0.18, 0.75)
+    alpha_hat = 0.5
+    alpha = 0.9
+
+    vA = (0.1, 0.8)
+    # vA = (-0.42, -0.1)
+    vB = (-0.1, -0.1)
+
+    ax = test(relative_position, vA, v_pref, vB, alpha_hat, alpha)
+
+    cutoff_center = (relative_position[0] / TAU, relative_position[1] / TAU)
+    cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
+    cutoff_circle = Circle(cutoff_center, cutoff_radius)
+    vo = VelocityObstacle(cutoff_circle)
+    vo.plot(ax)
+    relative_velocity = np.array(vA) - np.array(vB)
+    rel_vel_pref = np.array(v_pref) - np.array(vB)
+    ax.scatter(relative_velocity[0], relative_velocity[1], color='red', s=25, label='relvel')
+    ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
     ax.legend(bbox_to_anchor=(1.05, 0.5))

@@ -22,11 +22,13 @@ def main():
     elif test_num == 5:
         test_case_B_3()
     elif test_num == 6:
-        test_case_vA_feasible()
+        test_case_vA_feasible_1()
+    elif test_num == 7:
+        test_case_vA_feasible_2()
     else:
         print(f"Invalid test num {test_num}")
         print("Enter a number between 0 and 6 inclusive")
-    
+
     plt.show()
 
 if __name__ == "__main__":
