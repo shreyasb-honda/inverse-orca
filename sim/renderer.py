@@ -214,6 +214,18 @@ class Renderer:
                                       color='black', alpha=0.7, label=r'$\hat{v}_h^{new}$', marker='*')
             self.debug_vel_ax.scatter(vA_new_actual[frame_id][0], vA_new_actual[frame_id][1],
                                       color='tab:blue', alpha=0.7, label=r'$v_h^{new}$', marker='^')
+
+            # Add the preferred velocity of the human
+            self.debug_vel_ax.scatter([-1.], [0.], color='red', marker='*', label=r'$v_h^{pref}$')
+
+            # Add the relative velocity
+            relvel = np.array(vc[frame_id].center) - np.array(vB[frame_id])
+            self.debug_vel_ax.scatter(relvel[0], relvel[1], color='green', marker='o', label='relvel')
+
+            # Add the relative velocity with the preferred velocity
+            self.debug_vel_ax.scatter([-1.0 - vB[frame_id][0]], [-vB[frame_id][0]], 
+                                      color='magenta', marker='+', label='relvelpref')
+
             self.debug_vel_ax.legend(loc='center left', bbox_to_anchor=(1.05, 0.5))
             self.ax.grid(True)
             fig.canvas.draw_idle()
