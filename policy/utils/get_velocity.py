@@ -57,7 +57,7 @@ class InverseORCA:
         # There is no overlap between the relative velocity circle and
         # the line at a distance d from the tangent
         if not self.velocity_circle.line_overlap(proj_line):
-            # print("No overlap of right projection line and velocity circle")
+            print("No overlap of right projection line and velocity circle")
             self.solution_exists = False
 
         if self.solution_exists:
@@ -67,15 +67,16 @@ class InverseORCA:
             center_line_normal = tuple(center_line_normal)
             center_line = Tangent((0., 0.), center_line_normal)
             inter_point = center_line.intersect(proj_line)
-            dist_from_proj_line = proj_line.dist(self.vA)
+            # dist_from_proj_line = proj_line.dist(self.vA)
 
             # If the intersection point is to the left of the normal,
             # the minimum vB would be such that the relative velocity
             # is at vA - dist_from_proj_line * u
             side = self.vo.right_tangent.side(inter_point)
-            if side > 0:
-                # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat
-                self.vB = dist_from_proj_line * self.u_hat
+            if side < 0:
+                print("right")
+                relative_velocity = np.array(self.vo.right_tangent.point) - d * self.u_hat
+                self.vB = self.vA - relative_velocity
                 self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
                 self.vB = tuple(self.vB)
                 return self.vB, self.u
@@ -90,10 +91,14 @@ class InverseORCA:
             # then the minimum vB would be such that the relative velocity is at
             # the intersection point (plus epsilon in the u_perp direction to
             # avoid ambiguity of projection)
-            if side < 0:
-                u_perp = np.array([self.u_hat[1], -self.u_hat[0]])
-                self.vB = np.array(self.vA) - np.array(inter_point) + self.epsilon * u_perp
+            if side > 0:
+                print("left")
+                u_perp = np.array([-self.u_hat[1], self.u_hat[0]])
+                # Move a bit away from the intersection point to avoid ambiguity
+                relative_velocity = np.array(inter_point) + self.epsilon * u_perp
+                self.vB = np.array(self.vA) - relative_velocity
                 self.vB = tuple(self.vB)
+                self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
                 return self.vB, self.u
 
         return None, None
@@ -120,20 +125,25 @@ class InverseORCA:
             center_line_normal = tuple(center_line_normal)
             center_line = Tangent((0., 0.), center_line_normal)
             inter_point = center_line.intersect(proj_line)
-            dist_from_proj_line = proj_line.dist(self.vA)
+            # dist_from_proj_line = proj_line.dist(self.vA)
 
             side = self.vo.left_tangent.side(inter_point)
-            if side > 0:
-                # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat
-                self.vB = dist_from_proj_line * self.u_hat
+            if side < 0:
+                print("right")
+                relative_velocity = np.array(self.vo.left_tangent.point) - d * self.u_hat
+                self.vB = self.vA - relative_velocity
                 self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
                 self.vB = tuple(self.vB)
                 return self.vB, self.u
 
-            if side < 0:
-                u_perp = np.array([self.u_hat[1], -self.u_hat[0]])
-                self.vB = np.array(self.vA) - np.array(inter_point) + self.epsilon * u_perp
+            if side > 0:
+                print("left")
+                u_perp = np.array([-self.u_hat[1], self.u_hat[0]])
+                # Move a bit away from the intersection point to avoid ambiguity
+                relative_velocity = np.array(inter_point) - self.epsilon * u_perp
+                self.vB = np.array(self.vA) - relative_velocity
                 self.vB = tuple(self.vB)
+                self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
                 return self.vB, self.u
 
             # dist_from_proj_line = line.dist(self.vA)

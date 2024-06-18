@@ -71,7 +71,8 @@ class Tangent:
             0 if the point is on the line
             1 if the point is on the left side of the line
         """
-        det = self.normal[0] * point[1] - self.normal[1] * point[0]
+        _point_to_point = np.array(point) - np.array(self.point)
+        det = self.normal[0] * _point_to_point[1] - self.normal[1] * _point_to_point[0]
 
         if det < 0:
             return -1
@@ -115,8 +116,17 @@ class Circle:
         point_to_center = np.array(self.center) - np.array(line.point)
         normal = line.normal
         det = normal[0] * point_to_center[1] - normal[1] * point_to_center[0]
-        distance_from_line = point_to_center.dot(np.array(normal))
+        # distance_from_line = point_to_center.dot(np.array(normal))
+        distance_from_line = line.dist(self.center)
 
+        # If the point is inside the circle, return true
+        if norm(point_to_center) < self.radius:
+            return True
+
+        # If the point is outside the circle, but
+        # the distance of the ray from the center is less than the radius AND
+        # the line from the point to the center makes a positive angle with
+        # the normal, then return true
         if abs(distance_from_line) < self.radius and det > 0:
             return True
         

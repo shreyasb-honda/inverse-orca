@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from tests.overlap_testing import first_quadrant, second_quadrant, third_quadrant, fourth_quadrant
+from tests.overlap_testing import *
 
 
 def main(test_num: int):
@@ -12,6 +12,8 @@ def main(test_num: int):
         third_quadrant()
     if test_num == 3:
         fourth_quadrant()
+    if test_num == 4:
+        line_circle_overlap()
 
 
 if __name__ == "__main__":

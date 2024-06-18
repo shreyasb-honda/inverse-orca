@@ -153,11 +153,13 @@ class Robot(Agent):
         """
         human_pos = obs['human pos']
         human_speed = norm(obs['human vel'])
+        human_vel_y = obs['human vel'][1]
 
         x = -self.d_virtual_goal
         y = self.y_virtual_goal - human_pos[1]
         vh_direction = np.array([x, y]) + self.time_step * np.array([0., obs['human vel'][1]])
         vh_desired = vh_direction / norm(vh_direction) * human_speed
+        vh_desired[1] = min(human_vel_y, vh_desired[1])
         self.vh_desired = vh_desired
         self.policy.set_desired_velocity(tuple(self.vh_desired))
 
