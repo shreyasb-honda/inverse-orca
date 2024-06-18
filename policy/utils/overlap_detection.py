@@ -41,20 +41,46 @@ class Tangent:
 
     def intersect(self, other: "Tangent"):
         """
-        Returns a boolean and the intersection point between this ray and other.
-        The boolean is true if the two rays intersect and the returned point will be the
-        intersection with the two ras.
-        The boolean is false if the two rays do not intersect and the returned point will be None
+        Returns the intersection point between this line and other.
+        (Considering the rays as lines extending both sides)
         """
-        # TODO: Do I really need this function?
-        # The intersection determination happens with a line passing through the origin
-        # If I really think about it, I do not care about the intersection point of the lines
-        # What I really want is the maximum possible distance d of the line parallel to the leg that 
-        # will result in a projection on the leg
-        return False, None
+        x1, y1 = self.point
+        n1x, n1y = self.normal
+
+        x2, y2 = other.point
+        n2x, n2y = other.normal
+
+        denom = n1x*n2y - n2x*n1y
+
+        x = (x1*n1x*n2y - x2*n1y*n2x + n1y*n2y*(y1-y2)) / denom
+        y = (n2y*n1x*y2 - n1y*n2x*y1 + n1x*n2x*(x2-x1)) / denom
+
+        return x, y
 
     def dist(self, point: Point):
-        return abs(np.dot(self.normal, point))
+        """
+        Returns the distance of a point from this line
+        """
+        _point_to_point = np.array(point) - np.array(self.point)
+        return abs(np.dot(self.normal, _point_to_point))
+    
+    def side(self, point: Point):
+        """
+        Returns 
+            -1 if the point is on the right side of the line
+            0 if the point is on the line
+            1 if the point is on the left side of the line
+        """
+        _point_to_point = np.array(point) - np.array(self.point)
+        det = self.normal[0] * _point_to_point[1] - self.normal[1] * _point_to_point[0]
+
+        if det < 0:
+            return -1
+        if det > 0:
+            return 1
+
+        return 0
+
 
 class Circle:
     """
@@ -90,8 +116,17 @@ class Circle:
         point_to_center = np.array(self.center) - np.array(line.point)
         normal = line.normal
         det = normal[0] * point_to_center[1] - normal[1] * point_to_center[0]
-        distance_from_line = point_to_center.dot(np.array(normal))
+        # distance_from_line = point_to_center.dot(np.array(normal))
+        distance_from_line = line.dist(self.center)
 
+        # If the point is inside the circle, return true
+        if norm(point_to_center) < self.radius:
+            return True
+
+        # If the point is outside the circle, but
+        # the distance of the ray from the center is less than the radius AND
+        # the line from the point to the center makes a positive angle with
+        # the normal, then return true
         if abs(distance_from_line) < self.radius and det > 0:
             return True
         

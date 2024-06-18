@@ -178,7 +178,7 @@ class Renderer:
     def debug_mode(self, fig: plt.Figure, anim_ax: plt.Axes, velocity_axis: plt.Axes,
                    vc: List[Circle], vo: List[VelocityObstacle],
                    vA_d: List[Point], vB: List[Point], vA_new_expected: List[Point],
-                   vA_new_actual: List[Point]):
+                   vA_new_actual: List[Point], u: List[Point]):
 
         assert self.num_frames is not None, "Please set observations first"
         assert self.observations is not None, "Please set observations first"
@@ -227,6 +227,12 @@ class Renderer:
             # Add the relative velocity with the preferred velocity
             self.debug_vel_ax.scatter([-1.0 - vB[frame_id][0]], [-vB[frame_id][0]], 
                                       color='magenta', marker='+', label='relvelpref')
+            
+            # Add u
+            if u[frame_id] is not None:
+                u_ = np.array(vc[frame_id].center) - np.array(vB[frame_id]) + np.array(u[frame_id])
+                self.debug_vel_ax.scatter(u_[0], u_[1],
+                                          color='blue', marker='s', label=r'$u$')
 
             self.debug_vel_ax.legend(loc='center left', bbox_to_anchor=(1.05, 0.5))
             self.ax.grid(True)

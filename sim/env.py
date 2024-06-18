@@ -82,6 +82,7 @@ class HallwayScene(gym.Env):
         self.vb_list = None
         self.va_exp_list = None
         self.va_act_list = None
+        self.u_list = None
 
         # For saving the plots
         self.render_mode = None
@@ -117,6 +118,7 @@ class HallwayScene(gym.Env):
             self.vb_list = []
             self.va_exp_list = []
             self.va_act_list = []
+            self.u_list = []
 
         left = -4.
         right = self.hallway_length + 4.
@@ -185,6 +187,7 @@ class HallwayScene(gym.Env):
             self.vb_list.append(self.robot.get_velocity())
             self.va_exp_list.append(self.robot.policy.invorca.vA_new)
             self.va_act_list.append(tuple(action["human vel"]))   # The velocity after updating it via ORCA
+            self.u_list.append(self.robot.policy.u)
 
         if (not self.goal_frame_set) and self.robot.human_reached_goal(obs):
             self.goal_frame_set = True
@@ -232,7 +235,9 @@ class HallwayScene(gym.Env):
             ax1.set_aspect('equal')
             ax2.set_aspect('equal')
             self.renderer.debug_mode(fig, ax2, ax1, self.vc_list, self.vo_list,
-                                     self.va_d_list, self.vb_list, self.va_exp_list, self.va_act_list)
+                                     self.va_d_list, self.vb_list,
+                                     self.va_exp_list, self.va_act_list,
+                                     self.u_list)
 
     def __get_obs(self):
         obs = {

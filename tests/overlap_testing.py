@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from policy.utils.overlap_detection import Circle, VelocityObstacle
+from policy.utils.overlap_detection import Circle, VelocityObstacle, Tangent
 sns.set_theme(context='talk', style='dark')
 
 
@@ -93,6 +93,7 @@ def first_quadrant():
 
     plt.show()
 
+
 def second_quadrant():
     # Constants
     tau = 2.0
@@ -147,6 +148,7 @@ def second_quadrant():
     plt.savefig(os.path.join(out_directory, '6.png'))
 
     plt.show()
+
 
 def third_quadrant():
     # Constants
@@ -203,6 +205,7 @@ def third_quadrant():
 
     plt.show()
 
+
 def fourth_quadrant():
     # Constants
     tau = 2.0
@@ -255,5 +258,26 @@ def fourth_quadrant():
     ax.text(0.01, 0.99, f"Overlap {overlap}", ha='left', va='top', transform=ax.transAxes)
     print(f"Overlap: {overlap}")
     plt.savefig(os.path.join(out_directory, '6.png'))
+
+    plt.show()
+
+
+def line_circle_overlap():
+    circ = Circle((1.,1.), 1.)
+
+    normal = np.array([-1., 1.])
+    normal /= np.linalg.norm(normal)
+    point = np.array(circ.center) + 1.1 * normal
+    point = tuple(point)
+
+    line = Tangent(point, normal)
+
+    fig, ax = plt.subplots()
+    ax.set_aspect('equal')
+
+    circ.plot(ax)
+    line.plot(ax)
+
+    print(circ.line_overlap(line))
 
     plt.show()
