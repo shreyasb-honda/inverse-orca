@@ -74,7 +74,7 @@ class InverseORCA:
             # is at vA - dist_from_proj_line * u
             side = self.vo.right_tangent.side(inter_point)
             if side < 0:
-                print("right")
+                # print("right")
                 relative_velocity = np.array(self.vo.right_tangent.point) - d * self.u_hat
                 self.vB = self.vA - relative_velocity
                 self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
@@ -92,7 +92,7 @@ class InverseORCA:
             # the intersection point (plus epsilon in the u_perp direction to
             # avoid ambiguity of projection)
             if side > 0:
-                print("left")
+                # print("left")
                 u_perp = np.array([-self.u_hat[1], self.u_hat[0]])
                 # Move a bit away from the intersection point to avoid ambiguity
                 relative_velocity = np.array(inter_point) + self.epsilon * u_perp
@@ -129,7 +129,7 @@ class InverseORCA:
 
             side = self.vo.left_tangent.side(inter_point)
             if side < 0:
-                print("right")
+                # print("right")
                 relative_velocity = np.array(self.vo.left_tangent.point) - d * self.u_hat
                 self.vB = self.vA - relative_velocity
                 self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
@@ -137,7 +137,7 @@ class InverseORCA:
                 return self.vB, self.u
 
             if side > 0:
-                print("left")
+                # print("left")
                 u_perp = np.array([-self.u_hat[1], self.u_hat[0]])
                 # Move a bit away from the intersection point to avoid ambiguity
                 relative_velocity = np.array(inter_point) - self.epsilon * u_perp
@@ -242,19 +242,19 @@ class InverseORCA:
             angle_right = get_angle(self.vo.right_tangent.normal, current_to_desired)
 
             if 0 < angle_right < np.pi / 2:
-                print("Projecting on right leg")
+                # print("Projecting on right leg")
                 self.vB, self.u = self.handle_right_leg(current_to_desired)
                 if self.solution_exists:
                     return self.vB, self.u
 
             if np.pi/2 < angle_left < np.pi:
-                print("Projecting on left leg")
+                # print("Projecting on left leg")
                 self.vB, self.u = self.handle_left_leg(current_to_desired)
                 if self.solution_exists:
                     return self.vB, self.u
 
             if angle_right < 0 and angle_left < 0:
-                print("Projecting on cutoff circle")
+                # print("Projecting on cutoff circle")
                 return self.handle_cutoff_circle(current_to_desired)
 
             if self.solution_exists:
