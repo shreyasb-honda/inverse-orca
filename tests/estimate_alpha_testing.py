@@ -36,7 +36,7 @@ def plot(ax: plt.Axes, vA: Point, u: Point, alpha_hat: float,
 
     # Draw the expected ORCA line
     line_length = 30
-    u_perp = -np.array([-u[1], u[0]])
+    u_perp = np.array([-u[1], u[0]])
     u = np.array(u)
 
     point1 = tuple(np.array(vA) + u_perp)
