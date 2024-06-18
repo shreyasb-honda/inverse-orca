@@ -53,6 +53,9 @@ class Tangent:
         # will result in a projection on the leg
         return False, None
 
+    def dist(self, point: Point):
+        return abs(np.dot(self.normal, point))
+
 class Circle:
     """
     A class representing a circle. Implements overlap checks with rays and other circles
