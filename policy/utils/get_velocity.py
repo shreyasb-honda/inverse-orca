@@ -11,7 +11,7 @@ import numpy as np
 from numpy.linalg import norm
 from policy.utils.overlap_detection import Circle, VelocityObstacle, Point, Tangent
 
-EPSILON = 1e-2
+EPSILON = 1e-6
 
 class InverseORCA:
     """
@@ -147,7 +147,7 @@ class InverseORCA:
         self.u_hat = current_to_desired / l
         d = min(l, self.vo.cutoff_circle.radius - self.epsilon)
         self.u = d * self.u_hat
-        self.vB = np.array(self.vA) - np.array(self.vo.cutoff_circle.center) + (d - self.vo.cutoff_circle.radius) * self.u
+        self.vB = np.array(self.vA) - np.array(self.vo.cutoff_circle.center) + (d - self.vo.cutoff_circle.radius) * self.u_hat
         self.vB = tuple(self.vB)
         self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
 
