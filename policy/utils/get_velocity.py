@@ -260,11 +260,12 @@ class InverseORCA:
                 return self.handle_cutoff_circle(current_to_desired)
 
             if self.solution_exists:
-                print("Something has gone terribly wrong....")
-                print('None of the conditions for getting best projection direction are satisfied')
-                print(f"Angle with right leg: {np.rad2deg(angle_right):.2f}")
-                print(f"Angle with left leg: {np.rad2deg(angle_left):.2f}")
-                return None, None
+                self.solution_exists = False
+                # print("Something has gone terribly wrong....")
+                # print('None of the conditions for getting best projection direction are satisfied')
+                # print(f"Angle with right leg: {np.rad2deg(angle_right):.2f}")
+                # print(f"Angle with left leg: {np.rad2deg(angle_left):.2f}")
+                # return None, None
 
         if not self.solution_exists:
             return self.handle_getting_closer_to_vo()
