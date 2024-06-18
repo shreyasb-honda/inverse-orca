@@ -258,11 +258,17 @@ class InverseORCA:
                 return self.handle_cutoff_circle(current_to_desired)
 
             if self.solution_exists:
-                print("Something has gone terribly wrong....")
-                print('None of the conditions for getting best projection direction are satisfied')
-                print(f"Angle with right leg: {np.rad2deg(angle_right):.2f}")
-                print(f"Angle with left leg: {np.rad2deg(angle_left):.2f}")
-                return None, None
+                self.solution_exists = False
+                # This means that there is an overlap between the velocity obstacle and the velocity
+                # circle. However, the current conditions dictate that nudging the human towards
+                # the desired velocity is not possible
+                # Currently treating this case as the same as the one with no overlap
+
+                # print("Something has gone terribly wrong....")
+                # print('None of the conditions for getting best projection direction are satisfied')
+                # print(f"Angle with right leg: {np.rad2deg(angle_right):.2f}")
+                # print(f"Angle with left leg: {np.rad2deg(angle_left):.2f}")
+                # return None, None
 
         if not self.solution_exists:
             return self.handle_getting_closer_to_vo()
