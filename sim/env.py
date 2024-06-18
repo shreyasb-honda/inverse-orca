@@ -259,7 +259,7 @@ class HallwayScene(gym.Env):
         # Reset the position of human
         human_pos = self.human_start_box.sample()
         self.human.set_position(human_pos[0], human_pos[1])
-        # self.human.set_position(self.hallway_length * 0.98, 2.5) # Debugging
+        # self.human.set_position(self.hallway_length * 0.98, 2.8) # Debugging
 
         # Reset the position of the robot
         robot_pos = self.robot_start_box.sample()
