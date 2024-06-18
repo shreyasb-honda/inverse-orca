@@ -46,6 +46,7 @@ class InverseORCA:
         self.u_hat = np.array(self.vo.right_tangent.normal)
         d = abs(self.u_hat.dot(current_to_desired))
         dmax = self.vo.find_dmax(self.velocity_circle, 'right')
+        print(dmax, d)
         d = min(dmax, d)
         self.u = d * self.u_hat
 
@@ -76,6 +77,7 @@ class InverseORCA:
                 # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat
                 self.vB = dist_from_proj_line * self.u_hat
                 self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+                self.vB = tuple(self.vB)
                 return self.vB, self.u
 
             # dist_along_line = np.sqrt(self.vB_max ** 2 - dist_from_proj_line ** 2)
@@ -91,6 +93,7 @@ class InverseORCA:
             if side < 0:
                 u_perp = np.array([self.u_hat[1], -self.u_hat[0]])
                 self.vB = np.array(self.vA) - np.array(inter_point) + self.epsilon * u_perp
+                self.vB = tuple(self.vB)
                 return self.vB, self.u
 
         return None, None
@@ -124,11 +127,13 @@ class InverseORCA:
                 # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat
                 self.vB = dist_from_proj_line * self.u_hat
                 self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+                self.vB = tuple(self.vB)
                 return self.vB, self.u
 
             if side < 0:
                 u_perp = np.array([self.u_hat[1], -self.u_hat[0]])
                 self.vB = np.array(self.vA) - np.array(inter_point) + self.epsilon * u_perp
+                self.vB = tuple(self.vB)
                 return self.vB, self.u
 
             # dist_from_proj_line = line.dist(self.vA)
@@ -137,7 +142,6 @@ class InverseORCA:
             # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat + dist_along_line * u_hat_perp
             # self.vB = tuple(np.array(self.vA) - relative_velocity)
             # self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
-            return self.vB, self.u
 
         return None, None
 
@@ -228,19 +232,19 @@ class InverseORCA:
             angle_right = get_angle(self.vo.right_tangent.normal, current_to_desired)
 
             if 0 < angle_right < np.pi / 2:
-                # print("Projecting on right leg")
+                print("Projecting on right leg")
                 self.vB, self.u = self.handle_right_leg(current_to_desired)
                 if self.solution_exists:
                     return self.vB, self.u
 
             if np.pi/2 < angle_left < np.pi:
-                # print("Projecting on left leg")
+                print("Projecting on left leg")
                 self.vB, self.u = self.handle_left_leg(current_to_desired)
                 if self.solution_exists:
                     return self.vB, self.u
 
             if angle_right < 0 and angle_left < 0:
-                # print("Projecting on cutoff circle")
+                print("Projecting on cutoff circle")
                 return self.handle_cutoff_circle(current_to_desired)
 
             if self.solution_exists:

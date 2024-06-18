@@ -61,7 +61,8 @@ class Tangent:
         """
         Returns the distance of a point from this line
         """
-        return abs(np.dot(self.normal, point))
+        _point_to_point = np.array(point) - np.array(self.point)
+        return abs(np.dot(self.normal, _point_to_point))
     
     def side(self, point: Point):
         """
