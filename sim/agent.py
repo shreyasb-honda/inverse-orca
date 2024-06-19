@@ -161,6 +161,7 @@ class Robot(Agent):
         vh_direction = np.array([x, y]) + self.time_step * np.array([0., obs['human vel'][1]])
         vh_desired = vh_direction / norm(vh_direction) * human_speed
         vh_desired[1] = min(human_vel_y, vh_desired[1])
+        # vh_desired[1] = -1.0
         self.vh_desired = vh_desired
         self.policy.set_desired_velocity(tuple(self.vh_desired))
 
