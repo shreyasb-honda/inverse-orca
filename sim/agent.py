@@ -55,6 +55,7 @@ class Agent:
         assert self.gx is not None, "Please set the goal position before calling set_preferred_velocity"
         assert self.gy is not None, "Please set the goal position before calling set_preferred_velocity"
         self.preferred_velocity_x = min(abs(self.gx - self.px), self.preferred_speed)
+        self.preferred_velocity_x = min(self.preferred_velocity_x, self.max_speed)
         self.preferred_velocity_x *= np.sign(self.gx - self.px)
         self.preferred_velocity_y = 0
         self.set_velocity(self.preferred_velocity_x, self.preferred_velocity_y)
