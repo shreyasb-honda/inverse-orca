@@ -7,6 +7,7 @@ import gymnasium as gym
 from sim.agent import Robot, Human
 from policy.orca import Orca
 from policy.invorca import InvOrca
+from policy.utils.estimate_alpha import estimate_alpha
 
 
 def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 1,
@@ -96,6 +97,13 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
                 obs['robot vel'] = np.array(robot_action)
                 # Update the observation to include the current velocity of the robot
                 human_action = human.policy.predict(obs)
+
+                # Estimate the value of alpha
+                alpha_hat = estimate_alpha((-1.0, 0), human_action, 
+                                           robot.policy.invorca.vA_new,
+                                           robot.policy.collision_responsibility,
+                                           tuple(robot.policy.invorca.u))
+                print(alpha_hat)
 
             env.render()
         except TypeError as err:

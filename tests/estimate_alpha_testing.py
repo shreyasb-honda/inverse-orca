@@ -74,11 +74,15 @@ def test(relative_position: Point, vA: Point, v_pref: Point,
     sim1.setAgentPrefVelocity(1, v_pref)
 
     sim1.doStep()
+
+    # A factor of alpha_hat is already multiplied when ORCA computes the orca_point
+    # Therefore, this is not the unmodified u. It is actually alpha_hat * u
     orca_line = sim1.getAgentORCALine(1, 0)
     orca_point = (orca_line[0], orca_line[1])
     orca_direction = (orca_line[2], orca_line[3])
-    u_mag = np.linalg.norm(np.array(orca_point) - np.array(vA))
+    u_mag = np.linalg.norm(np.array(orca_point) - np.array(vA)) / alpha_hat
     u = tuple(u_mag * np.array(orca_direction))
+    print(u)
 
     vA_new_exp = sim1.getAgentVelocity(1)
 
@@ -90,6 +94,12 @@ def test(relative_position: Point, vA: Point, v_pref: Point,
     sim2.setAgentPrefVelocity(1, v_pref)
 
     sim2.doStep()
+    orca_line = sim2.getAgentORCALine(1, 0)
+    orca_point = (orca_line[0], orca_line[1])
+    orca_direction = (orca_line[2], orca_line[3])
+    u_mag = np.linalg.norm(np.array(orca_point) - np.array(vA)) / alpha
+    u = tuple(u_mag * np.array(orca_direction))
+    print(u)
 
     vA_new = sim2.getAgentVelocity(1)
 
@@ -115,6 +125,7 @@ def test(relative_position: Point, vA: Point, v_pref: Point,
 
     return ax
 
+
 def test_case_A_1():
     relative_position = (1., 1.)
     v_pref = (-1.0, 0)
@@ -126,6 +137,7 @@ def test_case_A_1():
 
     test(relative_position, vA, v_pref, vB, alpha_hat, alpha)
 
+
 def test_case_A_2():
     relative_position = (1., 1.)
     v_pref = (-0.8, -0.27)
@@ -136,6 +148,7 @@ def test_case_A_2():
     vB = (-1.0, -0.4)
 
     test(relative_position, vA, v_pref, vB, alpha_hat, alpha)
+
 
 def test_case_A_3():
     relative_position = (1., 1.)
@@ -159,6 +172,7 @@ def test_case_B_1():
     vB = (0, -0.8)
 
     test(relative_position, vA, v_pref, vB, alpha_hat, alpha)
+
 
 def test_case_B_2():
     relative_position = (1., 1.)
@@ -211,6 +225,7 @@ def test_case_vA_feasible_1():
     ax.scatter(relative_velocity[0], relative_velocity[1], color='red', s=25, label='relvel')
     ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
     ax.legend(bbox_to_anchor=(1.05, 0.5))
+
 
 def test_case_vA_feasible_2():
     relative_position = (1., 1.)
