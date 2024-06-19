@@ -13,7 +13,7 @@ def main():
     max_speed_robot = 1.0
 
     for alpha in alphas:
-        run_sim(render_mode, alpha=alpha, 
+        run_sim(render_mode, alpha=alpha,
                 max_speed_robot=max_speed_robot)
 
 
