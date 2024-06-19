@@ -10,7 +10,9 @@ from policy.invorca import InvOrca
 
 
 def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 1,
-            alpha: float | None = None, max_speed_robot: float | None = None):
+            alpha: float | None = None, max_speed_robot: float | None = None, 
+            time_horizon_robot: int | None = None, 
+            time_horizon_human: int | None = None):
 
     # Configure the environment
     env_config = RawConfigParser()
@@ -23,8 +25,15 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     policy_config.read(os.path.join('.', 'sim', 'config', 'policy.config'))
     orca.configure(policy_config)
 
+    if time_horizon_human is not None:
+        orca.time_horizon = time_horizon_human
+
     invorca = InvOrca()
     invorca.configure(policy_config)
+
+    if time_horizon_robot is not None:
+        invorca.time_horizon = time_horizon_robot
+        invorca.orca_time_horizon = time_horizon_robot
 
     # Configure the human
     time_step = env_config.getfloat('env', 'time_step')
