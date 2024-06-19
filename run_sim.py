@@ -12,7 +12,8 @@ from policy.invorca import InvOrca
 def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 1,
             alpha: float | None = None, max_speed_robot: float | None = None, 
             time_horizon_robot: int | None = None, 
-            time_horizon_human: int | None = None):
+            time_horizon_human: int | None = None, 
+            out_fname: str | None = None):
 
     # Configure the environment
     env_config = RawConfigParser()
@@ -57,6 +58,9 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     env.unwrapped.set_human(human)
     env.unwrapped.set_robot(robot)
     env.unwrapped.configure(env_config, save_anim, render_mode)
+
+    if out_fname is not None:
+        env.unwrapped.set_output_filename(out_fname)
 
     num_failed = 0
 
