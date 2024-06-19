@@ -114,11 +114,6 @@ class Circle:
         :param line - the line with which to evaluate the overlap
         """
         point_to_center = np.array(self.center) - np.array(line.point)
-        normal = line.normal
-        det = normal[0] * point_to_center[1] - normal[1] * point_to_center[0]
-        # distance_from_line = point_to_center.dot(np.array(normal))
-        distance_from_line = line.dist(self.center)
-
         # If the point is inside the circle, return true
         if norm(point_to_center) < self.radius:
             return True
@@ -127,6 +122,10 @@ class Circle:
         # the distance of the ray from the center is less than the radius AND
         # the line from the point to the center makes a positive angle with
         # the normal, then return true
+        normal = line.normal
+        det = normal[0] * point_to_center[1] - normal[1] * point_to_center[0]
+        # distance_from_line = point_to_center.dot(np.array(normal))
+        distance_from_line = line.dist(self.center)
         if abs(distance_from_line) < self.radius and det > 0:
             return True
         
