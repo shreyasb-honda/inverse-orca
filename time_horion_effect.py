@@ -9,7 +9,7 @@ def main():
 
     alpha = 1.0
     render_mode = "human"
-    max_speed = 2.0
+    max_speed = 1.0
 
     robot_horizons = list(range(2, 9))
     human_horizon = 6
