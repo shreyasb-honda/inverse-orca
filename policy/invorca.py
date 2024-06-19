@@ -110,7 +110,7 @@ class InvOrca(Policy):
         cutoff_circle = Circle(tuple(center), radius)
         self.vo = VelocityObstacle(cutoff_circle)
 
-        self.invorca = InverseORCA(self.vo, vB_max=self.max_speed, 
+        self.invorca = InverseORCA(self.vo, vB_max=self.max_speed,
                                    collision_responsibility=self.collision_responsibility)
 
         self.robot_vel, self.u = self.invorca.compute_velocity(human_vel, self.desired_velocity)
