@@ -55,6 +55,7 @@ class Agent:
         assert self.gx is not None, "Please set the goal position before calling set_preferred_velocity"
         assert self.gy is not None, "Please set the goal position before calling set_preferred_velocity"
         self.preferred_velocity_x = min(abs(self.gx - self.px), self.preferred_speed)
+        self.preferred_velocity_x = min(self.preferred_velocity_x, self.max_speed)
         self.preferred_velocity_x *= np.sign(self.gx - self.px)
         self.preferred_velocity_y = 0
         self.set_velocity(self.preferred_velocity_x, self.preferred_velocity_y)
@@ -160,6 +161,7 @@ class Robot(Agent):
         vh_direction = np.array([x, y]) + self.time_step * np.array([0., obs['human vel'][1]])
         vh_desired = vh_direction / norm(vh_direction) * human_speed
         vh_desired[1] = min(human_vel_y, vh_desired[1])
+        # vh_desired[1] = -1.0
         self.vh_desired = vh_desired
         self.policy.set_desired_velocity(tuple(self.vh_desired))
 

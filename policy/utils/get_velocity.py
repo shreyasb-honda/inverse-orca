@@ -67,7 +67,6 @@ class InverseORCA:
             center_line_normal = tuple(center_line_normal)
             center_line = Tangent((0., 0.), center_line_normal)
             inter_point = center_line.intersect(proj_line)
-            # dist_from_proj_line = proj_line.dist(self.vA)
 
             # If the intersection point is to the left of the normal,
             # the minimum vB would be such that the relative velocity
@@ -81,11 +80,13 @@ class InverseORCA:
                 self.vB = tuple(self.vB)
                 return self.vB, self.u
 
+            # dist_from_proj_line = proj_line.dist(self.vA)
             # dist_along_line = np.sqrt(self.vB_max ** 2 - dist_from_proj_line ** 2)
             # u_hat_perp = np.array([-self.u_hat[1], self.u_hat[0]])
             # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat + dist_along_line * u_hat_perp
             # self.vB = tuple(np.array(self.vA) - relative_velocity)
             # self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+            # return self.vB, self.u
 
             # If the intersection point is to the right of the normal,
             # then the minimum vB would be such that the relative velocity is at
@@ -146,12 +147,13 @@ class InverseORCA:
                 self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
                 return self.vB, self.u
 
-            # dist_from_proj_line = line.dist(self.vA)
+            # dist_from_proj_line = proj_line.dist(self.vA)
             # dist_along_line = np.sqrt(self.vB_max ** 2 - dist_from_proj_line ** 2)
             # u_hat_perp = np.array([self.u_hat[1], -self.u_hat[0]])
             # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat + dist_along_line * u_hat_perp
             # self.vB = tuple(np.array(self.vA) - relative_velocity)
             # self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+            # return self.vB, self.u
 
         return None, None
 
@@ -170,16 +172,18 @@ class InverseORCA:
     def handle_getting_closer_to_right_leg(self):
 
         self.u_hat = -np.array(self.vo.right_tangent.normal)
-        right_point_to_center = np.array(self.vA) - np.array(self.vo.right_tangent.point)
-        dist_from_right_leg = abs(self.u_hat.dot(right_point_to_center))
+        # right_point_to_center = np.array(self.vA) - np.array(self.vo.right_tangent.point)
+        # dist_from_right_leg = abs(self.u_hat.dot(right_point_to_center))
+        dist_from_right_leg = self.vo.right_tangent.dist(self.vA)
         d = min(self.vB_max, dist_from_right_leg - self.epsilon)
         self.u = d * self.u_hat
-    
+
     def handle_getting_closer_to_left_leg(self):
 
         self.u_hat = np.array(self.vo.left_tangent.normal)
-        left_point_to_center = np.array(self.vA) - np.array(self.vo.left_tangent.point)
-        dist_from_left_leg = abs(self.u_hat.dot(left_point_to_center))
+        # left_point_to_center = np.array(self.vA) - np.array(self.vo.left_tangent.point)
+        # dist_from_left_leg = abs(self.u_hat.dot(left_point_to_center))
+        dist_from_left_leg = self.vo.left_tangent.dist(self.vA)
         d = min(self.vB_max, dist_from_left_leg - self.epsilon)
         self.u = d * self.u_hat
 
@@ -188,7 +192,9 @@ class InverseORCA:
         self.u_hat = np.array(self.vo.cutoff_circle.center) - np.array(self.vA)
         l = norm(self.u_hat)
         self.u_hat /= l
-        d = min(self.vB_max, l - self.epsilon)
+        # d = min(self.vB_max, l - self.epsilon)
+        # We need to subtract the radius to ensure that we do not end up inside the VO
+        d = min(self.vB_max, l - self.epsilon - self.vo.cutoff_circle.radius)  
         self.u = d * self.u_hat
 
     def handle_getting_closer_to_vo(self):
@@ -225,8 +231,14 @@ class InverseORCA:
             3. Checking for the existence of solutions
             4. Returning the optimal velocity for B to influence vA towards vA_d
         """
+
+        if norm(np.array(vA) - np.array(vA_d)) < self.epsilon:
+            print(vA, vA_d)
+            return self.vB, self.u
+
         self.vA = vA
         self.vA_d = vA_d
+
         self.velocity_circle = Circle(vA, self.vB_max)
         self.overlap = self.vo.overlap(self.velocity_circle)
         self.solution_exists = False
@@ -242,7 +254,7 @@ class InverseORCA:
             angle_right = get_angle(self.vo.right_tangent.normal, current_to_desired)
 
             if 0 < angle_right < np.pi / 2:
-                # print("Projecting on right leg")
+                print("Projecting on right leg")
                 self.vB, self.u = self.handle_right_leg(current_to_desired)
                 if self.solution_exists:
                     return self.vB, self.u
@@ -258,11 +270,17 @@ class InverseORCA:
                 return self.handle_cutoff_circle(current_to_desired)
 
             if self.solution_exists:
-                print("Something has gone terribly wrong....")
-                print('None of the conditions for getting best projection direction are satisfied')
-                print(f"Angle with right leg: {np.rad2deg(angle_right):.2f}")
-                print(f"Angle with left leg: {np.rad2deg(angle_left):.2f}")
-                return None, None
+                self.solution_exists = False
+                # This means that there is an overlap between the velocity obstacle and the velocity
+                # circle. However, the current conditions dictate that nudging the human towards
+                # the desired velocity is not possible
+                # Currently treating this case as the same as the one with no overlap
+
+                # print("Something has gone terribly wrong....")
+                # print('None of the conditions for getting best projection direction are satisfied')
+                # print(f"Angle with right leg: {np.rad2deg(angle_right):.2f}")
+                # print(f"Angle with left leg: {np.rad2deg(angle_left):.2f}")
+                # return None, None
 
         if not self.solution_exists:
             return self.handle_getting_closer_to_vo()

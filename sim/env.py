@@ -87,6 +87,7 @@ class HallwayScene(gym.Env):
         # For saving the plots
         self.render_mode = None
         self.save_anim = None
+        self.filename = None
 
     def configure(self, config: RawConfigParser, save_anim: bool,
                   render_mode: str = "human"):
@@ -201,9 +202,10 @@ class HallwayScene(gym.Env):
         info = {}
         return obs, reward, terminated, truncated, info
 
+    def set_output_filename(self, fname: str):
+        self.filename = fname
+
     def render(self):
-        # TODO: Assuming that render mode is human and showing a animated video of the frames
-        # TODO: We may want to plot the static trajectory
         if self.goal_frame is None:
             self.goal_frame = len(self.observations)
 
@@ -215,9 +217,13 @@ class HallwayScene(gym.Env):
                 ax.set_aspect('equal')
                 anim = self.renderer.animate(fig, ax)
                 if self.save_anim:
+                    filename = self.filename
+                    if filename is None:
+                        ts = datetime.datetime.now().strftime("%m-%d %H-%M-%S")
+                        filename = f'{ts}-{uuid.uuid4().hex}'
+
                     writervideo = animation.FFMpegWriter(fps=5)
-                    ts = datetime.datetime.now().strftime("%m-%d %H-%M-%S")
-                    anim.save(f'media/videos/{ts}-{uuid.uuid4().hex}.mp4', writer=writervideo)
+                    anim.save(f'media/videos/{filename}.mp4', writer=writervideo)
                     plt.close(fig)
                 # plt.show()
             if self.render_mode == 'static':
@@ -225,10 +231,13 @@ class HallwayScene(gym.Env):
                 ax.set_aspect('equal')
                 fig, ax = self.renderer.static_plot(fig, ax)
                 if self.save_anim:
-                    ts = datetime.datetime.now().strftime("%m-%d %H-%M-%S")
-                    plt.savefig(f'media/static-plots/{ts}-{uuid.uuid4().hex}.png')
+                    filename = self.filename
+                    if filename is None:
+                        ts = datetime.datetime.now().strftime("%m-%d %H-%M-%S")
+                        filename = f'{ts}-{uuid.uuid4().hex}'
+
+                    plt.savefig(f'media/static-plots/{filename}.png')
                     plt.close(fig)
-                # plt.show()
 
         else:
             fig, (ax1, ax2) = plt.subplots(figsize=(9, 9), nrows=2, ncols=1, height_ratios=[0.7, 0.3])
@@ -258,13 +267,13 @@ class HallwayScene(gym.Env):
 
         # Reset the position of human
         human_pos = self.human_start_box.sample()
-        self.human.set_position(human_pos[0], human_pos[1])
-        # self.human.set_position(self.hallway_length * 0.95, 2.5) # Debugging
+        # self.human.set_position(human_pos[0], human_pos[1])
+        self.human.set_position(self.hallway_length * 0.98, 2.5) # Debugging
 
         # Reset the position of the robot
         robot_pos = self.robot_start_box.sample()
-        self.robot.set_position(robot_pos[0], robot_pos[1])
-        # self.robot.set_position(self.hallway_length * 0.05, 2.5)
+        # self.robot.set_position(robot_pos[0], robot_pos[1])
+        self.robot.set_position(self.hallway_length * 0.02, 3.0)
 
         # Set the preferred velocity of the human and the robot
         self.human.set_preferred_velocity()

@@ -9,20 +9,11 @@ from policy.orca import Orca
 from policy.invorca import InvOrca
 
 
-def main():
-
-    parser = ArgumentParser()
-    parser.add_argument('--debug', type=bool, default=False,
-                        help="Whether to run the simulation in debug mode (default: False)")
-    parser.add_argument('--save-anim', type=bool, default=True,
-                        help="Whether to save the animation to a file (default: False)")
-    parser.add_argument('--render-mode', type=str, default='human',
-                        help='The mode in which to render (human or static plot) (default: human)')
-
-    parser.add_argument('--num-runs', type=int, default=1,
-                        help='The number of times the simulation should be run (default: 1)')
-
-    args = parser.parse_args()
+def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 1,
+            alpha: float | None = None, max_speed_robot: float | None = None, 
+            time_horizon_robot: int | None = None, 
+            time_horizon_human: int | None = None, 
+            out_fname: str | None = None):
 
     # Configure the environment
     env_config = RawConfigParser()
@@ -35,8 +26,15 @@ def main():
     policy_config.read(os.path.join('.', 'sim', 'config', 'policy.config'))
     orca.configure(policy_config)
 
+    if time_horizon_human is not None:
+        orca.time_horizon = time_horizon_human
+
     invorca = InvOrca()
     invorca.configure(policy_config)
+
+    if time_horizon_robot is not None:
+        invorca.time_horizon = time_horizon_robot
+        invorca.orca_time_horizon = time_horizon_robot
 
     # Configure the human
     time_step = env_config.getfloat('env', 'time_step')
@@ -59,12 +57,24 @@ def main():
 
     env.unwrapped.set_human(human)
     env.unwrapped.set_robot(robot)
-    env.unwrapped.configure(env_config, args.save_anim, args.render_mode)
+    env.unwrapped.configure(env_config, save_anim, render_mode)
+
+    if out_fname is not None:
+        env.unwrapped.set_output_filename(out_fname)
 
     num_failed = 0
+
+    if alpha is not None:
+        human.collision_responsibility = alpha
+        human.policy.set_collision_responsiblity(alpha)
+    
+    if max_speed_robot is not None:
+        robot.max_speed = max_speed_robot
+        robot.policy.set_max_speed(max_speed_robot)
+
     env.reset(seed=100)
 
-    for _ in tqdm(range(args.num_runs)):
+    for _ in tqdm(range(num_runs)):
         try:
             obs, _ = env.reset()
             robot.set_vh_desired(obs)
@@ -92,6 +102,27 @@ def main():
             print("TypeError: ", err)
             num_failed += 1
             continue
+    
+    return num_failed
+
+
+
+def main():
+
+    parser = ArgumentParser()
+    parser.add_argument('--debug', type=bool, default=False,
+                        help="Whether to run the simulation in debug mode (default: False)")
+    parser.add_argument('--save-anim', type=bool, default=True,
+                        help="Whether to save the animation to a file (default: False)")
+    parser.add_argument('--render-mode', type=str, default='human',
+                        help='The mode in which to render (human or static plot) (default: human)')
+
+    parser.add_argument('--num-runs', type=int, default=1,
+                        help='The number of times the simulation should be run (default: 1)')
+
+    args = parser.parse_args()
+
+    num_failed = run_sim(args.render_mode, args.save_anim, args.num_runs)
 
     print(f"(failed/total) = ({num_failed}/{args.num_runs})")
 
