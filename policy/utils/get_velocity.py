@@ -261,6 +261,11 @@ class InverseORCA:
 
             if self.solution_exists:
                 self.solution_exists = False
+                # This means that there is an overlap between the velocity obstacle and the velocity
+                # circle. However, the current conditions dictate that nudging the human towards
+                # the desired velocity is not possible
+                # Currently treating this case as the same as the one with no overlap
+
                 # print("Something has gone terribly wrong....")
                 # print('None of the conditions for getting best projection direction are satisfied')
                 # print(f"Angle with right leg: {np.rad2deg(angle_right):.2f}")
