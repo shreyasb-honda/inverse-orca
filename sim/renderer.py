@@ -225,7 +225,7 @@ class Renderer:
                                       color='green', marker='o', label='relvel')
 
             # Add the relative velocity with the preferred velocity
-            self.debug_vel_ax.scatter([-1.0 - vB[frame_id][0]], [-vB[frame_id][0]], 
+            self.debug_vel_ax.scatter([-1.0 - vB[frame_id][0]], [-vB[frame_id][1]], 
                                       color='magenta', marker='+', label='relvelpref')
             
             # Add u

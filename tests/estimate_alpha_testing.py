@@ -36,7 +36,7 @@ def plot(ax: plt.Axes, vA: Point, u: Point, alpha_hat: float,
 
     # Draw the expected ORCA line
     line_length = 30
-    u_perp = -np.array([-u[1], u[0]])
+    u_perp = np.array([-u[1], u[0]])
     u = np.array(u)
 
     point1 = tuple(np.array(vA) + u_perp)
@@ -209,7 +209,7 @@ def test_case_vA_feasible_1():
     relative_velocity = np.array(vA) - np.array(vB)
     rel_vel_pref = np.array(v_pref) - np.array(vB)
     ax.scatter(relative_velocity[0], relative_velocity[1], color='red', s=25, label='relvel')
-    ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
+    # ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
     ax.legend(bbox_to_anchor=(1.05, 0.5))
 
 def test_case_vA_feasible_2():
@@ -232,5 +232,5 @@ def test_case_vA_feasible_2():
     relative_velocity = np.array(vA) - np.array(vB)
     rel_vel_pref = np.array(v_pref) - np.array(vB)
     ax.scatter(relative_velocity[0], relative_velocity[1], color='red', s=25, label='relvel')
-    ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
+    # ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
     ax.legend(bbox_to_anchor=(1.05, 0.5))
