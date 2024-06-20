@@ -34,6 +34,9 @@ class Renderer:
         self.alpha = None
         self.tails = display_tails
 
+        self.vel_arrow_robot = None
+        self.vel_arrow_human = None
+
         # Debugging
         self.debug_vel_ax = None
 
@@ -84,7 +87,7 @@ class Renderer:
         self.goal_dist = goal_dist
         self.goal_height = goal_height
     
-    def update(self, frame_num):
+    def update(self, frame_num, show_velocities: bool=True):
         observation = self.observations[frame_num]
         if self.robot_circ is None or self.human_circ is None:
             self.generate_background(self.ax, tuple(observation['robot pos']),
@@ -92,6 +95,26 @@ class Renderer:
 
         self.robot_circ.set_center(tuple(observation['robot pos']))
         self.human_circ.set_center(tuple(observation['human pos']))
+
+        if show_velocities:
+            robot_vel = observation['robot vel']
+            human_vel = observation['human vel']
+            x_start, y_start = self.robot_circ.get_center()
+            x_end, y_end = robot_vel[0], robot_vel[1]
+
+            if self.vel_arrow_robot is None:
+                self.vel_arrow_robot = plt.arrow(x_start, y_start, x_end, y_end, color='black', width=0.02)
+            else:
+                self.vel_arrow_robot.set_data(x=x_start, y=y_start, dx=x_end, dy=y_end)
+
+            x_start, y_start = self.human_circ.get_center()
+            x_end, y_end = human_vel[0], human_vel[1]
+            
+            if self.vel_arrow_human is None:
+                self.vel_arrow_human = plt.arrow(x_start, y_start, x_end, y_end, color='black', width=0.02)
+            else:
+                self.vel_arrow_human.set_data(x=x_start, y=y_start, dx=x_end, dy=y_end)
+
 
         if self.tails:
             self.ax.scatter(*tuple(observation['robot pos']), alpha=max(0.1, frame_num/self.num_frames), c=self.robot_params['color'])
@@ -198,9 +221,11 @@ class Renderer:
 
             self.robot_circ = None
             self.human_circ = None
+            self.vel_arrow_human = None
+            self.vel_arrow_robot = None
             self.debug_vel_ax.clear()
             self.ax.clear()
-            self.update(frame_id)
+            self.update(frame_id, show_velocities=True)
             vc[frame_id].plot(self.debug_vel_ax)
             vo[frame_id].plot(self.debug_vel_ax)
             self.debug_vel_ax.scatter(vc[frame_id].center[0], vc[frame_id].center[1],
@@ -221,13 +246,13 @@ class Renderer:
 
             # Add the relative velocity
             relvel = np.array(vc[frame_id].center) - np.array(vB[frame_id])
-            self.debug_vel_ax.scatter(relvel[0], relvel[1], 
+            self.debug_vel_ax.scatter(relvel[0], relvel[1],
                                       color='green', marker='o', label='relvel')
 
             # Add the relative velocity with the preferred velocity
-            self.debug_vel_ax.scatter([-1.0 - vB[frame_id][0]], [-vB[frame_id][1]], 
+            self.debug_vel_ax.scatter([-1.0 - vB[frame_id][0]], [-vB[frame_id][1]],
                                       color='magenta', marker='+', label='relvelpref')
-            
+
             # Add u
             if u[frame_id] is not None:
                 u_ = np.array(vc[frame_id].center) - np.array(vB[frame_id]) + np.array(u[frame_id])
@@ -235,11 +260,11 @@ class Renderer:
                                           color='blue', marker='s', label=r'$u$')
 
             self.debug_vel_ax.legend(loc='center left', bbox_to_anchor=(1.05, 0.5))
-            self.ax.grid(True)
+            # self.ax.grid(True)
             fig.canvas.draw_idle()
 
-        self.update(frame_id)
-        self.ax.grid(True)
+        self.update(frame_id, show_velocities=True)
+        # self.ax.grid(True)
 
         vc[frame_id].plot(self.debug_vel_ax)
         vo[frame_id].plot(self.debug_vel_ax)

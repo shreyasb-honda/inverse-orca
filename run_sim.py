@@ -103,7 +103,7 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
                                            robot.policy.invorca.vA_new,
                                            robot.policy.collision_responsibility,
                                            tuple(robot.policy.invorca.u))
-                print(alpha_hat)
+                # print(alpha_hat)
 
             env.render()
         except TypeError as err:
