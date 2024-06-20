@@ -128,9 +128,13 @@ def main():
     parser.add_argument('--num-runs', type=int, default=1,
                         help='The number of times the simulation should be run (default: 1)')
 
+    parser.add_argument('--tau-robot', type=int, default=6, 
+                        help='the planning time horizon for the robot (default: 6)')
+
     args = parser.parse_args()
 
-    num_failed = run_sim(args.render_mode, args.save_anim, args.num_runs)
+    num_failed = run_sim(args.render_mode, args.save_anim, args.num_runs, 
+                         time_horizon_robot=args.tau_robot)
 
     print(f"(failed/total) = ({num_failed}/{args.num_runs})")
 
