@@ -267,7 +267,7 @@ def line_circle_overlap():
 
     normal = np.array([-1., 1.])
     normal /= np.linalg.norm(normal)
-    point = np.array(circ.center) + 1.1 * normal
+    point = np.array(circ.center) + 0.5 * normal + np.array([1., 1.])
     point = tuple(point)
 
     line = Tangent(point, normal)

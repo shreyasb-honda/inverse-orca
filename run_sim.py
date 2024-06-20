@@ -7,6 +7,7 @@ import gymnasium as gym
 from sim.agent import Robot, Human
 from policy.orca import Orca
 from policy.invorca import InvOrca
+from policy.utils.estimate_alpha import estimate_alpha
 
 
 def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 1,
@@ -97,6 +98,13 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
                 # Update the observation to include the current velocity of the robot
                 human_action = human.policy.predict(obs)
 
+                # Estimate the value of alpha
+                alpha_hat = estimate_alpha((-1.0, 0), human_action, 
+                                           robot.policy.invorca.vA_new,
+                                           robot.policy.collision_responsibility,
+                                           tuple(robot.policy.invorca.u))
+                print(alpha_hat)
+
             env.render()
         except TypeError as err:
             print("TypeError: ", err)
@@ -120,9 +128,13 @@ def main():
     parser.add_argument('--num-runs', type=int, default=1,
                         help='The number of times the simulation should be run (default: 1)')
 
+    parser.add_argument('--tau-robot', type=int, default=6, 
+                        help='the planning time horizon for the robot (default: 6)')
+
     args = parser.parse_args()
 
-    num_failed = run_sim(args.render_mode, args.save_anim, args.num_runs)
+    num_failed = run_sim(args.render_mode, args.save_anim, args.num_runs, 
+                         time_horizon_robot=args.tau_robot)
 
     print(f"(failed/total) = ({num_failed}/{args.num_runs})")
 

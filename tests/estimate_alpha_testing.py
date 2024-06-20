@@ -36,17 +36,17 @@ def plot(ax: plt.Axes, vA: Point, u: Point, alpha_hat: float,
 
     # Draw the expected ORCA line
     line_length = 30
-    u_perp = -np.array([-u[1], u[0]])
+    u_perp = np.array([-u[1], u[0]])
     u = np.array(u)
 
-    point1 = tuple(np.array(vA) + u_perp)
+    point1 = tuple(np.array(vA) + alpha_hat * u_perp)
     point2 = point1 + line_length * u
     point1 = point1 - line_length * u
     ax.plot([point1[0], point2[0]], [point1[1], point2[1]],
             ls='--', lw=2, c='dodgerblue', label='expected')
 
-    ratio = alpha / alpha_hat
-    point1 = tuple(np.array(vA) + ratio * u_perp)
+    # ratio = alpha / alpha_hat
+    point1 = tuple(np.array(vA) + alpha * u_perp)
     point2 = point1 + line_length * u
     point1 = point1 - line_length * u
     ax.plot([point1[0], point2[0]], [point1[1], point2[1]],
@@ -74,11 +74,15 @@ def test(relative_position: Point, vA: Point, v_pref: Point,
     sim1.setAgentPrefVelocity(1, v_pref)
 
     sim1.doStep()
+
+    # A factor of alpha_hat is already multiplied when ORCA computes the orca_point
+    # Therefore, this is not the unmodified u. It is actually alpha_hat * u
     orca_line = sim1.getAgentORCALine(1, 0)
     orca_point = (orca_line[0], orca_line[1])
     orca_direction = (orca_line[2], orca_line[3])
-    u_mag = np.linalg.norm(np.array(orca_point) - np.array(vA))
+    u_mag = np.linalg.norm(np.array(orca_point) - np.array(vA)) / alpha_hat
     u = tuple(u_mag * np.array(orca_direction))
+    # print(u)
 
     vA_new_exp = sim1.getAgentVelocity(1)
 
@@ -90,6 +94,12 @@ def test(relative_position: Point, vA: Point, v_pref: Point,
     sim2.setAgentPrefVelocity(1, v_pref)
 
     sim2.doStep()
+    orca_line = sim2.getAgentORCALine(1, 0)
+    orca_point = (orca_line[0], orca_line[1])
+    orca_direction = (orca_line[2], orca_line[3])
+    u_mag = np.linalg.norm(np.array(orca_point) - np.array(vA)) / alpha
+    u = tuple(u_mag * np.array(orca_direction))
+    # print(u)
 
     vA_new = sim2.getAgentVelocity(1)
 
@@ -115,33 +125,36 @@ def test(relative_position: Point, vA: Point, v_pref: Point,
 
     return ax
 
+
 def test_case_A_1():
     relative_position = (1., 1.)
     v_pref = (-1.0, 0)
     alpha_hat = 0.9
-    alpha = 0.7
+    alpha = 0.5
 
     vA = (0.5, 0)
     vB = (0, -0.8)
 
     test(relative_position, vA, v_pref, vB, alpha_hat, alpha)
 
+
 def test_case_A_2():
     relative_position = (1., 1.)
     v_pref = (-0.8, -0.27)
     alpha_hat = 0.9
-    alpha = 0.7
+    alpha = 0.5
 
     vA = (-0.5, 0)
     vB = (-1.0, -0.4)
 
     test(relative_position, vA, v_pref, vB, alpha_hat, alpha)
 
+
 def test_case_A_3():
     relative_position = (1., 1.)
     v_pref = (-0.5, 0)
     alpha_hat = 0.9
-    alpha = 0.7
+    alpha = 0.5
 
     vA = (0.5, 0)
     vB = (0, -0.4)
@@ -152,13 +165,14 @@ def test_case_A_3():
 def test_case_B_1():
     relative_position = (1., 1.)
     v_pref = (-1.0, 0)
-    alpha_hat = 0.7
+    alpha_hat = 0.5
     alpha = 0.9
 
     vA = (0.5, 0)
     vB = (0, -0.8)
 
     test(relative_position, vA, v_pref, vB, alpha_hat, alpha)
+
 
 def test_case_B_2():
     relative_position = (1., 1.)
@@ -175,7 +189,7 @@ def test_case_B_2():
 def test_case_B_3():
     relative_position = (1., 1.)
     v_pref = (-0.5, -0.2)
-    alpha_hat = 0.7
+    alpha_hat = 0.5
     alpha = 0.9
 
     vA = (0.5, 0)
@@ -209,8 +223,9 @@ def test_case_vA_feasible_1():
     relative_velocity = np.array(vA) - np.array(vB)
     rel_vel_pref = np.array(v_pref) - np.array(vB)
     ax.scatter(relative_velocity[0], relative_velocity[1], color='red', s=25, label='relvel')
-    ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
+    # ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
     ax.legend(bbox_to_anchor=(1.05, 0.5))
+
 
 def test_case_vA_feasible_2():
     relative_position = (1., 1.)
@@ -232,5 +247,5 @@ def test_case_vA_feasible_2():
     relative_velocity = np.array(vA) - np.array(vB)
     rel_vel_pref = np.array(v_pref) - np.array(vB)
     ax.scatter(relative_velocity[0], relative_velocity[1], color='red', s=25, label='relvel')
-    ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
+    # ax.scatter(rel_vel_pref[0], rel_vel_pref[1], color='darkred', s=25, label='relv_pref')
     ax.legend(bbox_to_anchor=(1.05, 0.5))
