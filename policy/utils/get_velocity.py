@@ -19,7 +19,7 @@ class InverseORCA:
     """
     def __init__(self, vo: VelocityObstacle | None = None,
                  epsilon: float = 1e-5,
-                 vB_max: float = 1.0, 
+                 vr_max: float = 1.0, 
                  collision_responsibility: float = 0.5):
         """
         Initializes this class
@@ -31,18 +31,23 @@ class InverseORCA:
         self.vo = vo
         self.velocity_circle = None
         self.epsilon = epsilon
-        self.vB_max = vB_max
+        self.vr_max = vr_max
         self.solution_exists = None
         self.overlap = None
         self.u = np.array([0., 0.])
         self.u_hat = None
-        self.vB = None
-        self.vA = None
-        self.vA_d = None
-        self.vA_new = None
+        self.vr = None
+        self.vh = None
+        self.vh_d = None
+        self.vh_new = None
         self.collision_responsibility = collision_responsibility
 
     def handle_right_leg(self, current_to_desired):
+        """
+        Finds the optimal influence velocity for the robot and the optimal 
+        projection vector when the desired projection is on the right leg
+        """
+
         self.u_hat = np.array(self.vo.right_tangent.normal)
         d = abs(self.u_hat.dot(current_to_desired))
         dmax = self.vo.find_dmax(self.velocity_circle, 'right')
@@ -62,7 +67,8 @@ class InverseORCA:
 
         if self.solution_exists:
             # Compute the intersection point of the center line and the projection line
-            center_line_normal = np.array([self.vo.cutoff_circle.center[1], -self.vo.cutoff_circle.center[0]])
+            center = self.vo.cutoff_circle.center
+            center_line_normal = np.array([center[1], -center[0]])
             center_line_normal /= norm(center_line_normal)
             center_line_normal = tuple(center_line_normal)
             center_line = Tangent((0., 0.), center_line_normal)
@@ -75,15 +81,16 @@ class InverseORCA:
             if side < 0:
                 # print("right")
                 relative_velocity = np.array(self.vo.right_tangent.point) - d * self.u_hat
-                self.vB = self.vA - relative_velocity
-                self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
-                self.vB = tuple(self.vB)
-                return self.vB, self.u
+                self.vr = self.vh - relative_velocity
+                self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
+                self.vr = tuple(self.vr)
+                return self.vr, self.u
 
             # dist_from_proj_line = proj_line.dist(self.vA)
             # dist_along_line = np.sqrt(self.vB_max ** 2 - dist_from_proj_line ** 2)
             # u_hat_perp = np.array([-self.u_hat[1], self.u_hat[0]])
-            # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat + dist_along_line * u_hat_perp
+            # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat + 
+            # dist_along_line * u_hat_perp
             # self.vB = tuple(np.array(self.vA) - relative_velocity)
             # self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
             # return self.vB, self.u
@@ -97,14 +104,18 @@ class InverseORCA:
                 u_perp = np.array([-self.u_hat[1], self.u_hat[0]])
                 # Move a bit away from the intersection point to avoid ambiguity
                 relative_velocity = np.array(inter_point) + self.epsilon * u_perp
-                self.vB = np.array(self.vA) - relative_velocity
-                self.vB = tuple(self.vB)
-                self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
-                return self.vB, self.u
+                self.vr = np.array(self.vh) - relative_velocity
+                self.vr = tuple(self.vr)
+                self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
+                return self.vr, self.u
 
         return None, None
 
     def handle_left_leg(self, current_to_desired):
+        """
+        Finds the optimal influence velocity for the robot and the optimal 
+        projection vector when the desired projection is on the left leg
+        """
 
         self.u_hat = -np.array(self.vo.left_tangent.normal)
         d = abs(self.u_hat.dot(current_to_desired))
@@ -112,8 +123,8 @@ class InverseORCA:
         d = min(dmax, d)
         self.u = d * self.u_hat
 
-        point = (self.vo.left_tangent.point[0] - self.u[0], 
-                 self.vo.left_tangent.point[1] - self.u[1])
+        tangent = self.vo.left_tangent
+        point = (tangent.point[0] - self.u[0], tangent.point[1] - self.u[1])
         normal = self.vo.left_tangent.normal
         proj_line = Tangent(point, normal)
         if not self.velocity_circle.line_overlap(proj_line):
@@ -121,7 +132,8 @@ class InverseORCA:
             self.solution_exists = False
 
         if self.solution_exists:
-            center_line_normal = np.array([self.vo.cutoff_circle.center[1], -self.vo.cutoff_circle.center[0]])
+            center = self.vo.cutoff_circle.center
+            center_line_normal = np.array([center[1], -center[0]])
             center_line_normal /= norm(center_line_normal)
             center_line_normal = tuple(center_line_normal)
             center_line = Tangent((0., 0.), center_line_normal)
@@ -132,25 +144,26 @@ class InverseORCA:
             if side < 0:
                 # print("right")
                 relative_velocity = np.array(self.vo.left_tangent.point) - d * self.u_hat
-                self.vB = self.vA - relative_velocity
-                self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
-                self.vB = tuple(self.vB)
-                return self.vB, self.u
+                self.vr = self.vh - relative_velocity
+                self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
+                self.vr = tuple(self.vr)
+                return self.vr, self.u
 
             if side > 0:
                 # print("left")
                 u_perp = np.array([-self.u_hat[1], self.u_hat[0]])
                 # Move a bit away from the intersection point to avoid ambiguity
                 relative_velocity = np.array(inter_point) - self.epsilon * u_perp
-                self.vB = np.array(self.vA) - relative_velocity
-                self.vB = tuple(self.vB)
-                self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
-                return self.vB, self.u
+                self.vr = np.array(self.vh) - relative_velocity
+                self.vr = tuple(self.vr)
+                self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
+                return self.vr, self.u
 
             # dist_from_proj_line = proj_line.dist(self.vA)
             # dist_along_line = np.sqrt(self.vB_max ** 2 - dist_from_proj_line ** 2)
             # u_hat_perp = np.array([self.u_hat[1], -self.u_hat[0]])
-            # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat + dist_along_line * u_hat_perp
+            # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat + 
+            # dist_along_line * u_hat_perp
             # self.vB = tuple(np.array(self.vA) - relative_velocity)
             # self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
             # return self.vB, self.u
@@ -158,54 +171,80 @@ class InverseORCA:
         return None, None
 
     def handle_cutoff_circle(self, current_to_desired):
+        """
+        Finds the optimal influence velocity for the robot and the optimal 
+        projection vector when the desired projection is on the cutoff circle
+        """
 
         l = norm(current_to_desired)
         self.u_hat = current_to_desired / l
         d = min(l, self.vo.cutoff_circle.radius - self.epsilon)
         self.u = d * self.u_hat
-        self.vB = np.array(self.vA) - np.array(self.vo.cutoff_circle.center) + (d - self.vo.cutoff_circle.radius) * self.u_hat
-        self.vB = tuple(self.vB)
-        self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
+        center = self.vo.cutoff_circle.center
+        radius = self.vo.cutoff_circle.radius
+        self.vr = np.array(self.vh) - np.array(center) + (d - radius) * self.u_hat
+        self.vr = tuple(self.vr)
+        self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
 
-        return self.vB, self.u
+        return self.vr, self.u
 
     def handle_getting_closer_to_right_leg(self):
+        """
+        Handles the case when the closest possible relative velocity
+        to the VO is near the right leg
+        """
 
         self.u_hat = -np.array(self.vo.right_tangent.normal)
         # right_point_to_center = np.array(self.vA) - np.array(self.vo.right_tangent.point)
         # dist_from_right_leg = abs(self.u_hat.dot(right_point_to_center))
-        dist_from_right_leg = self.vo.right_tangent.dist(self.vA)
-        d = min(self.vB_max, dist_from_right_leg - self.epsilon)
+        dist_from_right_leg = self.vo.right_tangent.dist(self.vh)
+        d = min(self.vr_max, dist_from_right_leg - self.epsilon)
         self.u = d * self.u_hat
 
     def handle_getting_closer_to_left_leg(self):
+        """
+        Handles the case when the closest possible relative velocity
+        to the VO is near the left leg
+        """
 
         self.u_hat = np.array(self.vo.left_tangent.normal)
         # left_point_to_center = np.array(self.vA) - np.array(self.vo.left_tangent.point)
         # dist_from_left_leg = abs(self.u_hat.dot(left_point_to_center))
-        dist_from_left_leg = self.vo.left_tangent.dist(self.vA)
-        d = min(self.vB_max, dist_from_left_leg - self.epsilon)
+        dist_from_left_leg = self.vo.left_tangent.dist(self.vh)
+        d = min(self.vr_max, dist_from_left_leg - self.epsilon)
         self.u = d * self.u_hat
 
     def handle_getting_closer_to_cutoff_circle(self):
+        """
+        Handles the case when the closest possible relative velocity
+        to the VO is near the cutoff circle
+        """
 
-        self.u_hat = np.array(self.vo.cutoff_circle.center) - np.array(self.vA)
+        self.u_hat = np.array(self.vo.cutoff_circle.center) - np.array(self.vh)
         l = norm(self.u_hat)
         self.u_hat /= l
         # d = min(self.vB_max, l - self.epsilon)
         # We need to subtract the radius to ensure that we do not end up inside the VO
-        d = min(self.vB_max, l - self.epsilon - self.vo.cutoff_circle.radius)  
+        d = min(self.vr_max, l - self.epsilon - self.vo.cutoff_circle.radius)  
         self.u = d * self.u_hat
 
     def handle_getting_closer_to_vo(self):
+        """
+        Handles the case when there is no solution to influence the human's
+        velocity in the desired direction. 
+        In this case, we find the direction that is perpendicular to the VO
+        from the current velocity and set the relative velocity to be 
+        the point as close as possible to the VO
+        """
 
-        cutoff_center_to_current = tuple(-np.array(self.vo.cutoff_circle.center) + np.array(self.vA))
+        cutoff_center_to_current = tuple(-np.array(self.vo.cutoff_circle.center) 
+                                         + np.array(self.vh))
         angle_right = get_angle(self.vo.right_tangent.normal, cutoff_center_to_current)
         angle_left = get_angle(self.vo.left_tangent.normal, cutoff_center_to_current)
         # print(f"Angle left {np.rad2deg(angle_left):.2f}")
         # print(f"Angle right {np.rad2deg(angle_right):.2f}")
 
-        # Find the vector that takes the relative velocity closest to the velocity obstacle, but not in it.
+        # Find the vector that is closest to the velocity obstacle, but not in it.
         if np.pi/2 > angle_right > 0:
             # print("Getting closer to right leg")
             self.handle_getting_closer_to_right_leg()
@@ -216,11 +255,11 @@ class InverseORCA:
             # print("Getting closer to the cutoff circle")
             self.handle_getting_closer_to_cutoff_circle()
 
-        self.vB = -self.u
-        self.vB = tuple(self.vB)
-        self.vA_new =  self.vA
+        self.vr = -self.u
+        self.vr = tuple(self.vr)
+        self.vh_new =  self.vh
 
-        return self.vB, self.u
+        return self.vr, self.u
 
     def compute_velocity(self, vA: Point, vA_d: Point):
         """
@@ -234,12 +273,12 @@ class InverseORCA:
 
         if norm(np.array(vA) - np.array(vA_d)) < self.epsilon:
             print(vA, vA_d)
-            return self.vB, self.u
+            return self.vr, self.u
 
-        self.vA = vA
-        self.vA_d = vA_d
+        self.vh = vA
+        self.vh_d = vA_d
 
-        self.velocity_circle = Circle(vA, self.vB_max)
+        self.velocity_circle = Circle(vA, self.vr_max)
         self.overlap = self.vo.overlap(self.velocity_circle)
         self.solution_exists = False
 
@@ -254,16 +293,16 @@ class InverseORCA:
             angle_right = get_angle(self.vo.right_tangent.normal, current_to_desired)
 
             if 0 < angle_right < np.pi / 2:
-                print("Projecting on right leg")
-                self.vB, self.u = self.handle_right_leg(current_to_desired)
+                # print("Projecting on right leg")
+                self.vr, self.u = self.handle_right_leg(current_to_desired)
                 if self.solution_exists:
-                    return self.vB, self.u
+                    return self.vr, self.u
 
             if np.pi/2 < angle_left < np.pi:
                 # print("Projecting on left leg")
-                self.vB, self.u = self.handle_left_leg(current_to_desired)
+                self.vr, self.u = self.handle_left_leg(current_to_desired)
                 if self.solution_exists:
-                    return self.vB, self.u
+                    return self.vr, self.u
 
             if angle_right < 0 and angle_left < 0:
                 # print("Projecting on cutoff circle")
@@ -277,7 +316,8 @@ class InverseORCA:
                 # Currently treating this case as the same as the one with no overlap
 
                 # print("Something has gone terribly wrong....")
-                # print('None of the conditions for getting best projection direction are satisfied')
+                # print('None of the conditions for getting best',
+                #        'projection direction are satisfied')
                 # print(f"Angle with right leg: {np.rad2deg(angle_right):.2f}")
                 # print(f"Angle with left leg: {np.rad2deg(angle_left):.2f}")
                 # return None, None

@@ -186,7 +186,7 @@ class HallwayScene(gym.Env):
             self.vc_list.append(Circle(center, self.robot.max_speed))
             self.va_d_list.append(self.robot.vh_desired)
             self.vb_list.append(self.robot.get_velocity())
-            self.va_exp_list.append(self.robot.policy.invorca.vA_new)
+            self.va_exp_list.append(self.robot.policy.invorca.vh_new)
             self.va_act_list.append(tuple(action["human vel"]))   # The velocity after updating it via ORCA
             self.u_list.append(self.robot.policy.u)
 

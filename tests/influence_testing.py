@@ -35,7 +35,7 @@ def test(relative_position: Point, vA: Point, vA_d: Point,
     cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     cutoff_circle = Circle(cutoff_center, cutoff_radius)
     vo = VelocityObstacle(cutoff_circle)
-    invorca = InverseORCA(vo, vB_max=VB_MAX, epsilon=EPSILON, 
+    invorca = InverseORCA(vo, vr_max=VB_MAX, epsilon=EPSILON, 
                           collision_responsibility=collision_responsibility)
     invorca.compute_velocity(vA, vA_d)
 
@@ -56,11 +56,11 @@ def test(relative_position: Point, vA: Point, vA_d: Point,
 
     # If solution exists, plot vB, vAB, vA_new
     # If solution does not exist, plot vB, vAB (vA_new = vA)
-    ax.scatter(invorca.vB[0], invorca.vB[1], color='lime', label='vB')
-    ax.scatter(vA[0] - invorca.vB[0], vA[1] - invorca.vB[1], color='tab:orange', label='vAB')
+    ax.scatter(invorca.vr[0], invorca.vr[1], color='lime', label='vB')
+    ax.scatter(vA[0] - invorca.vr[0], vA[1] - invorca.vr[1], color='tab:orange', label='vAB')
 
     if invorca.solution_exists:
-        ax.scatter(invorca.vA_new[0], invorca.vA_new[1], color='teal', label='vA_new')
+        ax.scatter(invorca.vh_new[0], invorca.vh_new[1], color='teal', label='vA_new')
 
     ax.set_xlim([-5, 5])
     ax.set_ylim([-5, 5])

@@ -73,7 +73,8 @@ class InvOrca(Policy):
         robot_vel = tuple(observation['robot vel'])
 
         if self.stopping_criterion(observation):
-            params = self.neighbor_dist, self.max_neighbors, self.orca_time_horizon, self.orca_time_horizon_obst
+            params = (self.neighbor_dist, self.max_neighbors, 
+                      self.orca_time_horizon, self.orca_time_horizon_obst)
 
             # Create a simulator instance
             self.sim = rvo2.PyRVOSimulator(self.time_step, *params, self.radius,
@@ -106,11 +107,12 @@ class InvOrca(Policy):
             return action
 
         center = (robot_pos - human_pos) / self.time_horizon
-        radius = 2 * self.radius / self.time_horizon  # TODO: assuming equal radii for the two agents
+        # TODO: assuming equal radii for the two agents
+        radius = 2 * self.radius / self.time_horizon  
         cutoff_circle = Circle(tuple(center), radius)
         self.vo = VelocityObstacle(cutoff_circle)
 
-        self.invorca = InverseORCA(self.vo, vB_max=self.max_speed,
+        self.invorca = InverseORCA(self.vo, vr_max=self.max_speed,
                                    collision_responsibility=self.collision_responsibility)
 
         self.robot_vel, self.u = self.invorca.compute_velocity(human_vel, self.desired_velocity)
@@ -123,10 +125,13 @@ class InvOrca(Policy):
         :param observation - the observation at the current time step
         """
 
-        robot_pos = np.array(observation['robot pos'])
-        human_pos = np.array(observation['human pos'])
+        robot_pos = observation['robot pos']
+        human_pos = observation['human pos']
 
-        if human_pos[1] <= self.y_virtual_goal or robot_pos[0] >= human_pos[0] - self.d_virtual_goal:
+        goal_reached = human_pos[1] <= self.y_virtual_goal
+        crossed_human = robot_pos[0] >= human_pos[0] - self.d_virtual_goal
+
+        if goal_reached or crossed_human:
             return True
 
         return False

@@ -29,7 +29,7 @@ def test(relative_position: Point, vA: Point, vA_d: Point,
     cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     cutoff_circle = Circle(cutoff_center, cutoff_radius)
     vo = VelocityObstacle(cutoff_circle)
-    invorca = InverseORCA(vo, vB_max=VB_MAX, epsilon=EPSILON, 
+    invorca = InverseORCA(vo, vr_max=VB_MAX, epsilon=EPSILON, 
                           collision_responsibility=collision_responsibility)
     invorca.compute_velocity(vA, vA_d)
 
@@ -50,11 +50,11 @@ def test(relative_position: Point, vA: Point, vA_d: Point,
 
     # If solution exists, plot vB, vAB, vA_new
     # If solution does not exist, plot vB, vAB (vA_new = vA)
-    ax.scatter(invorca.vB[0], invorca.vB[1], color='lime', label='vB')
-    ax.scatter(vA[0] - invorca.vB[0], vA[1] - invorca.vB[1], color='tab:orange', label='vAB')
+    ax.scatter(invorca.vr[0], invorca.vr[1], color='lime', label='vB')
+    ax.scatter(vA[0] - invorca.vr[0], vA[1] - invorca.vr[1], color='tab:orange', label='vAB')
 
     if invorca.solution_exists:
-        ax.scatter(invorca.vA_new[0], invorca.vA_new[1], color='teal', label='vA_new')
+        ax.scatter(invorca.vh_new[0], invorca.vh_new[1], color='teal', label='vA_new')
 
     # Put a legend to the right of the current axis
     ax.legend(loc='center left', bbox_to_anchor=(1.05, 0.5))
@@ -82,16 +82,16 @@ def overlap_with_solution_1():
 
     params = (10., 10, TAU, 2.0)
     sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX)
-    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB, COLLISION_RESPONSIBILITY)
-    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA, COLLISION_RESPONSIBILITY)
+    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vr, COLLISION_RESPONSIBILITY)
+    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vh, COLLISION_RESPONSIBILITY)
 
     vA_0 = sim.getAgentVelocity(1)
 
-    sim.setAgentPrefVelocity(0, invorca.vB)
-    sim.setAgentPrefVelocity(1, invorca.vA)
+    sim.setAgentPrefVelocity(0, invorca.vr)
+    sim.setAgentPrefVelocity(1, invorca.vh)
     sim.doStep()
     vA_new_official = sim.getAgentVelocity(1)
-    vA_new_ours = invorca.vA_new
+    vA_new_ours = invorca.vh_new
 
     print(f'vA (official) {vA_0}')
     print(f"vA_new (official) {vA_new_official}")
@@ -125,16 +125,16 @@ def overlap_with_solution_2():
 
     params = (10., 10, TAU, 2.0)
     sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX)
-    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB, COLLISION_RESPONSIBILITY)
-    sim.addAgent((0., 0.), *params, RADIUS_A, 5., invorca.vA, COLLISION_RESPONSIBILITY)
+    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vr, COLLISION_RESPONSIBILITY)
+    sim.addAgent((0., 0.), *params, RADIUS_A, 5., invorca.vh, COLLISION_RESPONSIBILITY)
 
     vA_0 = sim.getAgentVelocity(1)
 
-    sim.setAgentPrefVelocity(0, invorca.vB)
-    sim.setAgentPrefVelocity(1, invorca.vA)
+    sim.setAgentPrefVelocity(0, invorca.vr)
+    sim.setAgentPrefVelocity(1, invorca.vh)
     sim.doStep()
     vA_new_official = sim.getAgentVelocity(1)
-    vA_new_ours = invorca.vA_new
+    vA_new_ours = invorca.vh_new
 
     print(f'vA (official) {vA_0}')
     print(f"vA_new (official) {vA_new_official}")
@@ -167,16 +167,16 @@ def overlap_with_solution_3():
 
     params = (10., 10, TAU, 2.0)
     sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX)
-    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB, COLLISION_RESPONSIBILITY)
-    sim.addAgent((0., 0.), *params, RADIUS_A, 5., invorca.vA, COLLISION_RESPONSIBILITY)
+    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vr, COLLISION_RESPONSIBILITY)
+    sim.addAgent((0., 0.), *params, RADIUS_A, 5., invorca.vh, COLLISION_RESPONSIBILITY)
 
     vA_0 = sim.getAgentVelocity(1)
 
-    sim.setAgentPrefVelocity(0, invorca.vB)
-    sim.setAgentPrefVelocity(1, invorca.vA)
+    sim.setAgentPrefVelocity(0, invorca.vr)
+    sim.setAgentPrefVelocity(1, invorca.vh)
     sim.doStep()
     vA_new_official = sim.getAgentVelocity(1)
-    vA_new_ours = invorca.vA_new
+    vA_new_ours = invorca.vh_new
 
     print(f'vA (official) {vA_0}')
     print(f"vA_new (official) {vA_new_official}")
@@ -208,24 +208,24 @@ def different_pref_velocity_1():
 
     params = (10., 10, TAU, 2.0)
     sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX)
-    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vB, COLLISION_RESPONSIBILITY)
-    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA, COLLISION_RESPONSIBILITY)
+    sim.addAgent(relative_position, *params, RADIUS_B, VB_MAX, invorca.vr, COLLISION_RESPONSIBILITY)
+    sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vh, COLLISION_RESPONSIBILITY)
 
     vA_0 = sim.getAgentVelocity(1)
 
-    sim.setAgentPrefVelocity(0, invorca.vB)
+    sim.setAgentPrefVelocity(0, invorca.vr)
     sim.setAgentPrefVelocity(1, (1.0, 0))   # Goal directed
     # sim.setAgentPrefVelocity(1, invorca.vA)   # Same as current
     sim.doStep()
     vA_new_official = sim.getAgentVelocity(1)
-    vA_new_ours = invorca.vA_new
+    vA_new_ours = invorca.vh_new
 
     print(f'vA (official) {vA_0}')
     print(f"vA_new (official) {vA_new_official}")
     print(f"vA_new (ours) {vA_new_ours}")
 
     print(f"vB (official) {sim.getAgentVelocity(0)}")
-    print(f"vB (ours) {invorca.vB}")
+    print(f"vB (ours) {invorca.vr}")
 
     return ax
 
@@ -257,7 +257,7 @@ def test_random(num_runs: int = 100, seed: int | None = None):
         cutoff_radius = (RADIUS_A + RADIUS_B) / time_horizon
         cutoff_circle = Circle(cutoff_center, cutoff_radius)
         vo = VelocityObstacle(cutoff_circle)
-        invorca = InverseORCA(vo, vB_max=VB_MAX, epsilon=EPSILON,
+        invorca = InverseORCA(vo, vr_max=VB_MAX, epsilon=EPSILON,
                             collision_responsibility=collision_responsibility)
         
         dot1 = abs(np.dot(vA, invorca.vo.right_tangent.normal))
@@ -276,14 +276,14 @@ def test_random(num_runs: int = 100, seed: int | None = None):
 
         params = (20., 10, time_horizon, 2.0)
         sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX, collisionResponsibility=collision_responsibility)
-        sim.addAgent(tuple(relative_position), *params, RADIUS_B, VB_MAX, invorca.vB, collision_responsibility)
-        sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vA, collision_responsibility)
+        sim.addAgent(tuple(relative_position), *params, RADIUS_B, VB_MAX, invorca.vr, collision_responsibility)
+        sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vh, collision_responsibility)
 
-        sim.setAgentPrefVelocity(0, invorca.vB)
-        sim.setAgentPrefVelocity(1, invorca.vA)
+        sim.setAgentPrefVelocity(0, invorca.vr)
+        sim.setAgentPrefVelocity(1, invorca.vh)
         sim.doStep()
         vA_new_official = sim.getAgentVelocity(1)
-        vA_new_ours = invorca.vA_new
+        vA_new_ours = invorca.vh_new
 
         diff = np.array(vA_new_official) - np.array(vA_new_ours)
         if np.linalg.norm(diff) > 1e-3:

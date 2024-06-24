@@ -100,7 +100,7 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
 
                 # Estimate the value of alpha
                 alpha_hat = estimate_alpha((-1.0, 0), human_action, 
-                                           robot.policy.invorca.vA_new,
+                                           robot.policy.invorca.vh_new,
                                            robot.policy.collision_responsibility,
                                            tuple(robot.policy.invorca.u))
                 # print(alpha_hat)
