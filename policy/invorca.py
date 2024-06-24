@@ -1,3 +1,7 @@
+"""
+The inverse ORCA policy
+"""
+
 from configparser import RawConfigParser
 import numpy as np
 import rvo2
@@ -42,7 +46,7 @@ class InvOrca(Policy):
         self.neighbor_dist = config.getfloat('invorca', 'neighbor_dist')
         self.orca_time_horizon_obst = config.getfloat('invorca', 
                                                       'orca_time_horizon_obst')
-    
+
     def set_max_speed(self, max_speed: float):
         """
         Sets the max speed for the agent using this policy

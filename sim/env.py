@@ -1,3 +1,6 @@
+"""
+The Hallway Crossing environment, written as a child of gymnasium.Env
+"""
 # TODO: Check if the framework is compatible with other Social Navigation algorithms
 
 import datetime
@@ -16,6 +19,10 @@ from policy.utils.overlap_detection import Circle
 
 
 class HallwayScene(gym.Env):
+    """
+    The hallway scene environment:
+    Two agents start at the ends of a hallway and want to move to the opposite end
+    """
 
     metadata = {"render_modes": ["human", "static", "debug"], "render_fps": 5}
 
@@ -121,30 +128,30 @@ class HallwayScene(gym.Env):
             self.va_act_list = []
             self.u_list = []
 
-        left = -4.
-        right = self.hallway_length + 4.
+        # left = -4.
+        # right = self.hallway_length + 4.
 
-        self.observation_space = spaces.Dict(
-            {
-                "robot pos": spaces.Box(left, right,
-                                        shape=(2, ), dtype=float),
-                "robot vel": spaces.Box(-self.robot.max_speed, self.robot.max_speed, 
-                                        shape=(2,), dtype=float),
-                "human pos": spaces.Box(left, right,
-                                        shape=(2, ), dtype=float),
-                "human vel": spaces.Box(-self.human.max_speed, self.human.max_speed, 
-                                        shape=(2,), dtype=float)
-            }
-        )
+        # self.observation_space = spaces.Dict(
+        #     {
+        #         "robot pos": spaces.Box(left, right,
+        #                                 shape=(2, ), dtype=float),
+        #         "robot vel": spaces.Box(-self.robot.max_speed, self.robot.max_speed, 
+        #                                 shape=(2,), dtype=float),
+        #         "human pos": spaces.Box(left, right,
+        #                                 shape=(2, ), dtype=float),
+        #         "human vel": spaces.Box(-self.human.max_speed, self.human.max_speed, 
+        #                                 shape=(2,), dtype=float)
+        #     }
+        # )
 
-        self.action_space = spaces.Dict(
-            {
-                "robot vel": spaces.Box(-self.robot.max_speed, self.robot.max_speed, 
-                                        shape=(2,), dtype=float),
-                "human vel": spaces.Box(-self.human.max_speed, self.human.max_speed, 
-                                        shape=(2,), dtype=float)
-            }
-        )
+        # self.action_space = spaces.Dict(
+        #     {
+        #         "robot vel": spaces.Box(-self.robot.max_speed, self.robot.max_speed, 
+        #                                 shape=(2,), dtype=float),
+        #         "human vel": spaces.Box(-self.human.max_speed, self.human.max_speed, 
+        #                                 shape=(2,), dtype=float)
+        #     }
+        # )
 
         self.robot_draw_params = {"radius": self.robot.radius, "color": "tab:blue"}
         self.human_draw_params = {"radius": self.human.radius, "color": 'tab:red'}
@@ -168,9 +175,17 @@ class HallwayScene(gym.Env):
         self.render_mode = render_mode
 
     def set_robot(self, robot: Robot):
+        """
+        Adds the robot to the environment
+        :param robot - the robot
+        """
         self.robot = robot
 
     def set_human(self, human: Human):
+        """
+        Adds the human to the environment
+        :param human - the human
+        """
         self.human = human
 
     def step(self, action):
@@ -187,7 +202,8 @@ class HallwayScene(gym.Env):
             self.va_d_list.append(self.robot.vh_desired)
             self.vb_list.append(self.robot.get_velocity())
             self.va_exp_list.append(self.robot.policy.invorca.vh_new)
-            self.va_act_list.append(tuple(action["human vel"]))   # The velocity after updating it via ORCA
+            # The velocity after updating it via ORCA
+            self.va_act_list.append(tuple(action["human vel"]))
             self.u_list.append(self.robot.policy.u)
 
         if (not self.goal_frame_set) and self.robot.human_reached_goal(obs):
@@ -203,6 +219,9 @@ class HallwayScene(gym.Env):
         return obs, reward, terminated, truncated, info
 
     def set_output_filename(self, fname: str):
+        """
+        Sets the filename to be used for saving animations/plots
+        """
         self.filename = fname
 
     def render(self):
@@ -240,7 +259,8 @@ class HallwayScene(gym.Env):
                     plt.close(fig)
 
         else:
-            fig, (ax1, ax2) = plt.subplots(figsize=(9, 9), nrows=2, ncols=1, height_ratios=[0.7, 0.3])
+            fig, (ax1, ax2) = plt.subplots(figsize=(9, 9), nrows=2, ncols=1, 
+                                           height_ratios=[0.7, 0.3])
             ax1.set_aspect('equal')
             ax2.set_aspect('equal')
             self.renderer.debug_mode(fig, ax2, ax1, self.vc_list, self.vo_list,

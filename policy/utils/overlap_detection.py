@@ -4,6 +4,7 @@ relative velocities circle overlaps the velocity obstacle
 """
 
 from typing import Tuple
+from math import sin, cos
 import numpy as np
 from numpy.linalg import norm
 import matplotlib.pyplot as plt
@@ -23,7 +24,7 @@ class Tangent:
         """
         self.point = point
         self.normal = normal
-    
+
     def plot(self, ax: plt.Axes, length: float = 3., color: str = 'black'):
         """
         Plots the ray
@@ -63,7 +64,7 @@ class Tangent:
         """
         _point_to_point = np.array(point) - np.array(self.point)
         return abs(np.dot(self.normal, _point_to_point))
-    
+
     def side(self, point: Point):
         """
         Returns 
@@ -107,7 +108,7 @@ class Circle:
         if distance < self.radius + other.radius:
             return True
         return False
-    
+
     def line_overlap(self, line: Tangent):
         """
         Checks for overlap with a line
@@ -128,10 +129,11 @@ class Circle:
         distance_from_line = line.dist(self.center)
         if abs(distance_from_line) < self.radius and det > 0:
             return True
-        
+
         return False
-    
-    def plot(self, ax: plt.Axes, fill: bool = False, edgecolor: str = 'red', color: str | None = None):
+
+    def plot(self, ax: plt.Axes, fill: bool = False, edgecolor: str = 'red',
+             color: str | None = None):
         """
         Plots the circle on the axis
         :param ax - the pyplot axis on which to plot this circle
@@ -167,7 +169,9 @@ class VelocityObstacle:
         self.alpha = np.arctan2(self.cutoff_circle.center[1], self.cutoff_circle.center[0])
 
         # Length of the tangent segment from the origin to the point of contact
-        self.leg_length = np.sqrt(norm(np.array(self.cutoff_circle.center))**2 - self.cutoff_circle.radius ** 2)
+        center = self.cutoff_circle.center
+        radius = self.cutoff_circle.radius
+        self.leg_length = np.sqrt(norm(np.array(center))**2 - radius ** 2)
         self.compute_tangents()
 
         # Angle from the origin to the right tangent
@@ -180,20 +184,21 @@ class VelocityObstacle:
         """
         Computes tangents to the circle from the origin
         """
-        direction = np.array([self.leg_length * np.sin(self.alpha) - self.cutoff_circle.radius * np.cos(self.alpha),
-                              self.leg_length * np.cos(self.alpha) + self.cutoff_circle.radius * np.sin(self.alpha)])
+        radius = self.cutoff_circle.radius
+        direction = np.array([self.leg_length * sin(self.alpha) - radius * cos(self.alpha),
+                              self.leg_length * cos(self.alpha) + radius * sin(self.alpha)])
         self.theta = np.arctan2(*direction)
 
         # print(f"Alpha: {np.rad2deg(self.alpha)}")
         # print(f"Theta: {np.rad2deg(self.theta)}")
 
-        right_point = (self.leg_length * np.cos(self.theta), self.leg_length * np.sin(self.theta))
-        right_normal = (np.sin(self.theta), -np.cos(self.theta))
+        right_point = (self.leg_length * cos(self.theta), self.leg_length * sin(self.theta))
+        right_normal = (sin(self.theta), -cos(self.theta))
         self.right_tangent = Tangent(right_point, right_normal)
 
         self.beta = 2 * self.alpha - self.theta
-        left_point = (self.leg_length * np.cos(self.beta), self.leg_length * np.sin(self.beta))
-        left_normal = (np.sin(self.beta), -np.cos(self.beta))
+        left_point = (self.leg_length * cos(self.beta), self.leg_length * sin(self.beta))
+        left_normal = (sin(self.beta), -cos(self.beta))
         self.left_tangent = Tangent(left_point, left_normal)
 
 
@@ -218,7 +223,7 @@ class VelocityObstacle:
 
         if velocity_circle.line_overlap(self.left_tangent):
             return True
-        
+
         if velocity_circle.line_overlap(self.right_tangent):
             return True
 
@@ -227,7 +232,9 @@ class VelocityObstacle:
     def find_dmax(self, velocity_circle: Circle, which: str):
         """
         Finds the maximum possible distance d of the projection line from the tangent line
-        If the projection line is further than this distance, the projection will be switched to the other leg
+        If the projection line is further than this distance, 
+        the projection will be switched to the other leg
+        
         :param velocity_circle: The relative velocities circle
         :param which: whether dmax should be computed from the right or left leg
         """
@@ -287,8 +294,8 @@ class VelocityObstacle:
             # Both points to the left of the normal at origin
             if norm(point1) > norm(point2):
                 return abs(np.dot(chosen_normal, point1))
-            else:
-                return abs(np.dot(chosen_normal, point2))
+
+            return abs(np.dot(chosen_normal, point2))
 
         if cross1 > 0:
             return abs(np.dot(chosen_normal, point1))

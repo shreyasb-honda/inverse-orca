@@ -1,5 +1,6 @@
-# TODO: Add velocity arrows
-# TODO: Check if the framework is compatible with other Social Navigation algorithms
+"""
+Renders the simulation
+"""
 
 from typing import Dict, Tuple, List
 import matplotlib.pyplot as plt
@@ -8,6 +9,10 @@ import numpy as np
 from policy.utils.overlap_detection import Circle, VelocityObstacle, Point
 
 class Renderer:
+    """
+    Class to help with the rendering of the Hallway Scene
+    """
+
     def __init__(self, hallway_dimensions: Dict,
                  robot_parameters: Dict,
                  human_parameters: Dict,
@@ -79,15 +84,31 @@ class Renderer:
         return ax
 
     def set_observations(self, observations: List[Dict], goal_frame: int):
+        """
+        Adds the observations and the frame in which the goal was reached
+        :param observations - the list of observations in the simulation
+        :param goal_frame - the index of the frame in which the robot's goal 
+                            for the human was reached
+        """
         self.goal_frame = goal_frame
         self.num_frames = len(observations)
         self.observations = observations
-    
+
     def set_goal_params(self, goal_dist: float, goal_height: float):
+        """
+        Sets the parameters for the virtual goal line of the robot for the human
+        :param goal_dist - the x-distance of the goal line from the human's current position
+        :param goal_height - the y-coordinate of the goal-line's topmost point
+        """
         self.goal_dist = goal_dist
         self.goal_height = goal_height
-    
+
     def update(self, frame_num, show_velocities: bool=True):
+        """
+        The update function used in the animation to update a frame
+        :param frame_num - the index of the frame to plot
+        :param show_velocities - whether to plot the velocity vectors
+        """
         observation = self.observations[frame_num]
         if self.robot_circ is None or self.human_circ is None:
             self.generate_background(self.ax, tuple(observation['robot pos']),
@@ -103,22 +124,26 @@ class Renderer:
             x_end, y_end = robot_vel[0], robot_vel[1]
 
             if self.vel_arrow_robot is None:
-                self.vel_arrow_robot = plt.arrow(x_start, y_start, x_end, y_end, color='black', width=0.02)
+                self.vel_arrow_robot = plt.arrow(x_start, y_start, x_end, y_end,
+                                                 color='black', width=0.02)
             else:
                 self.vel_arrow_robot.set_data(x=x_start, y=y_start, dx=x_end, dy=y_end)
 
             x_start, y_start = self.human_circ.get_center()
             x_end, y_end = human_vel[0], human_vel[1]
-            
+
             if self.vel_arrow_human is None:
-                self.vel_arrow_human = plt.arrow(x_start, y_start, x_end, y_end, color='black', width=0.02)
+                self.vel_arrow_human = plt.arrow(x_start, y_start, x_end, y_end,
+                                                 color='black', width=0.02)
             else:
                 self.vel_arrow_human.set_data(x=x_start, y=y_start, dx=x_end, dy=y_end)
 
 
         if self.tails:
-            self.ax.scatter(*tuple(observation['robot pos']), alpha=max(0.1, frame_num/self.num_frames), c=self.robot_params['color'])
-            self.ax.scatter(*tuple(observation['human pos']), alpha=max(0.1, frame_num/self.num_frames), c=self.human_params['color'])
+            self.ax.scatter(*tuple(observation['robot pos']),
+                            alpha=max(0.1, frame_num/self.num_frames), c=self.robot_params['color'])
+            self.ax.scatter(*tuple(observation['human pos']),
+                            alpha=max(0.1, frame_num/self.num_frames), c=self.human_params['color'])
 
         # Only update the virtual goal line if goal has not been reached yet
         # print(f"goal frame: {self.goal_frame}, total frames: {self.num_frames}")
@@ -130,6 +155,9 @@ class Renderer:
         return self.robot_circ, self.human_circ, self.virtual_goal
 
     def static_plot(self, fig: plt.Figure, ax: plt.Axes):
+        """
+        Function to plot the trajectories of the agents as static plots
+        """
         assert self.num_frames is not None, "Please set observations first"
         assert self.observations is not None, "Please set observations first"
         self.ax = ax
@@ -188,6 +216,9 @@ class Renderer:
         return fig, ax
 
     def animate(self, fig: plt.Figure, ax: plt.Axes):
+        """
+        Function to create an animation from the simulation
+        """
         assert self.num_frames is not None, "Please set observations first"
         assert self.observations is not None, "Please set observations first"
 
@@ -202,6 +233,12 @@ class Renderer:
                    vc: List[Circle], vo: List[VelocityObstacle],
                    vA_d: List[Point], vB: List[Point], vA_new_expected: List[Point],
                    vA_new_actual: List[Point], u: List[Point]):
+        """
+        Running the renderer in debug mode
+        Plots the positions of the agents, and the velocity-space diagram of ORCA
+        at each frame.
+        Use arrow keys to navigate through the frames
+        """
 
         assert self.num_frames is not None, "Please set observations first"
         assert self.observations is not None, "Please set observations first"
@@ -278,7 +315,7 @@ class Renderer:
         self.debug_vel_ax.scatter(vA_new_actual[frame_id][0], vA_new_actual[frame_id][1],
                                   color='tab:blue', alpha=0.9, label=r'$v_h^{new}$', marker='^')
         self.debug_vel_ax.legend(loc='center left', bbox_to_anchor=(1.05, 0.5))
-        
+
         cid = fig.canvas.mpl_connect('key_press_event', onkey)
 
         plt.show()

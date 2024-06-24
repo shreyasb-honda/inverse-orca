@@ -1,3 +1,7 @@
+"""
+Defines the agent classes
+"""
+
 import numpy as np
 from numpy.linalg import norm
 from policy.orca import Orca
@@ -52,8 +56,9 @@ class Agent:
         Sets the preferred velocity of the agent. It's policy will try to achieve this
         preferred velocity
         """
-        assert self.gx is not None, "Please set the goal position before calling set_preferred_velocity"
-        assert self.gy is not None, "Please set the goal position before calling set_preferred_velocity"
+        error_msg = "Please set the goal position before calling set_preferred_velocity"
+        assert self.gx is not None, error_msg
+        assert self.gy is not None, error_msg
         self.preferred_velocity_x = min(abs(self.gx - self.px), self.preferred_speed)
         self.preferred_velocity_x = min(self.preferred_velocity_x, self.max_speed)
         self.preferred_velocity_x *= np.sign(self.gx - self.px)
@@ -64,7 +69,8 @@ class Agent:
         """
         Set the current velocity of this agent as a tuple (vx, vy)
         """
-        assert norm(np.array([vx, vy])) <= self.max_speed, "Setting a speed higher than the max allowed speed"
+        error_msg = "Setting a speed higher than the max allowed speed"
+        assert norm(np.array([vx, vy])) <= self.max_speed, error_msg
         self.vx = vx
         self.vy = vy
 
@@ -138,7 +144,7 @@ class Robot(Agent):
         """
         self.policy = policy
         self.policy.set_max_speed(self.max_speed)
-    
+
     def set_virtual_goal_params(self, d_virtual_goal: float, y_virtual_goal: float):
         """
         Sets the (moving) virtual goal line segment in front of the human
