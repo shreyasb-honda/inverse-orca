@@ -110,13 +110,16 @@ class Human(Agent):
         Configures the policy for the human
         """
         self.policy = policy
-        self.policy.set_max_speed(self.max_speed)
+        try:
+            self.policy.set_max_speed(self.max_speed)
+        except AttributeError:
+            pass
 
     def reached_goal(self):
         """
         Returns true if the human has crossed its finish line
         """
-        return self.px < self.gx
+        return self.px - self.radius < self.gx
 
 
 class Robot(Agent):
@@ -186,4 +189,4 @@ class Robot(Agent):
         """
         Returns true if the robot has reached its own goal
         """
-        return self.px > self.gx
+        return self.px + self.radius > self.gx

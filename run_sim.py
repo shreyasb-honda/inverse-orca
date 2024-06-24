@@ -7,26 +7,32 @@ import gymnasium as gym
 from sim.agent import Robot, Human
 from policy.orca import Orca
 from policy.invorca import InvOrca
+from policy.social_force import SocialForce
 from policy.utils.estimate_alpha import estimate_alpha
 
 
 def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 1,
-            alpha: float | None = None, max_speed_robot: float | None = None, 
-            time_horizon_robot: int | None = None, 
-            time_horizon_human: int | None = None, 
+            alpha: float | None = None, max_speed_robot: float | None = None,
+            time_horizon_robot: int | None = None,
+            time_horizon_human: int | None = None,
             out_fname: str | None = None):
+    """
+    A helper function to set up and run the simulation according to the desired parameters 
+    supplied to it
+    """
 
     # Configure the environment
     env_config = RawConfigParser()
     env_config.read(os.path.join('.', 'sim', 'config', 'env.config'))
     env = gym.make('HallwayScene-v0')
 
-    # Configure the policy
-    orca = Orca()
+    # Policy config
     policy_config = RawConfigParser()
     policy_config.read(os.path.join('.', 'sim', 'config', 'policy.config'))
-    orca.configure(policy_config)
 
+    # Configure the policy
+    orca = Orca()
+    orca.configure(policy_config)
     if time_horizon_human is not None:
         orca.time_horizon = time_horizon_human
 
@@ -45,6 +51,9 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     human = Human(radius, max_speed, max_speed, time_step, collision_responsibility)
     orca.set_collision_responsiblity(collision_responsibility)
     human.set_policy(orca)
+
+    # social_force = SocialForce()
+    # human.set_policy(social_force)
 
     # Configure the robot
     radius = env_config.getfloat('robot', 'radius')
@@ -68,7 +77,7 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     if alpha is not None:
         human.collision_responsibility = alpha
         human.policy.set_collision_responsiblity(alpha)
-    
+
     if max_speed_robot is not None:
         robot.max_speed = max_speed_robot
         robot.policy.set_max_speed(max_speed_robot)
@@ -110,7 +119,7 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
             print("TypeError: ", err)
             num_failed += 1
             continue
-    
+
     return num_failed
 
 
@@ -128,12 +137,12 @@ def main():
     parser.add_argument('--num-runs', type=int, default=1,
                         help='The number of times the simulation should be run (default: 1)')
 
-    parser.add_argument('--tau-robot', type=int, default=6, 
+    parser.add_argument('--tau-robot', type=int, default=6,
                         help='the planning time horizon for the robot (default: 6)')
 
     args = parser.parse_args()
 
-    num_failed = run_sim(args.render_mode, args.save_anim, args.num_runs, 
+    num_failed = run_sim(args.render_mode, args.save_anim, args.num_runs,
                          time_horizon_robot=args.tau_robot)
 
     print(f"(failed/total) = ({num_failed}/{args.num_runs})")
