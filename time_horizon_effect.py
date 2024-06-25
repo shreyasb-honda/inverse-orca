@@ -19,7 +19,8 @@ def main():
                 max_speed_robot=max_speed,
                 time_horizon_robot=robot_horizon,
                 time_horizon_human=human_horizon,
-                out_fname=f'robot-time-horizon-{robot_horizon}')
+                out_fname=f'robot-time-horizon-{robot_horizon}',
+                human_policy='socialforce')
 
 
 if __name__ == "__main__":
