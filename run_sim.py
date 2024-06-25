@@ -1,3 +1,5 @@
+import logging
+logging.disable(logging.ERROR)
 import os
 from configparser import RawConfigParser
 from argparse import ArgumentParser
@@ -7,9 +9,10 @@ import gymnasium as gym
 from sim.agent import Robot, Human
 from policy.orca import Orca
 from policy.invorca import InvOrca
-# from policy.social_force import SocialForce
+from policy.social_force import SocialForce
 from policy.weighted_sum import WeightedSum
 from policy.utils.estimate_alpha import estimate_alpha
+from sim.collision_checker import CollisionChecker
 
 
 def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 1,
@@ -68,9 +71,9 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
         orca.set_collision_responsiblity(collision_responsibility)
         human.set_policy(orca)
 
-    # if human_policy == 'socialforce':
-    #     social_force = SocialForce()
-    #     human.set_policy(social_force)
+    if human_policy == 'socialforce':
+        social_force = SocialForce()
+        human.set_policy(social_force)
 
     # Configure the robot
     radius = env_config.getfloat('robot', 'radius')
@@ -90,8 +93,10 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     elif robot_policy == 'weighted_sum':
         robot.set_policy(weighted_sum)
 
+    collision_checker = CollisionChecker(robot.radius, human.radius)
     env.unwrapped.set_human(human)
     env.unwrapped.set_robot(robot)
+    env.unwrapped.set_collision_checker(collision_checker)
     env.unwrapped.configure(env_config, save_anim, render_mode)
 
     if out_fname is not None:
@@ -138,6 +143,9 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
                                            robot.policy.collision_responsibility,
                                            tuple(robot.policy.invorca.u))
                 # print(alpha_hat)
+
+            if env.unwrapped.collision:
+                print("Collision happened at frame(s)", env.unwrapped.collision_frames)
 
             env.render()
         except TypeError as err:

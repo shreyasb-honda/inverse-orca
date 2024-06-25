@@ -15,7 +15,7 @@ import numpy as np
 from sim.agent import Human, Robot
 from sim.renderer import Renderer
 from policy.utils.overlap_detection import Circle
-
+from sim.collision_checker import CollisionChecker
 
 
 class HallwayScene(gym.Env):
@@ -95,6 +95,11 @@ class HallwayScene(gym.Env):
         self.render_mode = None
         self.save_anim = None
         self.filename = None
+
+        # Collision checker
+        self.collision_checker = None
+        self.collision = False
+        self.collision_frames = []
 
     def configure(self, config: RawConfigParser, save_anim: bool,
                   render_mode: str = "human"):
@@ -187,14 +192,30 @@ class HallwayScene(gym.Env):
         :param human - the human
         """
         self.human = human
+    
+    def set_collision_checker(self, collision_checker: CollisionChecker):
+        """
+        Adds a collision checker to the environment
+        """
+        self.collision_checker = collision_checker
 
     def step(self, action):
+        """
+        Takes one step in the simulation
+        :param action - a dict with keys 'human vel' and 'robot vel'
+        """
         self.robot.step(action, self.time_step)
         center = self.human.get_velocity()      # The velocity before updating it via ORCA
         self.human.step(action, self.time_step)
+
         self.frame_count += 1
         obs = self.__get_obs()
         self.observations.append(obs)
+
+        # Check for collision
+        self.collision = self.collision_checker.is_collision(obs)
+        if self.collision:
+            self.collision_frames.append(self.frame_count)
 
         if self.debug:
             self.vo_list.append(self.robot.policy.vo)
