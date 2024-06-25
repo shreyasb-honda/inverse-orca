@@ -14,8 +14,8 @@ class InvOrca(Policy):
     Implements the inverse ORCA algorithm
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, time_step: float = 0.25) -> None:
+        super().__init__(time_step)
         self.time_horizon = None
         self.radius = None
         self.max_speed = None

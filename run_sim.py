@@ -7,7 +7,8 @@ import gymnasium as gym
 from sim.agent import Robot, Human
 from policy.orca import Orca
 from policy.invorca import InvOrca
-from policy.social_force import SocialForce
+# from policy.social_force import SocialForce
+from policy.weighted_sum import WeightedSum
 from policy.utils.estimate_alpha import estimate_alpha
 
 
@@ -15,12 +16,14 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
             alpha: float | None = None, max_speed_robot: float | None = None,
             time_horizon_robot: int | None = None,
             time_horizon_human: int | None = None,
-            out_fname: str | None = None, 
-            human_policy: str = 'orca'):
+            out_fname: str | None = None,
+            human_policy: str = 'orca',
+            robot_policy: str = 'invorca'):
     """
     A helper function to set up and run the simulation according to the desired parameters 
     supplied to it
     """
+
 
     # Configure the environment
     env_config = RawConfigParser()
@@ -38,12 +41,21 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
         if time_horizon_human is not None:
             orca.time_horizon = time_horizon_human
 
-    invorca = InvOrca()
-    invorca.configure(policy_config)
+    if robot_policy == 'invorca':
+        invorca = InvOrca()
+        invorca.configure(policy_config)
 
-    if time_horizon_robot is not None:
-        invorca.time_horizon = time_horizon_robot
-        invorca.orca_time_horizon = time_horizon_robot
+        if time_horizon_robot is not None:
+            invorca.time_horizon = time_horizon_robot
+            invorca.orca_time_horizon = time_horizon_robot
+
+    if robot_policy == 'weighted_sum':
+        weighted_sum = WeightedSum()
+        weighted_sum.configure(policy_config)
+        if time_horizon_robot is not None:
+            weighted_sum.time_horizon = time_horizon_robot
+            weighted_sum.orca_time_horizon = time_horizon_robot
+
 
     # Configure the human
     time_step = env_config.getfloat('env', 'time_step')
@@ -56,19 +68,27 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
         orca.set_collision_responsiblity(collision_responsibility)
         human.set_policy(orca)
 
-    if human_policy == 'socialforce':
-        social_force = SocialForce()
-        human.set_policy(social_force)
+    # if human_policy == 'socialforce':
+    #     social_force = SocialForce()
+    #     human.set_policy(social_force)
 
     # Configure the robot
     radius = env_config.getfloat('robot', 'radius')
     max_speed = env_config.getfloat('robot', 'max_speed')
     d_virtual_goal = env_config.getfloat('env', 'd_virtual_goal')
     y_virtual_goal = env_config.getfloat('env', 'y_virtual_goal')
-    invorca.set_virtual_goal_params(d_virtual_goal, y_virtual_goal)
+    if robot_policy == 'invorca':
+        invorca.set_virtual_goal_params(d_virtual_goal, y_virtual_goal)
+    elif robot_policy == 'weighted_sum':
+        weighted_sum.set_virtual_goal_params(d_virtual_goal, y_virtual_goal)
+    
     robot = Robot(radius, max_speed, max_speed, time_step)
     robot.set_virtual_goal_params(d_virtual_goal, y_virtual_goal)
-    robot.set_policy(invorca)
+
+    if robot_policy == 'invorca':
+        robot.set_policy(invorca)
+    elif robot_policy == 'weighted_sum':
+        robot.set_policy(weighted_sum)
 
     env.unwrapped.set_human(human)
     env.unwrapped.set_robot(robot)
@@ -147,11 +167,15 @@ def main():
                         help='the planning time horizon for the robot (default: 6)')
     parser.add_argument('--human-policy', type=str, default='orca',
                         help='The human policy [orca or socialforce] (default: orca)')
+    parser.add_argument('--robot-policy', type=str, default='invorca',
+                        help='The robot policy [invorca or weighted_sum] (default: invorca)')
 
     args = parser.parse_args()
 
     num_failed = run_sim(args.render_mode, args.save_anim, args.num_runs,
-                         time_horizon_robot=args.tau_robot)
+                         time_horizon_robot=args.tau_robot,
+                         human_policy=args.human_policy,
+                         robot_policy=args.robot_policy)
 
     print(f"(failed/total) = ({num_failed}/{args.num_runs})")
 
