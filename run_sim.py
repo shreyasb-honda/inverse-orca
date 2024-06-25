@@ -130,6 +130,9 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
 
 
 def main():
+    """
+    Just the main function to run the simulation
+    """
 
     parser = ArgumentParser()
     parser.add_argument('--debug', type=bool, default=False,
@@ -138,12 +141,12 @@ def main():
                         help="Whether to save the animation to a file (default: False)")
     parser.add_argument('--render-mode', type=str, default='human',
                         help='The mode in which to render (human or static plot) (default: human)')
-
     parser.add_argument('--num-runs', type=int, default=1,
                         help='The number of times the simulation should be run (default: 1)')
-
     parser.add_argument('--tau-robot', type=int, default=6,
                         help='the planning time horizon for the robot (default: 6)')
+    parser.add_argument('--human-policy', type=str, default='orca',
+                        help='The human policy [orca or socialforce] (default: orca)')
 
     args = parser.parse_args()
 
