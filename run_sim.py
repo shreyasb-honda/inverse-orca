@@ -15,7 +15,8 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
             alpha: float | None = None, max_speed_robot: float | None = None,
             time_horizon_robot: int | None = None,
             time_horizon_human: int | None = None,
-            out_fname: str | None = None):
+            out_fname: str | None = None, 
+            human_policy: str = 'orca'):
     """
     A helper function to set up and run the simulation according to the desired parameters 
     supplied to it
@@ -31,10 +32,11 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     policy_config.read(os.path.join('.', 'sim', 'config', 'policy.config'))
 
     # Configure the policy
-    orca = Orca()
-    orca.configure(policy_config)
-    if time_horizon_human is not None:
-        orca.time_horizon = time_horizon_human
+    if human_policy == 'orca':
+        orca = Orca()
+        orca.configure(policy_config)
+        if time_horizon_human is not None:
+            orca.time_horizon = time_horizon_human
 
     invorca = InvOrca()
     invorca.configure(policy_config)
@@ -49,11 +51,14 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     max_speed = env_config.getfloat('human', 'max_speed')
     collision_responsibility = env_config.getfloat('human', 'collision_responsibility')
     human = Human(radius, max_speed, max_speed, time_step, collision_responsibility)
-    orca.set_collision_responsiblity(collision_responsibility)
-    human.set_policy(orca)
 
-    # social_force = SocialForce()
-    # human.set_policy(social_force)
+    if human_policy == 'orca':
+        orca.set_collision_responsiblity(collision_responsibility)
+        human.set_policy(orca)
+
+    if human_policy == 'socialforce':
+        social_force = SocialForce()
+        human.set_policy(social_force)
 
     # Configure the robot
     radius = env_config.getfloat('robot', 'radius')
@@ -74,7 +79,7 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
 
     num_failed = 0
 
-    if alpha is not None:
+    if human_policy == 'orca' and alpha is not None:
         human.collision_responsibility = alpha
         human.policy.set_collision_responsiblity(alpha)
 
