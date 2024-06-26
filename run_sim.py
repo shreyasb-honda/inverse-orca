@@ -19,7 +19,8 @@ logging.disable(logging.ERROR)
 
 
 def configure_human(policy_name: str, policy_config: RawConfigParser,
-                    env_config: RawConfigParser, time_horizon: float | None = None):
+                    env_config: RawConfigParser, time_horizon: float | None = None,
+                    alpha: float | None = None):
     """
     Configures the human agent for the environment
     """
@@ -33,6 +34,9 @@ def configure_human(policy_name: str, policy_config: RawConfigParser,
         human_policy.set_collision_responsiblity(alpha)
         if time_horizon is not None:
             human_policy.time_horizon = time_horizon
+        if alpha is not None:
+            human_policy.set_collision_responsiblity(alpha)
+
     elif policy_name == 'social_force':
         human_policy = SocialForce(human.time_step)
     else:
@@ -44,7 +48,8 @@ def configure_human(policy_name: str, policy_config: RawConfigParser,
 
 
 def configure_robot(policy_name: str, policy_config: RawConfigParser,
-                    env_config: RawConfigParser, time_horizon: float | None = None):
+                    env_config: RawConfigParser, time_horizon: float | None = None,
+                    max_speed: float | None = None):
     """
     Configures the robot agent for the environment
     """
@@ -63,6 +68,8 @@ def configure_robot(policy_name: str, policy_config: RawConfigParser,
     if time_horizon is not None:
         robot_policy.time_horizon = time_horizon
         robot_policy.orca_time_horizon = time_horizon
+    if max_speed is not None:
+        robot_policy.max_speed = max_speed
 
     robot_policy.set_virtual_goal_params(*robot.get_virtual_goal_params())
     robot.set_policy(robot_policy)
@@ -93,11 +100,11 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
 
     # Configure the human
     human = configure_human(human_policy_str, policy_config, env_config,
-                            time_horizon_human)
+                            time_horizon_human, alpha)
 
     # Configure the robot
     robot = configure_robot(robot_policy_str, policy_config, env_config,
-                            time_horizon_robot)
+                            time_horizon_robot, max_speed_robot)
 
     # Set these in the environment
     env.unwrapped.set_human(human)
@@ -108,15 +115,6 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
         env.unwrapped.set_output_filename(out_fname)
 
     num_failed = 0
-
-    if human_policy_str == 'orca' and alpha is not None:
-        human.collision_responsibility = alpha
-        human.policy.set_collision_responsiblity(alpha)
-
-    if max_speed_robot is not None:
-        robot.max_speed = max_speed_robot
-        robot.policy.set_max_speed(max_speed_robot)
-
     env.reset(seed=100)
 
     for _ in tqdm(range(num_runs)):
