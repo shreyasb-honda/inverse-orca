@@ -109,6 +109,7 @@ class InvOrca(Policy):
 
             # Get the action for the robot
             action = self.sim.getAgentVelocity(0)
+            self.robot_vel = action
 
             return action
 

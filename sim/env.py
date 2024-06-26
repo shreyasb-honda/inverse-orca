@@ -207,7 +207,8 @@ class HallwayScene(gym.Env):
         self.global_time += self.time_step
         reward = 0
         truncated = self.global_time > self.time_limit
-        terminated = self.robot.reached_goal() or self.human.reached_goal()
+        # terminated = self.robot.reached_goal() or self.human.reached_goal()
+        terminated = self.robot.reached_goal() and self.human.reached_goal()
         info = {}
         return obs, reward, terminated, truncated, info
 

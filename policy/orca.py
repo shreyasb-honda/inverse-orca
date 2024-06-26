@@ -46,6 +46,7 @@ class Orca(Policy):
         self.collision_responsibility = collision_responsibility
 
     def predict(self, observation):
+
         params = self.neighbor_dist, self.max_neighbors, self.time_horizon, self.time_horizon_obst
 
         self.sim = rvo2.PyRVOSimulator(self.time_step, *params, self.radius,

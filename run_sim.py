@@ -129,10 +129,10 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
                 done = terminated or truncated
                 robot.set_vh_desired(obs)
                 # obs["human vel"] = np.array([-1.0, 0.])
-                robot_action = robot.policy.predict(obs)
+                robot_action = robot.choose_action(obs)
                 obs['robot vel'] = np.array(robot_action)
                 # Update the observation to include the current velocity of the robot
-                human_action = human.policy.predict(obs)
+                human_action = human.choose_action(obs)
 
                 # Estimate the value of alpha
                 alpha_hat = estimate_alpha((-1.0, 0), human_action, 
@@ -170,6 +170,8 @@ def main():
                         help='The number of times the simulation should be run (default: 1)')
     parser.add_argument('--tau-robot', type=int, default=6,
                         help='the planning time horizon for the robot (default: 6)')
+    parser.add_argument('--tau-human', type=int, default=6,
+                        help='the planning time horizon for the human (default: 6)')
     parser.add_argument('--human-policy', type=str, default='orca',
                         help='The human policy [orca or socialforce] (default: orca)')
     parser.add_argument('--robot-policy', type=str, default='invorca',
@@ -179,6 +181,7 @@ def main():
 
     num_failed = run_sim(args.render_mode, args.save_anim, args.num_runs,
                          time_horizon_robot=args.tau_robot,
+                         time_horizon_human=args.tau_human,
                          human_policy=args.human_policy,
                          robot_policy=args.robot_policy)
 

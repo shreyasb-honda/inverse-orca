@@ -120,6 +120,16 @@ class Human(Agent):
             self.policy.set_max_speed(self.max_speed)
         except AttributeError:
             pass
+    
+    def choose_action(self, observation):
+        """
+        Chooses an action given the current observation
+        """
+        action = (0., 0.)
+        if not self.reached_goal():
+            action = self.policy.predict(observation)
+        
+        return action
 
     def reached_goal(self):
         """
@@ -190,6 +200,16 @@ class Robot(Agent):
             return True
 
         return False
+
+    def choose_action(self, observation):
+        """
+        Chooses an action given the current observation
+        """
+        action = (0., 0.)
+        if not self.reached_goal():
+            action = self.policy.predict(observation)
+
+        return action
 
     def reached_goal(self):
         """
