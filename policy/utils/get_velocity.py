@@ -99,7 +99,7 @@ class InverseORCA:
             # then the minimum vB would be such that the relative velocity is at
             # the intersection point (plus epsilon in the u_perp direction to
             # avoid ambiguity of projection)
-            if side > 0:
+            if side >= 0:
                 # print("left")
                 u_perp = np.array([-self.u_hat[1], self.u_hat[0]])
                 # Move a bit away from the intersection point to avoid ambiguity
@@ -149,7 +149,7 @@ class InverseORCA:
                 self.vr = tuple(self.vr)
                 return self.vr, self.u
 
-            if side > 0:
+            if side >= 0:
                 # print("left")
                 u_perp = np.array([-self.u_hat[1], self.u_hat[0]])
                 # Move a bit away from the intersection point to avoid ambiguity
