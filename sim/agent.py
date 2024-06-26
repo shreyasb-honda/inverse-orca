@@ -1,11 +1,11 @@
 """
 Defines the agent classes
 """
-
+from configparser import RawConfigParser
 import numpy as np
 from numpy.linalg import norm
 from policy.orca import Orca
-from policy.invorca import InvOrca
+from policy.invorca import InverseOrca
 
 
 class Agent:
@@ -105,6 +105,19 @@ class Human(Agent):
         super().__init__(radius, max_speed, preferred_speed, time_step)
         self.collision_responsibility = collision_responsibility
 
+    def configure(self, config: RawConfigParser):
+        """
+        Configures the human agent according to the environment
+        config file
+        :param config - the environment configuration file (inverse_orca/sim/config/env.config)
+        """
+
+        self.time_step = config.getfloat('env', 'time_step')
+        self.radius = config.getfloat('human', 'radius')
+        self.max_speed = config.getfloat('human', 'max_speed')
+        self.collision_responsibility = config.getfloat('human', 'collision_responsibility')
+
+
     def step(self, action, delta_t):
         self.px += action['human vel'][0] * delta_t
         self.py += action['human vel'][1] * delta_t
@@ -120,7 +133,7 @@ class Human(Agent):
             self.policy.set_max_speed(self.max_speed)
         except AttributeError:
             pass
-    
+
     def choose_action(self, observation):
         """
         Chooses an action given the current observation
@@ -128,7 +141,7 @@ class Human(Agent):
         action = (0., 0.)
         if not self.reached_goal():
             action = self.policy.predict(observation)
-        
+
         return action
 
     def reached_goal(self):
@@ -150,6 +163,17 @@ class Robot(Agent):
         self.aborted = None
         self.d_virtual_goal = None
         self.y_virtual_goal = None
+    
+    def configure(self, config: RawConfigParser):
+        """
+        Configures this robot
+        :param config - the environment configuration file (inverse_orca/sim/config/env.config)
+        """
+        self.time_step = config.getfloat('env', 'time_step')
+        self.radius = config.getfloat('robot', 'radius')
+        self.max_speed = config.getfloat('robot', 'max_speed')
+        self.d_virtual_goal = config.getfloat('env', 'd_virtual_goal')
+        self.y_virtual_goal = config.getfloat('env', 'y_virtual_goal')
 
     def step(self, action, delta_t):
         self.px += action['robot vel'][0] * delta_t
@@ -157,7 +181,7 @@ class Robot(Agent):
         self.vx = action['robot vel'][0]
         self.vy = action['robot vel'][1]
 
-    def set_policy(self, policy: InvOrca):
+    def set_policy(self, policy: InverseOrca):
         """
         Sets the policy for the robot
         """
@@ -170,6 +194,14 @@ class Robot(Agent):
         """
         self.d_virtual_goal = d_virtual_goal
         self.y_virtual_goal = y_virtual_goal
+        self.policy.set_virtual_goal_params(d_virtual_goal, y_virtual_goal)
+
+    def get_virtual_goal_params(self):
+        """
+        Returns the parameters for the virtual goal line 
+        of the robot for the human
+        """
+        return self.d_virtual_goal, self.y_virtual_goal
 
     def set_vh_desired(self, obs):
         """

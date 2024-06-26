@@ -11,9 +11,9 @@ class Orca(Policy):
     this agent given the current observation
     """
 
-    def __init__(self) -> None:
+    def __init__(self, time_step: float = 0.25) -> None:
         super().__init__()
-        self.name = 'ORCA'
+        self.time_step = time_step
         self.neighbor_dist = None
         self.max_neighbors = None
         self.time_horizon = None
@@ -48,7 +48,6 @@ class Orca(Policy):
     def predict(self, observation):
 
         params = self.neighbor_dist, self.max_neighbors, self.time_horizon, self.time_horizon_obst
-
         self.sim = rvo2.PyRVOSimulator(self.time_step, *params, self.radius,
                                        self.max_speed,
                                        collisionResponsibility=self.collision_responsibility)

@@ -13,7 +13,7 @@ from policy.utils.overlap_detection import Circle, VelocityObstacle, Point, Tang
 
 EPSILON = 1e-6
 
-class InverseORCA:
+class OptimalInfluence:
     """
     Class implementing the inverse ORCA algorithm
     """

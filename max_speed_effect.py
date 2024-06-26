@@ -15,7 +15,7 @@ def main():
         run_sim(render_mode, alpha=alpha,
                 max_speed_robot=max_speed,
                 out_fname=f'max-speed-{max_speed:.2f}',
-                human_policy='socialforce',
+                human_policy_str='socialforce',
                 time_horizon_robot=time_horizon_robot)
 
 

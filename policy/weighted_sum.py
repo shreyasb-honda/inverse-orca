@@ -6,9 +6,9 @@ and the velocity output of the Inverse ORCA algorithm
 
 from configparser import RawConfigParser
 import numpy as np
-from policy.invorca import InvOrca
+from policy.invorca import InverseOrca
 
-class WeightedSum(InvOrca):
+class WeightedSum(InverseOrca):
     """
     A policy that adds a weighted goal-directed velocity component
     to the velocity output by the inverse ORCA algorithm

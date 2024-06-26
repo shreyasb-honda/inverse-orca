@@ -6,10 +6,10 @@ from configparser import RawConfigParser
 import numpy as np
 import rvo2
 from policy.policy import Policy
-from policy.utils.get_velocity import InverseORCA
+from policy.utils.get_velocity import OptimalInfluence
 from policy.utils.overlap_detection import Point, Circle, VelocityObstacle
 
-class InvOrca(Policy):
+class InverseOrca(Policy):
     """
     Implements the inverse ORCA algorithm
     """
@@ -44,7 +44,7 @@ class InvOrca(Policy):
         self.max_neighbors = config.getfloat('invorca', 'max_neighbors')
         self.orca_time_horizon = config.getfloat('invorca', 'orca_time_horizon')
         self.neighbor_dist = config.getfloat('invorca', 'neighbor_dist')
-        self.orca_time_horizon_obst = config.getfloat('invorca', 
+        self.orca_time_horizon_obst = config.getfloat('invorca',
                                                       'orca_time_horizon_obst')
 
     def set_max_speed(self, max_speed: float):
@@ -118,8 +118,8 @@ class InvOrca(Policy):
         cutoff_circle = Circle(tuple(center), radius[0])
         self.vo = VelocityObstacle(cutoff_circle)
 
-        self.invorca = InverseORCA(self.vo, vr_max=self.max_speed,
-                                   collision_responsibility=self.collision_responsibility)
+        self.invorca = OptimalInfluence(self.vo, vr_max=self.max_speed,
+                                        collision_responsibility=self.collision_responsibility)
 
         self.robot_vel, self.u = self.invorca.compute_velocity(human_vel, self.desired_velocity)
 
