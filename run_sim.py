@@ -12,7 +12,6 @@ from policy.invorca import InvOrca
 from policy.social_force import SocialForce
 from policy.weighted_sum import WeightedSum
 from policy.utils.estimate_alpha import estimate_alpha
-from sim.collision_checker import CollisionChecker
 
 
 def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 1,
@@ -93,10 +92,8 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     elif robot_policy == 'weighted_sum':
         robot.set_policy(weighted_sum)
 
-    collision_checker = CollisionChecker(robot.radius, human.radius)
     env.unwrapped.set_human(human)
     env.unwrapped.set_robot(robot)
-    env.unwrapped.set_collision_checker(collision_checker)
     env.unwrapped.configure(env_config, save_anim, render_mode)
 
     if out_fname is not None:

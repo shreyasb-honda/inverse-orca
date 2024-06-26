@@ -71,10 +71,13 @@ class InvOrca(Policy):
         self.desired_velocity = velocity
 
     def predict(self, observation):
-        robot_pos = np.array(observation['robot pos'])
-        human_pos = np.array(observation['human pos'])
+        robot_pos = observation['robot pos']
+        human_pos = observation['human pos']
         human_vel = tuple(observation['human vel'])
         robot_vel = tuple(observation['robot vel'])
+
+        human_radius = observation['human rad']
+        robot_radius = observation['robot rad']
 
         if self.stopping_criterion(observation):
             params = (self.neighbor_dist, self.max_neighbors, 
@@ -86,17 +89,16 @@ class InvOrca(Policy):
                                            collisionResponsibility=self.collision_responsibility)
 
             # Add the robot
-            self.sim.addAgent(tuple(robot_pos), *params, self.radius,
+            self.sim.addAgent(tuple(robot_pos), *params, robot_radius,
                           self.max_speed, robot_vel,
                           collisionResponsibility=self.collision_responsibility)
 
             # Add the human
-            self.sim.addAgent(tuple(human_pos), *params, self.radius,
+            self.sim.addAgent(tuple(human_pos), *params, human_radius,
                           self.max_speed, human_vel,
                           collisionResponsibility=self.collision_responsibility)
 
             # Set the preferred velocity of the robot to be goal-directed maximum
-            # self.sim.setAgentPrefVelocity(0, (self.max_speed-0.1, 0.1))
             self.sim.setAgentPrefVelocity(0, (self.max_speed, 0.))
 
             # Set the preferred velocity of the human to be their current velocity
@@ -111,9 +113,8 @@ class InvOrca(Policy):
             return action
 
         center = (robot_pos - human_pos) / self.time_horizon
-        # TODO: assuming equal radii for the two agents
-        radius = 2 * self.radius / self.time_horizon  
-        cutoff_circle = Circle(tuple(center), radius)
+        radius = (robot_radius + human_radius) / self.time_horizon
+        cutoff_circle = Circle(tuple(center), radius[0])
         self.vo = VelocityObstacle(cutoff_circle)
 
         self.invorca = InverseORCA(self.vo, vr_max=self.max_speed,

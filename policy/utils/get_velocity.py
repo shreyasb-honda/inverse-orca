@@ -17,9 +17,9 @@ class InverseORCA:
     """
     Class implementing the inverse ORCA algorithm
     """
-    def __init__(self, vo: VelocityObstacle | None = None,
+    def __init__(self, vo: VelocityObstacle,
                  epsilon: float = 1e-5,
-                 vr_max: float = 1.0, 
+                 vr_max: float = 1.0,
                  collision_responsibility: float = 0.5):
         """
         Initializes this class

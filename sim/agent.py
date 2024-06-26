@@ -44,6 +44,12 @@ class Agent:
         """
         return self.vx, self.vy
 
+    def get_radius(self):
+        """
+        Returns the radius of the agent
+        """
+        return self.radius
+
     def set_position(self, px: float, py: float):
         """
         Sets the position of the agent at (px, py)

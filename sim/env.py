@@ -14,8 +14,8 @@ from matplotlib import animation
 import numpy as np
 from sim.agent import Human, Robot
 from sim.renderer import Renderer
+from sim.collision_checker import check_collision
 from policy.utils.overlap_detection import Circle
-from sim.collision_checker import CollisionChecker
 
 
 class HallwayScene(gym.Env):
@@ -56,10 +56,14 @@ class HallwayScene(gym.Env):
                                         shape=(2, ), dtype=float),
                 "robot vel": spaces.Box(left, right, 
                                         shape=(2,), dtype=float),
+                "robot rad": spaces.Box(left, right, 
+                                        shape=(1,), dtype=float),
                 "human pos": spaces.Box(left, right,
                                         shape=(2, ), dtype=float),
                 "human vel": spaces.Box(left, right, 
-                                        shape=(2,), dtype=float)
+                                        shape=(2,), dtype=float),
+                "human rad": spaces.Box(left, right,
+                                        shape=(1,), dtype=float)
             }
         )
 
@@ -97,7 +101,6 @@ class HallwayScene(gym.Env):
         self.filename = None
 
         # Collision checker
-        self.collision_checker = None
         self.collision = False
         self.collision_frames = []
 
@@ -133,31 +136,6 @@ class HallwayScene(gym.Env):
             self.va_act_list = []
             self.u_list = []
 
-        # left = -4.
-        # right = self.hallway_length + 4.
-
-        # self.observation_space = spaces.Dict(
-        #     {
-        #         "robot pos": spaces.Box(left, right,
-        #                                 shape=(2, ), dtype=float),
-        #         "robot vel": spaces.Box(-self.robot.max_speed, self.robot.max_speed, 
-        #                                 shape=(2,), dtype=float),
-        #         "human pos": spaces.Box(left, right,
-        #                                 shape=(2, ), dtype=float),
-        #         "human vel": spaces.Box(-self.human.max_speed, self.human.max_speed, 
-        #                                 shape=(2,), dtype=float)
-        #     }
-        # )
-
-        # self.action_space = spaces.Dict(
-        #     {
-        #         "robot vel": spaces.Box(-self.robot.max_speed, self.robot.max_speed, 
-        #                                 shape=(2,), dtype=float),
-        #         "human vel": spaces.Box(-self.human.max_speed, self.human.max_speed, 
-        #                                 shape=(2,), dtype=float)
-        #     }
-        # )
-
         self.robot_draw_params = {"radius": self.robot.radius, "color": "tab:blue"}
         self.human_draw_params = {"radius": self.human.radius, "color": 'tab:red'}
         self.renderer = Renderer(self.hallway_dimensions,
@@ -192,12 +170,6 @@ class HallwayScene(gym.Env):
         :param human - the human
         """
         self.human = human
-    
-    def set_collision_checker(self, collision_checker: CollisionChecker):
-        """
-        Adds a collision checker to the environment
-        """
-        self.collision_checker = collision_checker
 
     def step(self, action):
         """
@@ -213,7 +185,7 @@ class HallwayScene(gym.Env):
         self.observations.append(obs)
 
         # Check for collision
-        self.collision = self.collision_checker.is_collision(obs)
+        self.collision = check_collision(obs)
         if self.collision:
             self.collision_frames.append(self.frame_count)
 
@@ -293,8 +265,10 @@ class HallwayScene(gym.Env):
         obs = {
             "robot pos": np.array(self.robot.get_position(), dtype=float),
             "robot vel": np.array(self.robot.get_velocity(), dtype=float),
+            "robot rad": np.array([self.robot.get_radius()], dtype=float),
             "human pos": np.array(self.human.get_position(), dtype=float),
-            "human vel": np.array(self.human.get_velocity(),  dtype=float)
+            "human vel": np.array(self.human.get_velocity(),  dtype=float),
+            "human rad": np.array([self.human.get_radius()], dtype=float)
         }
 
         return obs

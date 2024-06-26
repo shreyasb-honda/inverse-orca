@@ -29,7 +29,7 @@ class Orca(Policy):
         self.time_horizon = config.getfloat('orca', 'time_horizon')
         self.time_horizon_obst = config.getfloat('orca', 'time_horizon_obst')
         self.radius = config.getfloat('orca', 'radius')
-    
+
     def set_max_speed(self, max_speed: float):
         """
         Sets the max speed for the agent using this policy
@@ -55,28 +55,28 @@ class Orca(Policy):
         # Add the robot
         robot_pos = tuple(observation['robot pos'])
         robot_vel = tuple(observation['robot vel'])
-        self.sim.addAgent(robot_pos, *params, self.radius,
+        robot_radius = observation['robot rad']
+        self.sim.addAgent(robot_pos, *params, robot_radius,
                           self.max_speed, robot_vel,
                           collisionResponsibility=self.collision_responsibility)
-        # TODO: Assuming that the radius is the same for all agents
         # TODO: Assuming that the preferred speed is the max speed
 
         # Add the human
         human_pos = tuple(observation['human pos'])
         human_vel = tuple(observation['human vel'])
-        self.sim.addAgent(human_pos, *params, self.radius,
+        human_radius = observation['human rad']
+        self.sim.addAgent(human_pos, *params, human_radius,
                           self.max_speed, human_vel,
                           collisionResponsibility=self.collision_responsibility)
-        # TODO: Assuming that the radius is the same for all agents
         # TODO: Assuming that the preferred speed is the max speed
 
-        # Set the preferred velocity to the current velocity
+        # Set the preferred velocity to the current velocity for the robot
         self.sim.setAgentPrefVelocity(0, robot_vel)
+
+        # Set the preferred velocity to be the goal-directed velocity for the human
         self.sim.setAgentPrefVelocity(1, (-self.max_speed, 0))
-        # self.sim.setAgentPrefVelocity(1, human_vel)
 
         self.sim.doStep()
         action = self.sim.getAgentVelocity(1)
-        # print("ORCA action", action)
 
         return action

@@ -27,3 +27,14 @@ class CollisionChecker:
         self.collision =  dist <= (self.human_radius + self.robot_radius)
 
         return self.collision
+
+
+def check_collision(obs):
+    human_pos = obs['human pos']
+    human_radius = obs['human rad']
+    robot_pos = obs['robot pos']
+    robot_radius = obs['robot rad']
+
+    dist = norm(human_pos - robot_pos)
+
+    return dist <= (human_radius + robot_radius)
