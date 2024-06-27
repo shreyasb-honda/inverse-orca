@@ -10,7 +10,7 @@ from tqdm import tqdm
 import numpy as np
 import gymnasium as gym
 from sim.agent import Robot, Human
-from sim.performance_metrics import *
+import sim.performance_metrics as pm
 from policy.orca import Orca
 from policy.invorca import InverseOrca
 from policy.social_force import SocialForce
@@ -120,11 +120,11 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     env.reset(seed=100)
 
     # Configure the performance metrics
-    acceleration_metric_human = CumulativeAcceleration(robot.time_step, 'human')
-    acceleration_metric_robot = CumulativeAcceleration(robot.time_step, 'robot')
-    closest_dist_metric = ClosestDistance()
-    closeness_to_goal_metric = ClosenessToGoal(robot.y_virtual_goal)
-    time_to_reach_goal_metric = TimeToReachGoal(robot.time_step, robot.gx, human.gx)
+    acceleration_metric_human = pm.CumulativeAcceleration(robot.time_step, 'human')
+    acceleration_metric_robot = pm.CumulativeAcceleration(robot.time_step, 'robot')
+    closest_dist_metric = pm.ClosestDistance()
+    closeness_to_goal_metric = pm.ClosenessToGoal(robot.y_virtual_goal)
+    time_to_reach_goal_metric = pm.TimeToReachGoal(robot.time_step, robot.gx, human.gx)
     perf_metrics = [acceleration_metric_human, acceleration_metric_robot,
                     closest_dist_metric, closeness_to_goal_metric,
                     time_to_reach_goal_metric]
