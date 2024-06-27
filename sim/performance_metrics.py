@@ -11,20 +11,23 @@ class CumulativeAcceleration:
     experienced by an agent
     """
 
-    def __init__(self, time_step: float = 0.25) -> None:
+    def __init__(self, time_step: float = 0.25,
+                 agent: str = 'human') -> None:
+        self.name = 'Cumulative Acceleration'
+        self.agent = agent
         self.time_step = time_step
         self.cumulative_acc = 0
         self.velocities = None
         self.accelerations = None
 
-    def add(self, observation, agent: str = 'human'):
+    def add(self, observation):
         """
         Uses the observation to compute acceleration and
         adds it to the list and cumulative acceleration values
         :param observation - the observation to the agent
         :param agent - the name of the agent [human or robot]
         """
-        vel = observation[agent + ' vel']
+        vel = observation[self.agent + ' vel']
         if self.velocities is None:
             self.velocities = [vel]
             self.accelerations = []
@@ -47,6 +50,7 @@ class ClosestDistance:
     """
 
     def __init__(self) -> None:
+        self.name = 'Closest Distance'
         self.min_dist = 1e6
         self.distances = []
 
@@ -76,6 +80,7 @@ class ClosenessToGoal:
     """
 
     def __init__(self, y_virutal_goal) -> None:
+        self.name = 'Closeness to goal'
         self.min_dist = 1e5
         self.x_coordinate_at_goal = None
         self.y_goal = y_virutal_goal
@@ -108,6 +113,7 @@ class TimeToReachGoal:
     Measures the time it takes the agent to reach its goal
     """
     def __init__(self, time_step: float, robot_goal_x: float, human_goal_x: float) -> None:
+        self.name = 'Time to reach goal'
         self.time_step = time_step
         self.human_time = 0
         self.robot_time = 0

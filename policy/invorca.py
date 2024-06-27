@@ -3,7 +3,6 @@ The inverse ORCA policy
 """
 
 from configparser import RawConfigParser
-import numpy as np
 import rvo2
 from policy.policy import Policy
 from policy.utils.get_velocity import OptimalInfluence

@@ -4,7 +4,7 @@ Compares our expected results with the official ORCA implementation
 import rvo2
 import matplotlib.pyplot as plt
 import numpy as np
-from policy.utils.get_velocity import InverseORCA
+from policy.utils.get_velocity import OptimalInfluence
 from policy.utils.overlap_detection import Circle, VelocityObstacle, Point
 
 
@@ -29,8 +29,8 @@ def test(relative_position: Point, vA: Point, vA_d: Point,
     cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     cutoff_circle = Circle(cutoff_center, cutoff_radius)
     vo = VelocityObstacle(cutoff_circle)
-    invorca = InverseORCA(vo, vr_max=VB_MAX, epsilon=EPSILON, 
-                          collision_responsibility=collision_responsibility)
+    invorca = OptimalInfluence(vo, vr_max=VB_MAX, epsilon=EPSILON, 
+                               collision_responsibility=collision_responsibility)
     invorca.compute_velocity(vA, vA_d)
 
     fig, ax = plt.subplots(layout='tight', figsize=(9, 9))
@@ -112,7 +112,7 @@ def overlap_with_solution_2():
 
     # Constants
     relative_position = (-1., 1.)
-    vA = (-2.3, 0.5)    
+    vA = (-2.3, 0.5)
     cutoff_center = tuple(np.array(relative_position) / TAU)
     cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     cutoff_circle = Circle(cutoff_center, cutoff_radius)
@@ -257,8 +257,8 @@ def test_random(num_runs: int = 100, seed: int | None = None):
         cutoff_radius = (RADIUS_A + RADIUS_B) / time_horizon
         cutoff_circle = Circle(cutoff_center, cutoff_radius)
         vo = VelocityObstacle(cutoff_circle)
-        invorca = InverseORCA(vo, vr_max=VB_MAX, epsilon=EPSILON,
-                            collision_responsibility=collision_responsibility)
+        invorca = OptimalInfluence(vo, vr_max=VB_MAX, epsilon=EPSILON,
+                                   collision_responsibility=collision_responsibility)
         
         dot1 = abs(np.dot(vA, invorca.vo.right_tangent.normal))
         dot2 = abs(np.dot(vA, invorca.vo.left_tangent.normal))

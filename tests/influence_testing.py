@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from policy.utils.overlap_detection import Circle, VelocityObstacle, Point
-from policy.utils.get_velocity import InverseORCA
+from policy.utils.get_velocity import OptimalInfluence
 sns.set_theme(context='talk', style='dark')
 
 
@@ -35,8 +35,8 @@ def test(relative_position: Point, vA: Point, vA_d: Point,
     cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     cutoff_circle = Circle(cutoff_center, cutoff_radius)
     vo = VelocityObstacle(cutoff_circle)
-    invorca = InverseORCA(vo, vr_max=VB_MAX, epsilon=EPSILON, 
-                          collision_responsibility=collision_responsibility)
+    invorca = OptimalInfluence(vo, vr_max=VB_MAX, epsilon=EPSILON, 
+                               collision_responsibility=collision_responsibility)
     invorca.compute_velocity(vA, vA_d)
 
     fig, ax = plt.subplots(layout='tight', figsize=(9,9))

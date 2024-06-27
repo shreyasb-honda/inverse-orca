@@ -10,6 +10,7 @@ from tqdm import tqdm
 import numpy as np
 import gymnasium as gym
 from sim.agent import Robot, Human
+from sim.performance_metrics import *
 from policy.orca import Orca
 from policy.invorca import InverseOrca
 from policy.social_force import SocialForce
@@ -89,6 +90,7 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     supplied to it
     """
 
+
     # Configure the environment
     env_config = RawConfigParser()
     env_config.read(os.path.join('.', 'sim', 'config', 'env.config'))
@@ -117,6 +119,16 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
     num_failed = 0
     env.reset(seed=100)
 
+    # Configure the performance metrics
+    acceleration_metric_human = CumulativeAcceleration(robot.time_step, 'human')
+    acceleration_metric_robot = CumulativeAcceleration(robot.time_step, 'robot')
+    closest_dist_metric = ClosestDistance()
+    closeness_to_goal_metric = ClosenessToGoal(robot.y_virtual_goal)
+    time_to_reach_goal_metric = TimeToReachGoal(robot.time_step, robot.gx, human.gx)
+    perf_metrics = [acceleration_metric_human, acceleration_metric_robot,
+                    closest_dist_metric, closeness_to_goal_metric,
+                    time_to_reach_goal_metric]
+
     for _ in tqdm(range(num_runs)):
         try:
             obs, _ = env.reset()
@@ -124,6 +136,8 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
             robot_action = robot.policy.predict(obs)
             obs['robot vel'] = np.array(robot_action)
             human_action = human.get_velocity()
+            for metric in perf_metrics:
+                metric.add(obs)
 
             done = False
             while not done:
@@ -137,6 +151,8 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
                 # obs["human vel"] = np.array([-1.0, 0.])
                 robot_action = robot.choose_action(obs)
                 obs['robot vel'] = np.array(robot_action)
+                for metric in perf_metrics:
+                    metric.add(obs)
                 # Update the observation to include the current velocity of the robot
                 human_action = human.choose_action(obs)
 
@@ -151,13 +167,16 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
                 print("Collision happened at frame(s)", env.unwrapped.collision_frames)
 
             env.render()
+
+            for metric in perf_metrics:
+                print(metric.name, metric.get_metric())
+
         except TypeError as err:
             print("TypeError: ", err)
             num_failed += 1
             continue
 
     return num_failed
-
 
 
 def main():

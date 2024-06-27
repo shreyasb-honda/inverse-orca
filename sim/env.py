@@ -44,9 +44,6 @@ class HallwayScene(gym.Env):
         self.observations = None
         self.time_limit = None
 
-        self.observation_space = None
-        self.action_space = None
-
         left = -100
         right = 100
 

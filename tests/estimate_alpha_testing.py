@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from policy.utils.overlap_detection import Point, VelocityObstacle, Circle
 from policy.utils.estimate_alpha import estimate_alpha
-from policy.utils.get_velocity import InverseORCA
+from policy.utils.get_velocity import OptimalInfluence
 
 TAU = 6
 RADIUS_A = 0.3
@@ -111,7 +111,7 @@ def test(relative_position: Point, vA: Point, v_pref: Point,
     # cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     # cutoff_circle = Circle(cutoff_center, cutoff_radius)
     # vo = VelocityObstacle(cutoff_circle)
-    # invorca = InverseORCA(vo, collision_responsibility=alpha_hat)
+    # invorca = OptimalInfluence(vo, collision_responsibility=alpha_hat)
 
 
     print(f"vA_new {vA_new}")
