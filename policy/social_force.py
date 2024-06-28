@@ -1,11 +1,15 @@
-from pathlib import Path
+import logging
 from configparser import RawConfigParser
 import numpy as np
 import pysocialforce as psf
 from policy.policy import Policy
+logging.disable(logging.ERROR)
 
 
 class SocialForce(Policy):
+    """
+    Implements the social force based policy for the humans    
+    """
 
     def configure(self, config: RawConfigParser):
         pass

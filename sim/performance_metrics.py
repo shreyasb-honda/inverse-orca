@@ -5,7 +5,27 @@ for the robot's influencing behavior
 
 import numpy as np
 
-class CumulativeAcceleration:
+class PerformanceMetric:
+    """
+    Base class for all performance metrics
+    """
+
+    def __init__(self, name) -> None:
+        self.name = name
+
+    def add(self, observation):
+        """
+        Computes/Updates the metric based on the current observation
+        """
+        raise NotImplementedError
+
+    def get_metric(self):
+        """
+        Returns the value of the metric(s) based on the current data
+        """
+        raise NotImplementedError
+
+class CumulativeAcceleration(PerformanceMetric):
     """
     Class to keep track of the cumulative acceleration 
     experienced by an agent
@@ -13,7 +33,7 @@ class CumulativeAcceleration:
 
     def __init__(self, time_step: float = 0.25,
                  agent: str = 'human') -> None:
-        self.name = 'Cumulative Acceleration'
+        super().__init__('Cumulative Acceleration')
         self.agent = agent
         self.time_step = time_step
         self.cumulative_acc = 0
@@ -44,13 +64,13 @@ class CumulativeAcceleration:
         return self.cumulative_acc
 
 
-class ClosestDistance:
+class ClosestDistance(PerformanceMetric):
     """
     Class keeps track of the minimum distance between the human and the robot
     """
 
     def __init__(self) -> None:
-        self.name = 'Closest Distance'
+        super().__init__('Closest Distance')
         self.min_dist = 1e6
         self.distances = []
 
@@ -73,14 +93,14 @@ class ClosestDistance:
         return self.min_dist
 
 
-class ClosenessToGoal:
+class ClosenessToGoal(PerformanceMetric):
     """
     Measures how close the human got to the virtual goal
     line
     """
 
     def __init__(self, y_virutal_goal) -> None:
-        self.name = 'Closeness to goal'
+        super().__init__('Closeness to goal')
         self.min_dist = 1e5
         self.x_coordinate_at_goal = None
         self.y_goal = y_virutal_goal
@@ -108,12 +128,12 @@ class ClosenessToGoal:
         return self.min_dist, self.x_coordinate_at_goal, self.reached
 
 
-class TimeToReachGoal:
+class TimeToReachGoal(PerformanceMetric):
     """
     Measures the time it takes the agent to reach its goal
     """
     def __init__(self, time_step: float, robot_goal_x: float, human_goal_x: float) -> None:
-        self.name = 'Time to reach goal'
+        super().__init__('Time to reach goal')
         self.time_step = time_step
         self.human_time = 0
         self.robot_time = 0

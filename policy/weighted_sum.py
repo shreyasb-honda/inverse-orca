@@ -3,8 +3,7 @@ Implements a policy that computes the velocity as
 a weighted sum of goal directed velocity for the robot
 and the velocity output of the Inverse ORCA algorithm
 """
-
-from configparser import RawConfigParser
+import toml
 import numpy as np
 from policy.invorca import InverseOrca
 
@@ -18,9 +17,10 @@ class WeightedSum(InverseOrca):
         super().__init__(time_step)
         self.goal_weight = None
 
-    def configure(self, config: RawConfigParser):
+    def configure(self, config: str):
         super().configure(config)
-        self.goal_weight = config.getfloat('weighted_sum', 'goal_weight')
+        self.config['goal_weight'] = toml.load(config)['weighted_sum']['goal_weight']
+        self.goal_weight = self.config['goal_weight']
 
     def predict(self, observation):
         v_invorca =  np.array(super().predict(observation))

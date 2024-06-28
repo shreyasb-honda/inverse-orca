@@ -1,7 +1,7 @@
 """
 Defines the agent classes
 """
-from configparser import RawConfigParser
+import toml
 import numpy as np
 from numpy.linalg import norm
 from policy.orca import Orca
@@ -104,18 +104,19 @@ class Human(Agent):
                  time_step: float = 0.25, collision_responsibility: float = 1.0) -> None:
         super().__init__(radius, max_speed, preferred_speed, time_step)
         self.collision_responsibility = collision_responsibility
+        self.config = None
 
-    def configure(self, config: RawConfigParser):
+    def configure(self, config_file: str):
         """
         Configures the human agent according to the environment
         config file
         :param config - the environment configuration file (inverse_orca/sim/config/env.config)
         """
-
-        self.time_step = config.getfloat('env', 'time_step')
-        self.radius = config.getfloat('human', 'radius')
-        self.max_speed = config.getfloat('human', 'max_speed')
-        self.collision_responsibility = config.getfloat('human', 'collision_responsibility')
+        self.config = toml.load(config_file)
+        self.time_step = self.config['env']['time_step']
+        self.radius = self.config['human']['radius']
+        self.max_speed = self.config['human']['max_speed']
+        self.collision_responsibility = self.config['human']['collision_responsibility']
 
 
     def step(self, action, delta_t):
@@ -163,17 +164,19 @@ class Robot(Agent):
         self.aborted = None
         self.d_virtual_goal = None
         self.y_virtual_goal = None
-    
-    def configure(self, config: RawConfigParser):
+        self.config = None
+
+    def configure(self, config_file: str):
         """
         Configures this robot
         :param config - the environment configuration file (inverse_orca/sim/config/env.config)
         """
-        self.time_step = config.getfloat('env', 'time_step')
-        self.radius = config.getfloat('robot', 'radius')
-        self.max_speed = config.getfloat('robot', 'max_speed')
-        self.d_virtual_goal = config.getfloat('env', 'd_virtual_goal')
-        self.y_virtual_goal = config.getfloat('env', 'y_virtual_goal')
+        self.config = toml.load(config_file)
+        self.time_step = self.config['env']['time_step']
+        self.radius = self.config['robot']['radius']
+        self.max_speed = self.config['robot']['max_speed']
+        self.d_virtual_goal = self.config['env']['d_virtual_goal']
+        self.y_virtual_goal = self.config['env']['y_virtual_goal']
 
     def step(self, action, delta_t):
         self.px += action['robot vel'][0] * delta_t

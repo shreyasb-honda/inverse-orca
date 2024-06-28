@@ -1,11 +1,9 @@
 """
 A general runner code for running the simulation
 """
-
-import logging
 import os
-from configparser import RawConfigParser
 from argparse import ArgumentParser
+import toml
 from tqdm import tqdm
 import numpy as np
 import gymnasium as gym
@@ -16,11 +14,43 @@ from policy.invorca import InverseOrca
 from policy.social_force import SocialForce
 from policy.weighted_sum import WeightedSum
 from policy.utils.estimate_alpha import estimate_alpha
-logging.disable(logging.ERROR)
 
 
-def configure_human(policy_name: str, policy_config: RawConfigParser,
-                    env_config: RawConfigParser, time_horizon: float | None = None,
+class SimulationRunner:
+    """
+    A class for running the simulation with the supplied parameters
+    """
+
+    def __init__(self) -> None:
+        self.render_mode = 'human'
+        self.save_anim = True
+        self.num_runs = 1
+        self.alpha = None
+        self.vr_max = None
+        self.tau_robot = None
+        self.tau_human = None
+        self.out_fname = None
+        self.human_policy_str = 'orca'
+        self.robot_policy_str = 'inverse_orca'
+
+        # Configuration dictionaries
+        self.env_config = None
+        self.sim_config = None
+        self.policy_config = None
+
+    def configure_from_file(self, sim_config: str,
+                            env_config: str,
+                            policy_config: str):
+        """
+        Configures the simulation runner with the supplied parameters
+        """
+        self.env_config = toml.load(env_config)
+        self.sim_config = toml.load(sim_config)
+        self.policy_config = toml.load(policy_config)
+
+
+def configure_human(policy_name: str, policy_config: str,
+                    env_config: str, time_horizon: float | None = None,
                     alpha: float | None = None):
     """
     Configures the human agent for the environment
@@ -31,7 +61,7 @@ def configure_human(policy_name: str, policy_config: RawConfigParser,
     if policy_name == 'orca':
         human_policy = Orca(human.time_step)
         human_policy.configure(policy_config)
-        alpha = env_config.getfloat('human', 'collision_responsibility')
+        alpha = toml.load(env_config)['human']['collision_responsibility']
         human_policy.set_collision_responsiblity(alpha)
         if time_horizon is not None:
             human_policy.time_horizon = time_horizon
@@ -48,8 +78,8 @@ def configure_human(policy_name: str, policy_config: RawConfigParser,
     return human
 
 
-def configure_robot(policy_name: str, policy_config: RawConfigParser,
-                    env_config: RawConfigParser, time_horizon: float | None = None,
+def configure_robot(policy_name: str, policy_config: str,
+                    env_config: str, time_horizon: float | None = None,
                     max_speed: float | None = None):
     """
     Configures the robot agent for the environment
@@ -84,7 +114,7 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
             time_horizon_human: int | None = None,
             out_fname: str | None = None,
             human_policy_str: str = 'orca',
-            robot_policy_str: str = 'invorca'):
+            robot_policy_str: str = 'inverse_orca'):
     """
     A helper function to set up and run the simulation according to the desired parameters 
     supplied to it
@@ -92,13 +122,11 @@ def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 
 
 
     # Configure the environment
-    env_config = RawConfigParser()
-    env_config.read(os.path.join('.', 'sim', 'config', 'env.config'))
+    env_config = os.path.join('.', 'sim', 'config', 'env.toml')
     env = gym.make('HallwayScene-v0')
 
     # Policy config
-    policy_config = RawConfigParser()
-    policy_config.read(os.path.join('.', 'sim', 'config', 'policy.config'))
+    policy_config = os.path.join('.', 'sim', 'config', 'policy.toml')
 
     # Configure the human
     human = configure_human(human_policy_str, policy_config, env_config,

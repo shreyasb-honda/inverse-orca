@@ -2,7 +2,6 @@
 Base class for all policies
 """
 
-from configparser import RawConfigParser
 from gymnasium import Env
 
 class Policy:
@@ -16,11 +15,13 @@ class Policy:
         self.last_state = None
         self.time_step = time_step
         self.env = None
+        # The config dictionary
+        self.config = None
 
-    def configure(self, config: RawConfigParser):
+    def configure(self, config: str):
         """
-        Configures the parameters of the policy from a config file
-        :param config - the configuration for the policy
+        Configures the parameters of the policy from a toml file
+        :param config - the toml configuration filepath for the policy
         """
         raise NotImplementedError
 

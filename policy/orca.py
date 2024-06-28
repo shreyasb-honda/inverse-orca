@@ -1,7 +1,7 @@
 # TODO: currently we are assuming that the robot is agent 0 and the human is agent 1
 # TODO: the policy returns the action for agent 1
 
-from configparser import RawConfigParser
+import toml
 import rvo2
 from policy.policy import Policy
 
@@ -23,12 +23,13 @@ class Orca(Policy):
         self.sim = None
         self.collision_responsibility = None
 
-    def configure(self, config: RawConfigParser):
-        self.neighbor_dist = config.getfloat('orca', 'neighbor_dist')
-        self.max_neighbors = config.getint('orca', 'max_neighbors')
-        self.time_horizon = config.getfloat('orca', 'time_horizon')
-        self.time_horizon_obst = config.getfloat('orca', 'time_horizon_obst')
-        self.radius = config.getfloat('orca', 'radius')
+    def configure(self, config: str):
+        self.config = toml.load(config)['orca']
+        self.neighbor_dist = self.config['neighbor_dist']
+        self.max_neighbors = self.config['max_neighbors']
+        self.time_horizon = self.config['time_horizon']
+        self.time_horizon_obst = self.config['time_horizon_obst']
+        self.radius = self.config['radius']
 
     def set_max_speed(self, max_speed: float):
         """

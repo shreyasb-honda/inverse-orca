@@ -5,8 +5,8 @@ The Hallway Crossing environment, written as a child of gymnasium.Env
 
 import datetime
 import uuid
-from configparser import RawConfigParser
 from typing import Dict, Any
+import toml
 import gymnasium as gym
 from gymnasium import spaces
 import matplotlib.pyplot as plt
@@ -101,20 +101,20 @@ class HallwayScene(gym.Env):
         self.collision = False
         self.collision_frames = []
 
-    def configure(self, config: RawConfigParser, save_anim: bool,
+    def configure(self, config_file: str, save_anim: bool,
                   render_mode: str = "human"):
         """
         Configures the environment
         """
-        self.config = config
-        self.hallway_length = config.getfloat('env', 'hallway_length')
-        self.hallway_width = config.getfloat('env', 'hallway_width')
+        self.config = toml.load(config_file)['env']
+        self.hallway_length = self.config['hallway_length']
+        self.hallway_width = self.config['hallway_width']
         self.hallway_dimensions = {"length": self.hallway_length,
                                    "width": self.hallway_width}
-        self.time_step = config.getfloat('env', 'time_step')
-        self.time_limit = config.getfloat('env', 'time_limit')
-        self.d_virtual_goal = config.getfloat('env', 'd_virtual_goal')
-        self.y_virtual_goal = config.getfloat('env', 'y_virtual_goal')
+        self.time_step = self.config['time_step']
+        self.time_limit = self.config['time_limit']
+        self.d_virtual_goal = self.config['d_virtual_goal']
+        self.y_virtual_goal = self.config['y_virtual_goal']
 
         self.render_mode = render_mode
 

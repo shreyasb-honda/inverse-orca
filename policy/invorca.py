@@ -2,7 +2,7 @@
 The inverse ORCA policy
 """
 
-from configparser import RawConfigParser
+import toml
 import rvo2
 from policy.policy import Policy
 from policy.utils.get_velocity import OptimalInfluence
@@ -36,15 +36,16 @@ class InverseOrca(Policy):
         self.neighbor_dist = None
         self.orca_time_horizon_obst = None
 
-    def configure(self, config: RawConfigParser):
-        self.time_horizon = config.getfloat('invorca', 'time_horizon')
-        self.radius = config.getfloat('invorca', 'radius')
-        self.collision_responsibility = config.getfloat('invorca', 'collision_responsibility')
-        self.max_neighbors = config.getfloat('invorca', 'max_neighbors')
-        self.orca_time_horizon = config.getfloat('invorca', 'orca_time_horizon')
-        self.neighbor_dist = config.getfloat('invorca', 'neighbor_dist')
-        self.orca_time_horizon_obst = config.getfloat('invorca',
-                                                      'orca_time_horizon_obst')
+
+    def configure(self, config: str):
+        self.config = toml.load(config)['inverse_orca']
+        self.time_horizon = self.config['time_horizon']
+        self.radius = self.config['radius']
+        self.collision_responsibility = self.config['collision_responsibility']
+        self.max_neighbors = self.config['max_neighbors']
+        self.orca_time_horizon = self.config['orca_time_horizon']
+        self.neighbor_dist = self.config['neighbor_dist']
+        self.orca_time_horizon_obst = self.config['orca_time_horizon_obst']
 
     def set_max_speed(self, max_speed: float):
         """
