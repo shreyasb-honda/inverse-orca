@@ -1,5 +1,4 @@
 import logging
-from configparser import RawConfigParser
 import numpy as np
 import pysocialforce as psf
 from policy.policy import Policy
@@ -11,8 +10,12 @@ class SocialForce(Policy):
     Implements the social force based policy for the humans    
     """
 
-    def configure(self, config: RawConfigParser):
-        pass
+    def __init__(self, time_step: float = 0.25) -> None:
+        super().__init__(time_step)
+        self.config_file = None
+
+    def configure(self, config: str):
+        self.config_file = config
 
     def predict(self, observation):
         human_pos = observation['human pos']
@@ -35,7 +38,8 @@ class SocialForce(Policy):
         )
 
         s = psf.Simulator(
-            initial_state
+            initial_state,
+            config_file=self.config_file
         )
 
         s.step(1)

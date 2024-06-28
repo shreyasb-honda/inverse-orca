@@ -286,7 +286,6 @@ class VelocityObstacle:
         point1 = (x1, y1)
         point2 = (x2, y2)
 
-
         cross1 = chosen_normal[0] * y1 - chosen_normal[1] * x1
         cross2 = chosen_normal[0] * y2 - chosen_normal[0] * x2
 

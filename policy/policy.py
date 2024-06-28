@@ -15,6 +15,7 @@ class Policy:
         self.last_state = None
         self.time_step = time_step
         self.env = None
+
         # The config dictionary
         self.config = None
 

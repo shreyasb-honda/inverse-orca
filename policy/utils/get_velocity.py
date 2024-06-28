@@ -261,7 +261,7 @@ class OptimalInfluence:
 
         return self.vr, self.u
 
-    def compute_velocity(self, vA: Point, vA_d: Point):
+    def compute_velocity(self, vh: Point, vh_d: Point):
         """
         Implements the inverse ORCA algorithm
         Steps include:
@@ -271,20 +271,20 @@ class OptimalInfluence:
             4. Returning the optimal velocity for B to influence vA towards vA_d
         """
 
-        if norm(np.array(vA) - np.array(vA_d)) < self.epsilon:
-            print(vA, vA_d)
+        if norm(np.array(vh) - np.array(vh_d)) < self.epsilon:
+            print(vh, vh_d)
             return self.vr, self.u
 
-        self.vh = vA
-        self.vh_d = vA_d
+        self.vh = vh
+        self.vh_d = vh_d
 
-        self.velocity_circle = Circle(vA, self.vr_max)
+        self.velocity_circle = Circle(vh, self.vr_max)
         self.overlap = self.vo.overlap(self.velocity_circle)
         self.solution_exists = False
 
         if self.overlap:
             self.solution_exists = True
-            current_to_desired = tuple(np.array(vA_d) - np.array(vA))
+            current_to_desired = tuple(np.array(vh_d) - np.array(vh))
 
             # Angle with the left tangent's normal
             angle_left = get_angle(self.vo.left_tangent.normal, current_to_desired)
