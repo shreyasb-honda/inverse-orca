@@ -112,11 +112,12 @@ class ClosenessToGoal(PerformanceMetric):
         """
         human_pos = observation['human pos']
         dist = human_pos[1] - self.y_goal
-        self.min_dist = min(self.min_dist, dist)
-        if not self.reached and self.min_dist <= 0:
-            self.reached = True
-            self.min_dist = 0
-            self.x_coordinate_at_goal = human_pos[0]
+        if not self.reached:
+            self.min_dist = min(self.min_dist, dist)
+            if self.min_dist <= 0:
+                self.reached = True
+                self.min_dist = 0
+                self.x_coordinate_at_goal = human_pos[0]
 
     def get_metric(self):
         """

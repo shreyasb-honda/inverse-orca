@@ -57,29 +57,8 @@ class SimulationRunner:
         self.config_files['policy'] = policy_config
 
         # Load the configuration dictionaries at the file paths
-        for key in self.config_files:
-            self.config[key] = toml.load(self.config_files[key])
-
-    # def update_config(self, env_data: Dict | None = None,
-    #                   policy_data: Dict | None = None, sim_data: Dict | None = None):
-    #     """
-    #     Updates the configuration from a dictionary
-    #     :param env_data - the dict with newer config items for the environment
-    #     :param policy_data - the dict with newer config items for the policies
-    #     :param sim_data - the dict with newer config items for the sim settings
-
-    #     To use this, first read and store the configuration from the config files
-    #                  then update the necessary values in them and pass the updated
-    #                 dictionaries here
-    #     """
-    #     if env_data is not None:
-    #         self.config['env'] = env_data
-
-    #     if policy_data is not None:
-    #         self.config['policy'] = policy_data
-
-    #     if sim_data is not None:
-    #         self.config['sim'] = sim_data
+        for key, value in self.config_files.items():
+            self.config[key] = toml.load(value)
 
     def configure_human(self):
         """
@@ -214,164 +193,6 @@ class SimulationRunner:
             print(metric.name, metric.get_metric())
 
 
-def configure_human(policy_name: str, policy_config: str,
-                    env_config: str, time_horizon: float | None = None,
-                    alpha: float | None = None):
-    """
-    Configures the human agent for the environment
-    """
-    human = Human()
-    human.configure(env_config)
-    human_policy = None
-    if policy_name == 'orca':
-        human_policy = Orca(human.time_step)
-        human_policy.configure(policy_config)
-        alpha = toml.load(env_config)['human']['collision_responsibility']
-        human_policy.set_collision_responsiblity(alpha)
-        if time_horizon is not None:
-            human_policy.time_horizon = time_horizon
-        if alpha is not None:
-            human_policy.set_collision_responsiblity(alpha)
-
-    elif policy_name == 'social_force':
-        human_policy = SocialForce(human.time_step)
-        human_policy.configure(os.path.join('sim', 'config', 'policy.toml'))
-    else:
-        raise ValueError(f"Unknown human policy {policy_name}.",
-                          "Use one of 'orca' or 'social_force'.")
-
-    human.set_policy(human_policy)
-    return human
-
-
-def configure_robot(policy_name: str, policy_config: str,
-                    env_config: str, time_horizon: float | None = None,
-                    max_speed: float | None = None):
-    """
-    Configures the robot agent for the environment
-    """
-    robot = Robot()
-    robot.configure(env_config)
-    robot_policy = None
-    if policy_name == 'inverse_orca':
-        robot_policy = InverseOrca(robot.time_step)
-    elif policy_name == 'weighted_sum':
-        robot_policy = WeightedSum(robot.time_step)
-    else:
-        raise ValueError(f"Unknown policy {policy_name} for the robot.",
-                         "Use one of 'inverse_orca' or 'weighted_sum'.")
-
-    robot_policy.configure(policy_config)
-    if time_horizon is not None:
-        robot_policy.time_horizon = time_horizon
-        robot_policy.orca_time_horizon = time_horizon
-    if max_speed is not None:
-        robot_policy.max_speed = max_speed
-
-    robot_policy.set_virtual_goal_params(*robot.get_virtual_goal_params())
-    robot.set_policy(robot_policy)
-
-    return robot
-
-
-def run_sim(render_mode: str = 'human', save_anim: bool = True, num_runs: int = 1,
-            alpha: float | None = None, max_speed_robot: float | None = None,
-            time_horizon_robot: int | None = None,
-            time_horizon_human: int | None = None,
-            out_fname: str | None = None,
-            human_policy_str: str = 'orca',
-            robot_policy_str: str = 'inverse_orca'):
-    """
-    A helper function to set up and run the simulation according to the desired parameters 
-    supplied to it
-    """
-
-    # Configure the environment
-    env_config = os.path.join('.', 'sim', 'config', 'env.toml')
-
-    # Policy config
-    policy_config = os.path.join('.', 'sim', 'config', 'policy.toml')
-
-    # Configure the human
-    human = configure_human(human_policy_str, policy_config, env_config,
-                            time_horizon_human, alpha)
-
-    # Configure the robot
-    robot = configure_robot(robot_policy_str, policy_config, env_config,
-                            time_horizon_robot, max_speed_robot)
-
-    env = gym.make('HallwayScene-v0')
-    # Set these in the environment
-    env.unwrapped.set_human(human)
-    env.unwrapped.set_robot(robot)
-    env.unwrapped.configure(env_config, save_anim, render_mode)
-
-    if out_fname is not None:
-        env.unwrapped.set_output_filename(out_fname)
-
-    num_failed = 0
-    env.reset(seed=100)
-
-    # Configure the performance metrics
-    acceleration_metric_human = pm.CumulativeAcceleration(robot.time_step, 'human')
-    acceleration_metric_robot = pm.CumulativeAcceleration(robot.time_step, 'robot')
-    closest_dist_metric = pm.ClosestDistance()
-    closeness_to_goal_metric = pm.ClosenessToGoal(robot.y_virtual_goal)
-    time_to_reach_goal_metric = pm.TimeToReachGoal(robot.time_step, robot.gx, human.gx)
-    perf_metrics = [acceleration_metric_human, acceleration_metric_robot,
-                    closest_dist_metric, closeness_to_goal_metric,
-                    time_to_reach_goal_metric]
-
-    for _ in tqdm(range(num_runs)):
-        try:
-            obs, _ = env.reset()
-            robot.set_vh_desired(obs)
-            robot_action = robot.policy.predict(obs)
-            obs['robot vel'] = np.array(robot_action)
-            human_action = human.get_velocity()
-            for metric in perf_metrics:
-                metric.add(obs)
-
-            done = False
-            while not done:
-                action = {
-                    "robot vel": np.array(robot_action),
-                    "human vel": np.array(human_action)
-                }
-                obs, reward, terminated, truncated, _ = env.step(action)
-                done = terminated or truncated
-                robot.set_vh_desired(obs)
-                # obs["human vel"] = np.array([-1.0, 0.])
-                robot_action = robot.choose_action(obs)
-                obs['robot vel'] = np.array(robot_action)
-                for metric in perf_metrics:
-                    metric.add(obs)
-                # Update the observation to include the current velocity of the robot
-                human_action = human.choose_action(obs)
-
-                # Estimate the value of alpha
-                alpha_hat = estimate_alpha((-1.0, 0), human_action, 
-                                            robot.policy.invorca.vh_new,
-                                            robot.policy.collision_responsibility,
-                                            tuple(robot.policy.invorca.u))
-                # print(alpha_hat)
-
-            if env.unwrapped.collision:
-                print("Collision happened at frame(s)", env.unwrapped.collision_frames)
-
-            env.render()
-
-            for metric in perf_metrics:
-                print(metric.name, metric.get_metric())
-
-        except TypeError as err:
-            print("TypeError: ", err)
-            num_failed += 1
-            continue
-
-    return num_failed
-
-
 def main():
     """
     Just the main function to run the simulation
@@ -426,14 +247,6 @@ def main():
 
     sim_runner.setup_environment()
     sim_runner.run_sim()
-
-    # num_failed = run_sim(args.render_mode, args.no_save_anim, args.num_runs,
-    #                      time_horizon_robot=args.tau_robot,
-    #                      time_horizon_human=args.tau_human,
-    #                      human_policy_str=args.human_policy,
-    #                      robot_policy_str=args.robot_policy)
-
-    # print(f"(failed/total) = ({num_failed}/{args.num_runs})")
 
 if __name__ == "__main__":
     main()

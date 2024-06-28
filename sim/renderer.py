@@ -231,8 +231,8 @@ class Renderer:
 
     def debug_mode(self, fig: plt.Figure, anim_ax: plt.Axes, velocity_axis: plt.Axes,
                    vc: List[Circle], vo: List[VelocityObstacle],
-                   vA_d: List[Point], vB: List[Point], vA_new_expected: List[Point],
-                   vA_new_actual: List[Point], u: List[Point]):
+                   vh_d: List[Point], vr: List[Point], vh_expected: List[Point],
+                   vh_new: List[Point], u: List[Point]):
         """
         Running the renderer in debug mode
         Plots the positions of the agents, and the velocity-space diagram of ORCA
@@ -268,31 +268,31 @@ class Renderer:
             self.debug_vel_ax.scatter(vc[frame_id].center[0], vc[frame_id].center[1],
                                       color='red', s=9, label=r'$v_h$')
 
-            self.debug_vel_ax.scatter(vA_d[frame_id][0], vA_d[frame_id][1],
+            self.debug_vel_ax.scatter(vh_d[frame_id][0], vh_d[frame_id][1],
                                       color='tab:purple', label=r'$v_h^d$')
-            self.debug_vel_ax.scatter(vB[frame_id][0], vB[frame_id][1],
+            self.debug_vel_ax.scatter(vr[frame_id][0], vr[frame_id][1],
                                       color='tab:orange', label=r'$v_r$')
-            self.debug_vel_ax.scatter(vA_new_expected[frame_id][0], vA_new_expected[frame_id][1],
+            self.debug_vel_ax.scatter(vh_expected[frame_id][0], vh_expected[frame_id][1],
                                       color='black', alpha=0.7, 
                                       label=r'$\hat{v}_h^{new}$', marker='*')
-            self.debug_vel_ax.scatter(vA_new_actual[frame_id][0], vA_new_actual[frame_id][1],
+            self.debug_vel_ax.scatter(vh_new[frame_id][0], vh_new[frame_id][1],
                                       color='tab:blue', alpha=0.7, label=r'$v_h^{new}$', marker='^')
 
             # Add the preferred velocity of the human
             self.debug_vel_ax.scatter([-1.], [0.], color='red', marker='*', label=r'$v_h^{pref}$')
 
             # Add the relative velocity
-            relvel = np.array(vc[frame_id].center) - np.array(vB[frame_id])
+            relvel = np.array(vc[frame_id].center) - np.array(vr[frame_id])
             self.debug_vel_ax.scatter(relvel[0], relvel[1],
                                       color='green', marker='o', label='relvel')
 
             # Add the relative velocity with the preferred velocity
-            self.debug_vel_ax.scatter([-1.0 - vB[frame_id][0]], [-vB[frame_id][1]],
+            self.debug_vel_ax.scatter([-1.0 - vr[frame_id][0]], [-vr[frame_id][1]],
                                       color='magenta', marker='+', label='relvelpref')
 
             # Add u
             if u[frame_id] is not None:
-                u_ = np.array(vc[frame_id].center) - np.array(vB[frame_id]) + np.array(u[frame_id])
+                u_ = np.array(vc[frame_id].center) - np.array(vr[frame_id]) + np.array(u[frame_id])
                 self.debug_vel_ax.scatter(u_[0], u_[1],
                                           color='blue', marker='s', label=r'$u$')
 
@@ -306,13 +306,13 @@ class Renderer:
         vc[frame_id].plot(self.debug_vel_ax)
         vo[frame_id].plot(self.debug_vel_ax)
 
-        self.debug_vel_ax.scatter(vA_d[frame_id][0], vA_d[frame_id][1],
+        self.debug_vel_ax.scatter(vh_d[frame_id][0], vh_d[frame_id][1],
                                   color='tab:purple', label=r'$v_h^d$')
-        self.debug_vel_ax.scatter(vB[frame_id][0], vB[frame_id][1],
+        self.debug_vel_ax.scatter(vr[frame_id][0], vr[frame_id][1],
                                   color='tab:orange', label=r'$v_r$')
-        self.debug_vel_ax.scatter(vA_new_expected[frame_id][0], vA_new_expected[frame_id][1],
+        self.debug_vel_ax.scatter(vh_expected[frame_id][0], vh_expected[frame_id][1],
                                   color='black', alpha=0.7, label=r'$\hat{v}_h^{new}$', marker='*')
-        self.debug_vel_ax.scatter(vA_new_actual[frame_id][0], vA_new_actual[frame_id][1],
+        self.debug_vel_ax.scatter(vh_new[frame_id][0], vh_new[frame_id][1],
                                   color='tab:blue', alpha=0.9, label=r'$v_h^{new}$', marker='^')
         self.debug_vel_ax.legend(loc='center left', bbox_to_anchor=(1.05, 0.5))
 
