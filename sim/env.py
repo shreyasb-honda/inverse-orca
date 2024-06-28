@@ -102,7 +102,7 @@ class HallwayScene(gym.Env):
         self.collision_frames = []
 
     def configure(self, config_file: str, save_anim: bool,
-                  render_mode: str = "human"):
+                  render_mode: str | None = "human"):
         """
         Configures the environment
         """
@@ -216,6 +216,10 @@ class HallwayScene(gym.Env):
         self.filename = fname
 
     def render(self):
+
+        if self.render_mode is None:
+            return
+
         if self.goal_frame is None:
             self.goal_frame = len(self.observations)
 

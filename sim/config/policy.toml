@@ -38,7 +38,7 @@ goal_threshold = 0.0
 relaxation_time = 0.5
 
 [social_force]
-factor = 25.1
+factor = 5.1
 # Moussaid-Helbing 2009
 # relative importance of position vs velocity vector
 lambda_importance = 2.0

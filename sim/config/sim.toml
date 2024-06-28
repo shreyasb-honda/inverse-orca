@@ -1,3 +1,9 @@
 title = "Configuration file for simulation settings"
 
-[sim_settings]
+# Simumlation settings
+num_runs = 1
+save_anim = true
+render_mode = 'human'
+robot_policy = 'inverse_orca'
+human_policy = 'orca'
+out_fname = 'temp'
