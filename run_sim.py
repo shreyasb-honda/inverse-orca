@@ -71,11 +71,11 @@ class SimulationRunner:
         Configures the human agent for the environment
         """
         human = Human()
-        human.configure(self.config_files['env'])
+        human.configure(self.config['env'])
         human_policy = None
         if self.config['sim']['human_policy'] == 'orca':
             human_policy = Orca(human.time_step)
-            human_policy.configure(self.config_files['policy'])
+            human_policy.configure(self.config['policy'])
             alpha = self.config['env']['human']['collision_responsibility']
             human_policy.set_collision_responsiblity(alpha)
 
@@ -94,7 +94,7 @@ class SimulationRunner:
         Configures the robot agent for the environment
         """
         robot = Robot()
-        robot.configure(self.config_files['env'])
+        robot.configure(self.config['env'])
         robot_policy = None
         if self.config['sim']['robot_policy'] == 'inverse_orca':
             robot_policy = InverseOrca(robot.time_step)
@@ -104,7 +104,7 @@ class SimulationRunner:
             raise ValueError(f"Unknown policy {self.config['sim']['robot_policy']} for the robot.",
                             "Use one of 'inverse_orca' or 'weighted_sum'.")
 
-        robot_policy.configure(self.config_files['policy'])
+        robot_policy.configure(self.config['policy'])
         robot_policy.set_virtual_goal_params(*robot.get_virtual_goal_params())
         robot.set_policy(robot_policy)
         self.robot = robot
@@ -125,7 +125,7 @@ class SimulationRunner:
         # Set these in the environment
         env.unwrapped.set_human(self.human)
         env.unwrapped.set_robot(self.robot)
-        env.unwrapped.configure(self.config_files['env'],
+        env.unwrapped.configure(self.config['env'],
                                 self.config['sim']['save_anim'],
                                 self.config['sim']['render_mode'])
         self.env = env
@@ -149,6 +149,9 @@ class SimulationRunner:
             toml.dump(self.config['sim'], f)
 
     def save_perf_metrics(self, experiment_directory: str, run_name: str):
+        """
+        Saves the performance metrics to file
+        """
         data_directory = os.path.join(experiment_directory, run_name)
         if not os.path.exists(data_directory):
             os.makedirs(data_directory)

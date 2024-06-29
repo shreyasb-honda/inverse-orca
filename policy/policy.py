@@ -2,6 +2,7 @@
 Base class for all policies
 """
 
+from typing import Dict
 from gymnasium import Env
 
 class Policy:
@@ -19,7 +20,7 @@ class Policy:
         # The config dictionary
         self.config = None
 
-    def configure(self, config: str):
+    def configure(self, config: Dict):
         """
         Configures the parameters of the policy from a toml file
         :param config - the toml configuration filepath for the policy

@@ -1,7 +1,7 @@
 # TODO: currently we are assuming that the robot is agent 0 and the human is agent 1
 # TODO: the policy returns the action for agent 1
 
-import toml
+from typing import Dict
 import rvo2
 from policy.policy import Policy
 
@@ -23,8 +23,8 @@ class Orca(Policy):
         self.sim = None
         self.collision_responsibility = None
 
-    def configure(self, config: str):
-        self.config = toml.load(config)['orca']
+    def configure(self, config: Dict):
+        self.config = config['orca']
         self.neighbor_dist = self.config['neighbor_dist']
         self.max_neighbors = self.config['max_neighbors']
         self.time_horizon = self.config['time_horizon']

@@ -2,7 +2,7 @@
 The inverse ORCA policy
 """
 
-import toml
+from typing import Dict
 import rvo2
 from policy.policy import Policy
 from policy.utils.get_velocity import OptimalInfluence
@@ -37,8 +37,8 @@ class InverseOrca(Policy):
         self.orca_time_horizon_obst = None
 
 
-    def configure(self, config: str):
-        self.config = toml.load(config)['inverse_orca']
+    def configure(self, config: Dict):
+        self.config = config['inverse_orca']
         self.time_horizon = self.config['time_horizon']
         self.radius = self.config['radius']
         self.collision_responsibility = self.config['collision_responsibility']

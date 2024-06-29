@@ -1,7 +1,7 @@
 """
 Defines the agent classes
 """
-import toml
+from typing import Dict
 import numpy as np
 from numpy.linalg import norm
 from policy.orca import Orca
@@ -101,23 +101,22 @@ class Human(Agent):
     """
 
     def __init__(self, radius: float = 0.3, max_speed: float = 1, preferred_speed: float = 1,
-                 time_step: float = 0.25, collision_responsibility: float = 1.0) -> None:
+                 time_step: float = 0.25) -> None:
         super().__init__(radius, max_speed, preferred_speed, time_step)
-        self.collision_responsibility = collision_responsibility
+        self.collision_responsibility = None
         self.config = None
 
-    def configure(self, config_file: str):
+    def configure(self, config: Dict):
         """
         Configures the human agent according to the environment
         config file
         :param config - the environment configuration file (inverse_orca/sim/config/env.config)
         """
-        self.config = toml.load(config_file)
+        self.config = config
         self.time_step = self.config['env']['time_step']
         self.radius = self.config['human']['radius']
         self.max_speed = self.config['human']['max_speed']
         self.collision_responsibility = self.config['human']['collision_responsibility']
-
 
     def step(self, action, delta_t):
         self.px += action['human vel'][0] * delta_t
@@ -166,12 +165,12 @@ class Robot(Agent):
         self.y_virtual_goal = None
         self.config = None
 
-    def configure(self, config_file: str):
+    def configure(self, config: Dict):
         """
         Configures this robot
         :param config - the environment configuration file (inverse_orca/sim/config/env.config)
         """
-        self.config = toml.load(config_file)
+        self.config = config
         self.time_step = self.config['env']['time_step']
         self.radius = self.config['robot']['radius']
         self.max_speed = self.config['robot']['max_speed']

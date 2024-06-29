@@ -6,7 +6,6 @@ The Hallway Crossing environment, written as a child of gymnasium.Env
 import datetime
 import uuid
 from typing import Dict, Any
-import toml
 import gymnasium as gym
 from gymnasium import spaces
 import matplotlib.pyplot as plt
@@ -101,12 +100,12 @@ class HallwayScene(gym.Env):
         self.collision = False
         self.collision_frames = []
 
-    def configure(self, config_file: str, save_anim: bool,
+    def configure(self, config: Dict, save_anim: bool,
                   render_mode: str | None = "human"):
         """
         Configures the environment
         """
-        self.config = toml.load(config_file)['env']
+        self.config = config['env']
         self.hallway_length = self.config['hallway_length']
         self.hallway_width = self.config['hallway_width']
         self.hallway_dimensions = {"length": self.hallway_length,
