@@ -272,6 +272,8 @@ class SimulationRunner:
 
             obs['robot vel'] = np.array(robot_action)
             for metric in self.perf_metrics:
+                # TODO: Check whether the goal has been reached. 
+                #       Only add an observation when the goal has not been reached
                 metric.add(obs)
             # Update the observation to include the current velocity of the robot
             human_action = self.human.choose_action(obs)

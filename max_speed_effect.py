@@ -15,7 +15,7 @@ def main():
     env_config = os.path.join(config_directory, 'env.toml')
     sim_config = os.path.join(config_directory, 'sim.toml')
     policy_config = os.path.join(config_directory, 'policy.toml')
-    max_speeds = [0.1, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+    max_speeds = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0, 1.5, 2.0, 2.5, 3.0]
 
     for max_speed in max_speeds:
         print("Max speed:", max_speed)
