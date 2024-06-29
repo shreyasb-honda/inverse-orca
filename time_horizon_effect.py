@@ -2,26 +2,33 @@
 Runs the code to check the effect of differing planning horizon
 for the robot and the human
 """
-from run_sim import run_sim
+import os
+from run_sim import SimulationRunner
 
 
 def main():
+    """
+    Just the main function
+    """
 
-    alpha = 1.0
-    render_mode = "human"
-    max_speed = 1.0
+    # Config files
+    config_directory = os.path.join('sim', 'config')
+    env_config = os.path.join(config_directory, 'env.toml')
+    sim_config = os.path.join(config_directory, 'sim.toml')
+    policy_config = os.path.join(config_directory, 'policy.toml')
+    time_horizons = [i+1 for i in range(10)]
 
-    robot_horizons = list(range(2, 9))
-    human_horizon = 6
-
-    for robot_horizon in robot_horizons:
-        run_sim(render_mode, alpha=alpha,
-                max_speed_robot=max_speed,
-                time_horizon_robot=robot_horizon,
-                time_horizon_human=human_horizon,
-                out_fname=f'robot-time-horizon-{robot_horizon}',
-                human_policy_str='socialforce')
-
+    for tau in time_horizons:
+        print("Robot Tau:", tau)
+        sim_runner = SimulationRunner()
+        # configure the simulation runner
+        sim_runner.configure_from_file(sim_config=sim_config,
+                                       env_config=env_config,
+                                       policy_config=policy_config)
+        sim_runner.config['sim']['render_mode'] = None
+        sim_runner.config['policy']['inverse_orca']['time_horizon'] = tau
+        sim_runner.setup_environment()
+        sim_runner.run_sim()
 
 if __name__ == "__main__":
     main()
