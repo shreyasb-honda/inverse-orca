@@ -9,7 +9,6 @@ def main():
     """
     Just the main function
     """
-    sim_runner = SimulationRunner()
 
     # Config files
     config_directory = os.path.join('sim', 'config')
@@ -17,12 +16,7 @@ def main():
     sim_config = os.path.join(config_directory, 'sim.toml')
     policy_config = os.path.join(config_directory, 'policy.toml')
 
-    # configure the simulation runner
-    sim_runner.configure_from_file(sim_config=sim_config,
-                                   env_config=env_config,
-                                   policy_config=policy_config)
-
-    alpha_start = 0.0
+    alpha_start = 0.1
     alpha_end = 1.0
     alpha_step = 0.1
     num_alphas = int((alpha_end - alpha_start) / alpha_step + 1)
@@ -30,10 +24,15 @@ def main():
 
     for alpha in alphas:
         print("Alpha", alpha)
+        sim_runner = SimulationRunner()
+        # configure the simulation runner
+        sim_runner.configure_from_file(sim_config=sim_config,
+                                       env_config=env_config,
+                                       policy_config=policy_config)
+        sim_runner.config['sim']['render_mode'] = None
         sim_runner.config['env']['human']['collision_responsibility'] = alpha
         sim_runner.setup_environment()
         sim_runner.run_sim()
-
 
 if __name__ == "__main__":
     main()

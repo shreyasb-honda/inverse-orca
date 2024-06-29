@@ -272,7 +272,6 @@ class OptimalInfluence:
         """
 
         if norm(np.array(vh) - np.array(vh_d)) < self.epsilon:
-            print(vh, vh_d)
             return self.vr, self.u
 
         self.vh = vh

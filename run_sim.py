@@ -2,8 +2,10 @@
 A general runner code for running the simulation
 """
 import os
-from typing import Dict
+import datetime
+import uuid
 from argparse import ArgumentParser
+import pickle
 import toml
 from tqdm import tqdm
 import numpy as np
@@ -14,7 +16,7 @@ from policy.orca import Orca
 from policy.invorca import InverseOrca
 from policy.social_force import SocialForce
 from policy.weighted_sum import WeightedSum
-from policy.utils.estimate_alpha import estimate_alpha
+# from policy.utils.estimate_alpha import estimate_alpha
 
 
 class SimulationRunner:
@@ -43,6 +45,10 @@ class SimulationRunner:
 
         # Performance metrics
         self.perf_metrics = None
+        self.metric_values = None
+        self.metrics_avg = None
+        self.metrics_std = None
+        self.metrics_overall = None
 
     def configure_from_file(self, sim_config: str,
                             env_config: str,
@@ -128,12 +134,96 @@ class SimulationRunner:
             env.unwrapped.set_output_filename(self.config['sim']['out_fname'])
         self.env.reset(seed=seed)
 
+    def save_configs(self, experiment_directory: str):
+        """
+        Save the configuration file for the experiment
+        """
+        if not os.path.exists(experiment_directory):
+            os.makedirs(experiment_directory)
+        # Save the configurations (once per set of runs)
+        with open(os.path.join(experiment_directory, 'env.toml'), 'w', encoding='utf-8') as f:
+            toml.dump(self.config['env'], f)
+        with open(os.path.join(experiment_directory, 'policy.toml'), 'w', encoding='utf-8') as f:
+            toml.dump(self.config['policy'], f)
+        with open(os.path.join(experiment_directory, 'sim.toml'), 'w', encoding='utf-8') as f:
+            toml.dump(self.config['sim'], f)
+
+    def save_perf_metrics(self, experiment_directory: str, run_name: str):
+        data_directory = os.path.join(experiment_directory, run_name)
+        if not os.path.exists(data_directory):
+            os.makedirs(data_directory)
+        # Save the observations
+        with open(os.path.join(data_directory, 'obs.pkl'), 'wb') as f:
+            pickle.dump(self.env.unwrapped.observations, f)
+        # Save the performance metrics
+        for metric in self.perf_metrics:
+            name = metric.name
+            value = metric.get_metric()
+            if self.metric_values is None:
+                self.metric_values = {name: [value]}
+            elif name not in self.metric_values:
+                self.metric_values[name] = [value]
+            else:
+                self.metric_values[name].append(value)
+        with open(os.path.join(data_directory, 'perf.pkl'), 'wb') as f:
+            current_metrics = {}
+            for key, val in self.metric_values.items():
+                current_metrics[key] = val[-1]
+            pickle.dump(current_metrics, f)
+
     def run_sim(self):
         """
         Runs the sim multiple times
         """
-        for _ in range(self.config['sim']['num_runs']):
+        save_data = self.config['sim']['save_data']
+        if save_data:
+            ts = datetime.datetime.now().strftime("%m-%d %H-%M-%S")
+            experiment_directory = os.path.join('data', ts)
+            self.save_configs(experiment_directory)
+
+        for _ in tqdm(range(self.config['sim']['num_runs'])):
             self.run_sim_once()
+            if save_data:
+                run_name = uuid.uuid4().hex
+                self.save_perf_metrics(experiment_directory, run_name)
+
+        if save_data:
+            self.generate_performance_summary(self.config['sim']['print_summary'])
+            self.metrics_overall = {"mean": self.metrics_avg, "std": self.metrics_std}
+            with open(os.path.join(experiment_directory, 'perf_summary.pkl'), 'wb') as f:
+                pickle.dump(self.metrics_overall, f)
+
+    def generate_performance_summary(self, _print=True):
+        """
+        Generates the summary of the performance metrics over multiple simulation runs
+        """
+        self.metrics_avg = {}
+        self.metrics_std = {}
+        for key, val in self.metric_values.items():
+            if key == 'Closeness to goal':
+                metrics_array = np.array(val, dtype=float)
+                self.metrics_avg['Minimum y_dist'] = np.average(metrics_array[:, 0])
+                self.metrics_avg['x-coordinate at goal'] = np.nanmean(metrics_array[:, 1])
+                self.metrics_avg['Virtual goal reached'] = np.average(metrics_array[:, 2])
+
+                self.metrics_std['Minimum y_dist'] = np.std(metrics_array[:, 0])
+                self.metrics_std['x-coordinate at goal'] = np.nanstd(metrics_array[:, 1])
+                self.metrics_std['Virtual goal reached'] = np.std(metrics_array[:, 2])
+            elif key == 'Time to reach goal':
+                metrics_array = np.array(val, dtype=float)
+                self.metrics_avg['Time to goal human'] = np.average(metrics_array[:, 0])
+                self.metrics_avg['Time to goal robot'] = np.average(metrics_array[:, 1])
+
+                self.metrics_std['Time to goal human'] = np.std(metrics_array[:, 0])
+                self.metrics_std['Time to goal robot'] = np.std(metrics_array[:, 1])
+            else:
+                self.metrics_avg[key] = np.average(val)
+                self.metrics_std[key] = np.std(val)
+
+        if _print:
+            print("Metrics:")
+            for key, val in self.metrics_avg.items():
+                print(f"{key:<20}: Average {val:.3f}, Std {self.metrics_std[key]: .3f}")
 
     def run_sim_once(self):
         """
@@ -171,6 +261,12 @@ class SimulationRunner:
             self.robot.set_vh_desired(obs)
             # obs["human vel"] = np.array([-1.0, 0.])
             robot_action = self.robot.choose_action(obs)
+
+            # This seems to happen when the desired 
+            # velocity has been achieved by the human
+            if robot_action is None:                     
+                robot_action = tuple(action['robot vel'])
+
             obs['robot vel'] = np.array(robot_action)
             for metric in self.perf_metrics:
                 metric.add(obs)
@@ -178,19 +274,18 @@ class SimulationRunner:
             human_action = self.human.choose_action(obs)
 
             # Estimate the value of alpha
-            alpha_hat = estimate_alpha((-1.0, 0), human_action,
-                                        self.robot.policy.invorca.vh_new,
-                                        self.robot.policy.collision_responsibility,
-                                        tuple(self.robot.policy.invorca.u))
-            # print(alpha_hat)
+            # alpha_hat = estimate_alpha((-1.0, 0), human_action,
+            #                             self.robot.policy.invorca.vh_new,
+            #                             self.robot.policy.collision_responsibility,
+            #                             tuple(self.robot.policy.invorca.u))
 
         if self.env.unwrapped.collision:
             print("Collision happened at frame(s)", self.env.unwrapped.collision_frames)
 
         self.env.render()
 
-        for metric in self.perf_metrics:
-            print(metric.name, metric.get_metric())
+        # for metric in self.perf_metrics:
+        #     print(metric.name, metric.get_metric())
 
 
 def main():

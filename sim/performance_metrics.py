@@ -33,7 +33,7 @@ class CumulativeAcceleration(PerformanceMetric):
 
     def __init__(self, time_step: float = 0.25,
                  agent: str = 'human') -> None:
-        super().__init__('Cumulative Acceleration')
+        super().__init__(f'Cumulative Acceleration {agent}')
         self.agent = agent
         self.time_step = time_step
         self.cumulative_acc = 0
