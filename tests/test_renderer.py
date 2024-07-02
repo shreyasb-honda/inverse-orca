@@ -1,7 +1,15 @@
+
+"""
+A test for the environment renderer class
+"""
+
 import matplotlib.pyplot as plt
 from sim.renderer import Renderer
 
 def test():
+    """
+    A test case for the renderer
+    """
     fig, ax = plt.subplots(layout='tight', figsize=(9, 6))
     ax.set_aspect('equal')
 
@@ -32,13 +40,8 @@ def test():
             "human pos": (human_pos_x, human_pos_y)
         }
         observations.append(observation)
-    
+
     renderer.set_observations(observations, goal_frame=30)
-    renderer.set_goal_params(0.2 * hallway_dimensions['length'], 
+    renderer.set_goal_params(0.2 * hallway_dimensions['length'],
                               0.3 * hallway_dimensions['width'])
     renderer.animate(fig, ax)
-
-
-def test_debug_mode():
-    # Tests the debug mode
-    pass

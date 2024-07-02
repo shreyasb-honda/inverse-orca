@@ -1,3 +1,6 @@
+"""
+Tests the side detection between a point and a vector
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from policy.utils.overlap_detection import Tangent

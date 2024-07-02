@@ -22,8 +22,8 @@ COLLISION_RESPONSIBILITY = 0.5
 HOME = expanduser('~')
 OUT_DIRECTORY = os.path.join(HOME, 'OneDrive', 'Documents', 'Notes', 'Plots', 'influence-testing')
 
-def test(relative_position: Point, vA: Point, vA_d: Point, 
-         collision_responsibility: float = 0.5):
+def test(relative_position: Point, v_a: Point, v_a_d: Point, 
+         alpha: float = 0.5):
     """
     Generates and plots the optimal velocity for the robot to influence the human's velocity
         1. If there is a solution, compute and plot it
@@ -35,9 +35,9 @@ def test(relative_position: Point, vA: Point, vA_d: Point,
     cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     cutoff_circle = Circle(cutoff_center, cutoff_radius)
     vo = VelocityObstacle(cutoff_circle)
-    invorca = OptimalInfluence(vo, vr_max=VB_MAX, epsilon=EPSILON, 
-                               collision_responsibility=collision_responsibility)
-    invorca.compute_velocity(vA, vA_d)
+    invorca = OptimalInfluence(vo, vr_max=VB_MAX, epsilon=EPSILON,
+                               collision_responsibility=alpha)
+    invorca.compute_velocity(v_a, v_a_d)
 
     fig, ax = plt.subplots(layout='tight', figsize=(9,9))
     ax.set_aspect('equal')
@@ -48,16 +48,16 @@ def test(relative_position: Point, vA: Point, vA_d: Point,
     ax = vo.plot(ax)
 
     # Plot the relative velocity circle
-    velocity_circle = Circle(vA, VB_MAX)
+    velocity_circle = Circle(v_a, VB_MAX)
     ax = velocity_circle.plot(ax)
 
     # Plot the desired velocity for A
-    ax.scatter(vA_d[0], vA_d[1], color='tab:purple', label='vA_d')
+    ax.scatter(v_a_d[0], v_a_d[1], color='tab:purple', label='vA_d')
 
     # If solution exists, plot vB, vAB, vA_new
     # If solution does not exist, plot vB, vAB (vA_new = vA)
     ax.scatter(invorca.vr[0], invorca.vr[1], color='lime', label='vB')
-    ax.scatter(vA[0] - invorca.vr[0], vA[1] - invorca.vr[1], color='tab:orange', label='vAB')
+    ax.scatter(v_a[0] - invorca.vr[0], v_a[1] - invorca.vr[1], color='tab:orange', label='vAB')
 
     if invorca.solution_exists:
         ax.scatter(invorca.vh_new[0], invorca.vh_new[1], color='teal', label='vA_new')
@@ -80,9 +80,9 @@ def no_overlap_1():
     # Constants
     relative_position = (1., 1.)
     # No overlap - in third quadrant. Therefore, the u selected should be directed cutoff circle
-    vA = (-1.2, -0.0)
-    vA_d = (-0.6, -0.7)
-    ax = test(relative_position, vA, vA_d)
+    v_a = (-1.2, -0.0)
+    v_a_d = (-0.6, -0.7)
+    ax = test(relative_position, v_a, v_a_d)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'no_overlap_1.png'))
 
     return ax
@@ -97,10 +97,11 @@ def no_overlap_2():
 
     # Constants
     relative_position = (-1., 1.)
-    # No overlap - in third quadrant. Therefore, the u selected should be directed towards the origin
-    vA = (-3.5, 0.0)
-    vA_d = (0., 0.)    
-    ax = test(relative_position, vA, vA_d)
+    # No overlap - in third quadrant.
+    # Therefore, the u selected should be directed towards the origin
+    v_a = (-3.5, 0.)
+    v_a_d = (0., 0.)
+    ax = test(relative_position, v_a, v_a_d)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'no_overlap_2.png'))
 
     return ax
@@ -116,9 +117,9 @@ def no_overlap_3():
     # Constants
     relative_position = (1., -1.)
     # No overlap
-    vA = (-0.5, -2.5)
-    vA_d = (0., 0.)
-    ax = test(relative_position, vA, vA_d)
+    v_a = (-0.5, -2.5)
+    v_a_d = (0., 0.)
+    ax = test(relative_position, v_a, v_a_d)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'no_overlap_3.png'))
 
     return ax
@@ -132,10 +133,10 @@ def overlap_with_solution_1():
 
     # Constants
     relative_position = (-1., -1.)
-    vA = (0.1, 0.2)
-    vA_d = (0.3, 0.4)  # Possible to get there completely
+    v_a = (0.1, 0.2)
+    v_a_d = (0.3, 0.4)  # Possible to get there completely
     # vA_d = (0.8, 0.9)  # Not possible to get there in one step
-    ax = test(relative_position, vA, vA_d, COLLISION_RESPONSIBILITY)
+    ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_with_solution_1.png'))
 
     return ax
@@ -149,16 +150,16 @@ def overlap_with_solution_2():
 
     # Constants
     relative_position = (-1., 1.)
-    vA = (-2.3, 0.5)    
-    cutoff_center = tuple(np.array(relative_position) / TAU)
-    cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
-    cutoff_circle = Circle(cutoff_center, cutoff_radius)
-    vo = VelocityObstacle(cutoff_circle)
-    left_normal = np.array(vo.left_tangent.normal)
-    vA_d = (-2.5, 0.3)  # Not along the normal
+    v_a = (-2.3, 0.5)
+    # cutoff_center = tuple(np.array(relative_position) / TAU)
+    # cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
+    # cutoff_circle = Circle(cutoff_center, cutoff_radius)
+    # vo = VelocityObstacle(cutoff_circle)
+    # left_normal = np.array(vo.left_tangent.normal)
+    v_a_d = (-2.5, 0.3)  # Not along the normal
     # vA_d = np.array(vA) - 0.3 * left_normal  # Along the normal
 
-    ax = test(relative_position, vA, vA_d, COLLISION_RESPONSIBILITY)
+    ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_with_solution_2.png'))
 
     return ax
@@ -172,17 +173,16 @@ def overlap_with_solution_3():
 
     # Constants
     relative_position = (1., 1.)
-    collision_responsibility = 0.8
-    vA = (2.3, 0.5)    
-    cutoff_center = tuple(np.array(relative_position) / TAU)
-    cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
-    cutoff_circle = Circle(cutoff_center, cutoff_radius)
-    vo = VelocityObstacle(cutoff_circle)
-    right_normal = np.array(vo.right_tangent.normal)
-    vA_d = (2.5, 0.3)  # Not along the normal
+    v_a = (2.3, 0.5)
+    # cutoff_center = tuple(np.array(relative_position) / TAU)
+    # cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
+    # cutoff_circle = Circle(cutoff_center, cutoff_radius)
+    # vo = VelocityObstacle(cutoff_circle)
+    # right_normal = np.array(vo.right_tangent.normal)
+    v_a_d = (2.5, 0.3)  # Not along the normal
     # vA_d = np.array(vA) + 0.3 * right_normal  # Along the normal
 
-    ax = test(relative_position, vA, vA_d, COLLISION_RESPONSIBILITY)
+    ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_with_solution_3.png'))
 
     return ax
@@ -196,16 +196,16 @@ def overlap_without_solution_1():
 
     # Constants
     relative_position = (1., 1.)
-    vA = (2.3, -0.1)
-    cutoff_center = tuple(np.array(relative_position) / TAU)
-    cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
-    cutoff_circle = Circle(cutoff_center, cutoff_radius)
-    vo = VelocityObstacle(cutoff_circle)
-    right_normal = np.array(vo.right_tangent.normal)
-    vA_d = (2.5, -0.5)  # Not along the normal
+    v_a = (2.3, -0.1)
+    # cutoff_center = tuple(np.array(relative_position) / TAU)
+    # cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
+    # cutoff_circle = Circle(cutoff_center, cutoff_radius)
+    # vo = VelocityObstacle(cutoff_circle)
+    # right_normal = np.array(vo.right_tangent.normal)
+    v_a_d = (2.5, -0.5)  # Not along the normal
     # vA_d = np.array(vA) + 0.3 * right_normal  # Along the normal
 
-    ax = test(relative_position, vA, vA_d, COLLISION_RESPONSIBILITY)
+    ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_without_solution_1.png'))
 
     return ax
@@ -219,16 +219,15 @@ def overlap_without_solution_2():
 
     # Constants
     relative_position = (1., 1.)
-    vA = (0., 1.5)
-    
+    v_a = (0., 1.5)
     cutoff_center = tuple(np.array(relative_position) / TAU)
     cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     cutoff_circle = Circle(cutoff_center, cutoff_radius)
     vo = VelocityObstacle(cutoff_circle)
-    right_normal = np.array(vo.right_tangent.normal)
-    vA_d = (-0.5, 1.9)  # Not along the normal
+    # right_normal = np.array(vo.right_tangent.normal)
+    v_a_d = (-0.5, 1.9)  # Not along the normal
     # vA_d = np.array(vA) + 0.3 * right_normal  # Along the normal
-    ax = test(relative_position, vA, vA_d, COLLISION_RESPONSIBILITY)
+    ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_without_solution_2.png'))
 
     return ax

@@ -1,3 +1,7 @@
+"""
+Tests the intersection point detection between two lines
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from policy.utils.overlap_detection import Tangent

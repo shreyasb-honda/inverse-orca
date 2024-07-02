@@ -231,6 +231,11 @@ def different_pref_velocity_1():
 
 
 def test_random(num_runs: int = 100, seed: int | None = None):
+    """
+    Generates and tests a random test case
+    Not currently working as expected since it is difficult to ensure that
+    a random test case has a solution
+    """
     rng = np.random.default_rng(seed=seed)
     num_failures = 0
     i = 0
@@ -239,14 +244,15 @@ def test_random(num_runs: int = 100, seed: int | None = None):
         # something in the interval of [-5, 5] x [-5, 5]
         relative_position = 10 * rng.random(2) - 5
         while np.linalg.norm(relative_position) < RADIUS_A + RADIUS_B + 0.5:
-            relative_position = 10 * rng.random(2) - 5   # To ensure that there is no collision to begin with
-        
+            relative_position = 10 * rng.random(2) - 5   
+            # To ensure that there is no collision to begin with
+
         # something in the interval of [-1, 1] x [-1, 1]
-        vA = 2 * rng.random(2) - 1
-        vA /= np.linalg.norm(vA)    # normalize it
+        v_a = 2 * rng.random(2) - 1
+        v_a /= np.linalg.norm(v_a)    # normalize it
 
         # Convert to tuples
-        vA = tuple(vA)
+        v_a = tuple(v_a)
 
         # something in [0, 1.0)
         collision_responsibility = rng.random()
@@ -259,33 +265,35 @@ def test_random(num_runs: int = 100, seed: int | None = None):
         vo = VelocityObstacle(cutoff_circle)
         invorca = OptimalInfluence(vo, vr_max=VB_MAX, epsilon=EPSILON,
                                    collision_responsibility=collision_responsibility)
-        
-        dot1 = abs(np.dot(vA, invorca.vo.right_tangent.normal))
-        dot2 = abs(np.dot(vA, invorca.vo.left_tangent.normal))
+
+        dot1 = abs(np.dot(v_a, invorca.vo.right_tangent.normal))
+        dot2 = abs(np.dot(v_a, invorca.vo.left_tangent.normal))
         if dot1 < dot2:
-            vA_d = vA + 0.4 * rng.random(2) * np.array(invorca.vo.right_tangent.normal)
+            va_d = v_a + 0.4 * rng.random(2) * np.array(invorca.vo.right_tangent.normal)
         else:
-            vA_d = vA + 0.4 * rng.random(2) * np.array(invorca.vo.left_tangent.normal)
+            va_d = v_a + 0.4 * rng.random(2) * np.array(invorca.vo.left_tangent.normal)
 
-        vA_d = tuple(vA_d)
+        va_d = tuple(va_d)
 
-        vB, _ = invorca.compute_velocity(vA, vA_d)
-        if vB is None:
+        v_b, _ = invorca.compute_velocity(v_a, va_d)
+        if v_b is None:
             i -= 1
             continue
 
         params = (20., 10, time_horizon, 2.0)
-        sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX, collisionResponsibility=collision_responsibility)
-        sim.addAgent(tuple(relative_position), *params, RADIUS_B, VB_MAX, invorca.vr, collision_responsibility)
+        sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX, 
+                                  collisionResponsibility=collision_responsibility)
+        sim.addAgent(tuple(relative_position), *params, RADIUS_B, VB_MAX, invorca.vr, 
+                     collision_responsibility)
         sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vh, collision_responsibility)
 
         sim.setAgentPrefVelocity(0, invorca.vr)
         sim.setAgentPrefVelocity(1, invorca.vh)
         sim.doStep()
-        vA_new_official = sim.getAgentVelocity(1)
-        vA_new_ours = invorca.vh_new
+        v_a_new_official = sim.getAgentVelocity(1)
+        v_a_new_ours = invorca.vh_new
 
-        diff = np.array(vA_new_official) - np.array(vA_new_ours)
+        diff = np.array(v_a_new_official) - np.array(v_a_new_ours)
         if np.linalg.norm(diff) > 1e-3:
             num_failures += 1
 

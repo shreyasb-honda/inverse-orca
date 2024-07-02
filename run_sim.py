@@ -265,14 +265,14 @@ class SimulationRunner:
             # obs["human vel"] = np.array([-1.0, 0.])
             robot_action = self.robot.choose_action(obs)
 
-            # This seems to happen when the desired 
+            # This seems to happen when the desired
             # velocity has been achieved by the human
-            if robot_action is None:                     
+            if robot_action is None:
                 robot_action = tuple(action['robot vel'])
 
             obs['robot vel'] = np.array(robot_action)
             for metric in self.perf_metrics:
-                # TODO: Check whether the goal has been reached. 
+                # TODO: Check whether the goal has been reached.
                 #       Only add an observation when the goal has not been reached
                 metric.add(obs)
             # Update the observation to include the current velocity of the robot
@@ -288,9 +288,6 @@ class SimulationRunner:
             print("Collision happened at frame(s)", self.env.unwrapped.collision_frames)
 
         self.env.render()
-
-        # for metric in self.perf_metrics:
-        #     print(metric.name, metric.get_metric())
 
 
 def main():

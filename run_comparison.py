@@ -4,9 +4,14 @@ from tests.compare_official import *
 
 
 def main():
+    """
+    The main function that runs the comparison between 
+    our implementation and the official implementation of ORCA
+    """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test-num', type=int, help='Index of the test to run 0-2 (default: 0)', default=0)
+    parser.add_argument('--test-num', type=int, 
+                        help='Index of the test to run 0-2 (default: 0)', default=0)
 
     args = parser.parse_args()
 
