@@ -302,7 +302,7 @@ class VelocityObstacle:
         if cross2 > 0:
             return abs(np.dot(chosen_normal, point2))
 
-        print("Both intersection points are to the right of the normal. Impossibe case...")
-        print("Both intersection points are to the right of the normal. Impossibe case...")
-        print('Returning dmax = 0')
+        # print("Both intersection points are to the right of the normal. Impossibe case...")
+        # print("Both intersection points are to the right of the normal. Impossibe case...")
+        # print('Returning dmax = 0')
         return 0

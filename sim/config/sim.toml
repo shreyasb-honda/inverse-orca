@@ -1,7 +1,7 @@
 title = "Configuration file for simulation settings"
 
 # Simumlation settings
-num_runs = 500
+num_runs = 200
 save_anim = false
 render_mode = 'static'
 robot_policy = 'inverse_orca'

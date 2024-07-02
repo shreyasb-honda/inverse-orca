@@ -39,6 +39,13 @@ class CumulativeAcceleration(PerformanceMetric):
         self.cumulative_acc = 0
         self.velocities = None
         self.accelerations = None
+        self.done = False
+
+    def agent_done(self, done):
+        """
+        Sets whether the agent has reached their goal
+        """
+        self.done = done
 
     def add(self, observation):
         """
@@ -51,7 +58,8 @@ class CumulativeAcceleration(PerformanceMetric):
         if self.velocities is None:
             self.velocities = [vel]
             self.accelerations = []
-        else:
+        elif not self.done:
+            # Only accumulate acceleration if the agent has not reached its goal
             acc = (vel - self.velocities[-1]) / self.time_step
             self.accelerations.append(acc)
             self.cumulative_acc += np.linalg.norm(acc)

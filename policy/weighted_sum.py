@@ -19,13 +19,15 @@ class WeightedSum(InverseOrca):
 
     def configure(self, config: Dict):
         super().configure(config)
-        self.goal_weight = self.config['weighted_sum']['goal_weight']
+        self.goal_weight = config['weighted_sum']['goal_weight']
 
     def predict(self, observation):
-        v_invorca =  np.array(super().predict(observation))
+        v_invorca =  super().predict(observation)
         v_goal_directed = np.array([self.max_speed, 0.])
+        v_sum = v_goal_directed
 
-        v_sum = v_invorca + self.goal_weight * v_goal_directed
+        if v_invorca is not None:
+            v_sum = np.array(v_invorca) + self.goal_weight * v_goal_directed
         if np.linalg.norm(v_sum) > self.max_speed:
             v_sum = v_sum / np.linalg.norm(v_sum) * self.max_speed
 

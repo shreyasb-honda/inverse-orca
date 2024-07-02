@@ -254,6 +254,9 @@ class OptimalInfluence:
         elif angle_right < 0 and angle_left < 0:
             # print("Getting closer to the cutoff circle")
             self.handle_getting_closer_to_cutoff_circle()
+        else:  # This condition should not happen
+            # TODO: Currently just setting it to the max goal-directed speed
+            self.u = -np.array([self.vr_max, 0])
 
         self.vr = -self.u
         self.vr = tuple(self.vr)

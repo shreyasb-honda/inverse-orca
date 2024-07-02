@@ -139,16 +139,16 @@ class HallwayScene(gym.Env):
                                  self.time_step)
         self.renderer.set_goal_params(self.d_virtual_goal, self.y_virtual_goal)
 
-        # Set the box for human start positions        
-        low = np.array([self.hallway_length * 0.95, self.hallway_width * 0.4 + self.human.radius])
-        high = np.array([self.hallway_length * 0.99 - self.human.radius,
-                         self.hallway_width * 0.7 - self.human.radius])
+        # Set the box for human start positions
+        radius = self.human.radius
+        low = np.array([self.hallway_length - 5 * radius, self.hallway_width * 0.4])
+        high = np.array([self.hallway_length - radius, self.hallway_width * 0.7])
         self.human_start_box = spaces.Box(low=low, high=high)
 
         # Set the box for robot start positions
-        low = np.array([self.hallway_length * 0.05 + self.robot.radius,
-                        self.hallway_width * 0.6 + self.robot.radius])
-        high = np.array([self.hallway_length * 0.1, self.hallway_width * 0.9 - self.robot.radius])
+        radius = self.robot.radius
+        low = np.array([self.robot.radius, self.hallway_width * 0.6])
+        high = np.array([5 * radius, self.hallway_width - radius])
         self.robot_start_box = spaces.Box(low=low, high=high)
 
         self.render_mode = render_mode

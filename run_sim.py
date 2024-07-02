@@ -148,16 +148,18 @@ class SimulationRunner:
         with open(os.path.join(experiment_directory, 'sim.toml'), 'w', encoding='utf-8') as f:
             toml.dump(self.config['sim'], f)
 
-    def save_perf_metrics(self, experiment_directory: str, run_name: str):
+    def add_perf_metrics(self, save: bool, experiment_directory: str, run_name: str):
         """
-        Saves the performance metrics to file
+        Adds the performance metrics to a list
+        Saves the list to file if saving si enabled
         """
-        data_directory = os.path.join(experiment_directory, run_name)
-        if not os.path.exists(data_directory):
-            os.makedirs(data_directory)
-        # Save the observations
-        with open(os.path.join(data_directory, 'obs.pkl'), 'wb') as f:
-            pickle.dump(self.env.unwrapped.observations, f)
+        if save:
+            data_directory = os.path.join(experiment_directory, run_name)
+            if not os.path.exists(data_directory):
+                os.makedirs(data_directory)
+            # Save the observations
+            with open(os.path.join(data_directory, 'obs.pkl'), 'wb') as f:
+                pickle.dump(self.env.unwrapped.observations, f)
         # Save the performance metrics
         for metric in self.perf_metrics:
             name = metric.name
@@ -168,17 +170,20 @@ class SimulationRunner:
                 self.metric_values[name] = [value]
             else:
                 self.metric_values[name].append(value)
-        with open(os.path.join(data_directory, 'perf.pkl'), 'wb') as f:
-            current_metrics = {}
-            for key, val in self.metric_values.items():
-                current_metrics[key] = val[-1]
-            pickle.dump(current_metrics, f)
+        if save:
+            with open(os.path.join(data_directory, 'perf.pkl'), 'wb') as f:
+                current_metrics = {}
+                for key, val in self.metric_values.items():
+                    current_metrics[key] = val[-1]
+                pickle.dump(current_metrics, f)
 
     def run_sim(self):
         """
         Runs the sim multiple times
         """
         save_data = self.config['sim']['save_data']
+        experiment_directory = None
+        run_name = None
         if save_data:
             ts = datetime.datetime.now().strftime("%m-%d %H-%M-%S")
             experiment_directory = os.path.join('data', ts)
@@ -188,10 +193,11 @@ class SimulationRunner:
             self.run_sim_once()
             if save_data:
                 run_name = uuid.uuid4().hex
-                self.save_perf_metrics(experiment_directory, run_name)
 
+            self.add_perf_metrics(save_data, experiment_directory, run_name)
+
+        self.generate_performance_summary(self.config['sim']['print_summary'])
         if save_data:
-            self.generate_performance_summary(self.config['sim']['print_summary'])
             self.metrics_overall = {"mean": self.metrics_avg, "std": self.metrics_std}
             with open(os.path.join(experiment_directory, 'perf_summary.pkl'), 'wb') as f:
                 pickle.dump(self.metrics_overall, f)
@@ -250,6 +256,9 @@ class SimulationRunner:
         robot_action = self.robot.policy.predict(obs)
         obs['robot vel'] = np.array(robot_action)
         human_action = self.human.get_velocity()
+        acceleration_metric_human.agent_done(self.human.reached_goal())
+        acceleration_metric_robot.agent_done(self.robot.reached_goal())
+
         for metric in self.perf_metrics:
             metric.add(obs)
 
@@ -271,9 +280,9 @@ class SimulationRunner:
                 robot_action = tuple(action['robot vel'])
 
             obs['robot vel'] = np.array(robot_action)
+            acceleration_metric_human.agent_done(self.human.reached_goal())
+            acceleration_metric_robot.agent_done(self.robot.reached_goal())
             for metric in self.perf_metrics:
-                # TODO: Check whether the goal has been reached.
-                #       Only add an observation when the goal has not been reached
                 metric.add(obs)
             # Update the observation to include the current velocity of the robot
             human_action = self.human.choose_action(obs)

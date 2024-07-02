@@ -46,6 +46,10 @@ class SocialForce(Policy):
         states, _ = s.get_states()
 
         vel = np.array([states[1, 0, 2], states[1, 0, 3]])
-        vel /= np.linalg.norm(vel)
+        if vel[0] == np.nan or vel[1] == np.nan:
+            vel = np.zeros_like(vel)
+
+        if np.linalg.norm(vel) > 0:
+            vel /= np.linalg.norm(vel)
 
         return tuple(vel)
