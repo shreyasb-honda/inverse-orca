@@ -1,6 +1,7 @@
 .VSCodeCounter/
 media/
 data/
+sheets/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
