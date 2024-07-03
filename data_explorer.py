@@ -149,7 +149,7 @@ class DataReader:
                 val2_s = f"{perf_summary['std'][key]:.3f}"
                 print(f"{key:<35}: Average {val_s:<10} Std {val2_s:<10}")
 
-    def plot_random_trajectory(self, indep_var_val):
+    def plot_random_trajectory(self, indep_var_val, mode='static'):
         """
         Plots a random trajectory for the given value
         of the independent variable
@@ -194,7 +194,10 @@ class DataReader:
         renderer.set_observations(observations, goal_frame)
         fig, ax = plt.subplots(figsize=(9, 6))
         ax.set_aspect('equal')
-        renderer.static_plot(fig, ax)
+        if mode == 'static':
+            return renderer.static_plot(fig, ax)
+        elif mode == 'human':
+            return renderer.animate(fig, ax)
 
     def get_goal_frame(self, observations, env_config):
         """
@@ -217,13 +220,16 @@ def main():
     # indep_var = 'alpha'
     # indep_val = 1.0
     indep_var = 'max_speed'
-    indep_val = 1.0
+    indep_val = 1.5
     # indep_var = 'time_horizon'
     # indep_val = 10
     # weight = None
-    weight = 0.2
+    weight = 0.5
     parent_dir = os.path.join('data',
                               f'human-{policy_combination[0]}-robot-{policy_combination[1]}')
+
+    # render_mode = 'static'
+    render_mode = 'human'
     if weight is not None:
         parent_dir = os.path.join(parent_dir, f'weight-{weight:.1f}')
 
@@ -232,7 +238,7 @@ def main():
     data_explorer = DataReader(parent_dir=parent_dir, indep_var=indep_var)
     data_explorer.read_data()
     # data_explorer.plot(policy_combination, weight)
-    data_explorer.plot_random_trajectory(indep_val)
+    out = data_explorer.plot_random_trajectory(indep_val, render_mode)
     plt.show()
 
 
