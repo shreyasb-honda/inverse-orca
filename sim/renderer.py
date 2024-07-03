@@ -174,6 +174,20 @@ class Renderer:
         human_pos_array = np.array(self.human_positions)
         robot_pos_array = np.array(self.robot_positions)
 
+        human_rad = self.observations[0]['human rad']
+        robot_rad = self.observations[0]['robot rad']
+        human_goal_frame = np.nonzero(human_pos_array - human_rad <= 0)[0]
+        if len(human_goal_frame) == 0:
+            human_goal_frame = self.num_frames - 1
+        else:
+            human_goal_frame = human_goal_frame[0]
+        condition = robot_pos_array + robot_rad >= self.hallway_dimensions['length']
+        robot_goal_frame = np.nonzero(condition)[0]
+        if len(robot_goal_frame) == 0:
+            robot_goal_frame = self.num_frames - 1
+        else:
+            robot_goal_frame = robot_goal_frame[0]
+
         self.ax.plot(human_pos_array[:, 0], human_pos_array[:, 1],
                      c=self.human_params['color'], ls='-.', lw=2)
         self.ax.plot(robot_pos_array[:, 0], robot_pos_array[:, 1],
@@ -210,8 +224,8 @@ class Renderer:
         ax.add_patch(self.human_circ)
 
         obs = self.observations[-1]
-        self.ax.annotate(f'{self.num_frames-1}', tuple(obs['robot pos']), ha='center')
-        self.ax.annotate(f'{self.num_frames-1}', tuple(obs['human pos']), ha='center')
+        self.ax.annotate(f'{robot_goal_frame}', tuple(obs['robot pos']), ha='center')
+        self.ax.annotate(f'{human_goal_frame}', tuple(obs['human pos']), ha='center')
 
         return fig, ax
 
@@ -267,7 +281,6 @@ class Renderer:
             vo[frame_id].plot(self.debug_vel_ax)
             self.debug_vel_ax.scatter(vc[frame_id].center[0], vc[frame_id].center[1],
                                       color='red', s=9, label=r'$v_h$')
-
             self.debug_vel_ax.scatter(vh_d[frame_id][0], vh_d[frame_id][1],
                                       color='tab:purple', label=r'$v_h^d$')
             self.debug_vel_ax.scatter(vr[frame_id][0], vr[frame_id][1],
