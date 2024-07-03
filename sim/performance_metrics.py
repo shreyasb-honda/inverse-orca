@@ -174,3 +174,34 @@ class TimeToReachGoal(PerformanceMetric):
         Returns the time taken by the agents to reach their goals
         """
         return self.human_time, self.robot_time
+
+
+class PathEfficiency(PerformanceMetric):
+    """
+    Computes the ratio between the actual path length to 
+    the optimal path length (straight line distance between the 
+    initial position and goal)
+    """
+    def __init__(self, agent: str, hallway_length: float) -> None:
+        super().__init__(f'Path efficiency {agent}')
+        self.dist_covered = 0
+        self.last_pos = None
+        self.agent = agent
+        self.opt_dist = None
+        self.hallway_length = hallway_length
+
+    def add(self, observation):
+        agent_pos = observation[f'{self.agent} pos']
+        if self.last_pos is None:
+            key = f'{self.agent} rad'
+            self.last_pos = agent_pos
+            if self.agent == 'human':
+                self.opt_dist = self.last_pos[0] - observation[key]
+            elif self.agent == 'robot':
+                self.opt_dist = self.hallway_length - self.last_pos[0] - observation[key]
+
+        self.dist_covered += np.linalg.norm(agent_pos - self.last_pos)
+        self.last_pos = agent_pos
+
+    def get_metric(self):
+        return self.dist_covered / self.opt_dist

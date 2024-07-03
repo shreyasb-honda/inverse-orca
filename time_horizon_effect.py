@@ -58,17 +58,17 @@ def main():
     policy_config = os.path.join(config_directory, 'policy.toml')
 
     # Only change the robot's planning time horizon
-    # time_horizons = [i+1 for i in range(10)]
-    # only_robot(time_horizons, env_config, sim_config, policy_config)
+    time_horizons = [i+1 for i in range(10)]
+    only_robot(time_horizons, env_config, sim_config, policy_config)
 
     # Change the robot's and the human's planning time horizons
-    time_horizons = {'human': [], 'robot': []}
-    tau_list = [2*(i+1) for i in range(7)]
-    for tau in tau_list:
-        time_horizons['human'].append(tau)
-        time_horizons['robot'].append(tau)
+    # time_horizons = {'human': [], 'robot': []}
+    # tau_list = [2*(i+1) for i in range(7)]
+    # for tau in tau_list:
+    #     time_horizons['human'].append(tau)
+    #     time_horizons['robot'].append(tau)
 
-    robot_and_human(time_horizons, env_config, sim_config, policy_config)
+    # robot_and_human(time_horizons, env_config, sim_config, policy_config)
 
 
 if __name__ == "__main__":

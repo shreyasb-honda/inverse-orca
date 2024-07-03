@@ -73,41 +73,68 @@ class DataReader:
 
         return fig, ax
 
-    def plot(self):
+    def plot(self, policy_comb=None, weight=None):
         """
         Plots the summary for a set of experiments
         """
+        save_dir = os.path.join('media', 'effect-plots',
+                                f'human-{policy_comb[0]}-robot-{policy_comb[1]}')
+        if weight is not None:
+            save_dir = os.path.join(save_dir, f"weight-{weight:.1f}")
+
+        save_dir = os.path.join(save_dir, f"{self.indep_var}_effect")
+
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
         fig, ax = self.__plot('Cumulative Acceleration human')
         ax.set_ylabel(r'Acceleration $(/s^2)$')
         fig.tight_layout()
+        filename = os.path.join(save_dir, 'human-acc.png')
+        plt.savefig(filename)
 
         fig, ax = self.__plot('Cumulative Acceleration robot')
         ax.set_ylabel(r'Acceleration $(/s^2)$')
         fig.tight_layout()
+        filename = os.path.join(save_dir, 'robot-acc.png')
+        plt.savefig(filename)
 
         fig, ax = self.__plot('Closest Distance')
         ax.set_ylabel('Distance')
         fig.tight_layout()
+        filename = os.path.join(save_dir, 'closest-distance.png')
+        plt.savefig(filename)
 
         fig, ax = self.__plot('Minimum y_dist')
         ax.set_ylabel('Distance')
         fig.tight_layout()
+        filename = os.path.join(save_dir, 'min-y-distance.png')
+        plt.savefig(filename)
 
         fig, ax = self.__plot('x-coordinate at goal')
         ax.set_ylabel('x-coordinate')
         fig.tight_layout()
+        filename = os.path.join(save_dir, 'x-coord-at-goal.png')
+        plt.savefig(filename)
+
 
         fig, ax = self.__plot('Virtual goal reached')
         ax.set_ylabel('ratio')
         fig.tight_layout()
+        filename = os.path.join(save_dir, 'ratio-virtual-goal-reached.png')
+        plt.savefig(filename)
 
         fig, ax = self.__plot('Time to goal human')
         ax.set_ylabel(r'$s$')
         fig.tight_layout()
+        filename = os.path.join(save_dir, 'time-to-goal-human.png')
+        plt.savefig(filename)
 
         fig, ax = self.__plot('Time to goal robot')
         ax.set_ylabel(r'$s$')
         fig.tight_layout()
+        filename = os.path.join(save_dir, 'time-to-goal-robot.png')
+        plt.savefig(filename)
 
         plt.show()
 
@@ -186,18 +213,23 @@ def main():
     """
     The main function
     """
-    policy_combination = ['orca', 'weighted']
-    indep_var = 'alpha'
+    policy_combination = ['sf', 'weighted']
+    # indep_var = 'alpha'
+    # indep_var = 'max_speed'
+    indep_var = 'time_horizon'
+    # weight = None
+    weight = 0.8
     parent_dir = os.path.join('data',
-                              f'human-{policy_combination[0]}-robot-{policy_combination[1]}',
-                              'weight-0.2',
-                              f'{indep_var}_effect')
+                              f'human-{policy_combination[0]}-robot-{policy_combination[1]}')
+    if weight is not None:
+        parent_dir = os.path.join(parent_dir, f'weight-{weight:.1f}')
+
+    parent_dir = os.path.join(parent_dir, f'{indep_var}_effect')
 
     data_explorer = DataReader(parent_dir=parent_dir, indep_var=indep_var)
-
     data_explorer.read_data()
-    # data_explorer.plot()
-    data_explorer.plot_random_trajectory(0.5)
+    data_explorer.plot(policy_combination, weight)
+    # data_explorer.plot_random_trajectory(0.5)
     plt.show()
 
 
