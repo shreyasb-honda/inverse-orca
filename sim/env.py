@@ -143,13 +143,13 @@ class HallwayScene(gym.Env):
         radius = self.human.radius
         low = np.array([self.hallway_length - 5 * radius, self.hallway_width * 0.4])
         high = np.array([self.hallway_length - radius, self.hallway_width * 0.7])
-        self.human_start_box = spaces.Box(low=low, high=high)
+        self.create_agent_start_box('human', low, high)
 
         # Set the box for robot start positions
         radius = self.robot.radius
         low = np.array([self.robot.radius, self.hallway_width * 0.6])
         high = np.array([5 * radius, self.hallway_width - radius])
-        self.robot_start_box = spaces.Box(low=low, high=high)
+        self.create_agent_start_box('robot', low, high)
 
         self.render_mode = render_mode
 
@@ -159,6 +159,17 @@ class HallwayScene(gym.Env):
         :param robot - the robot
         """
         self.robot = robot
+
+    def create_agent_start_box(self, agent: str, low: np.ndarray, high: np.ndarray):
+        """
+        Creates a start box for randomly generating the starting position of 
+        an agent
+        """
+        if agent == 'human':
+            self.human_start_box = spaces.Box(low=low, high=high)
+        elif agent == 'robot':
+            self.robot_start_box = spaces.Box(low=low, high=high)
+
 
     def set_human(self, human: Human):
         """
@@ -310,3 +321,71 @@ class HallwayScene(gym.Env):
         self.renderer.set_goal_params(self.d_virtual_goal, self.y_virtual_goal)
 
         return obs, {}
+
+
+class Overtaking(HallwayScene):
+    """
+    The human and the robot start at the same end of the hallway and have to move 
+    towards the other end. The robot wants the human to move downwards. 
+    """
+
+    def __get_obs(self):
+        obs = {
+            "robot pos": np.array(self.robot.get_position(), dtype=float),
+            "robot vel": np.array(self.robot.get_velocity(), dtype=float),
+            "robot rad": np.array([self.robot.get_radius()], dtype=float),
+            "human pos": np.array(self.human.get_position(), dtype=float),
+            "human vel": np.array(self.human.get_velocity(),  dtype=float),
+            "human rad": np.array([self.human.get_radius()], dtype=float)
+        }
+
+        return obs
+
+    def reset(self, seed: int | None = None, options: Dict[str, Any] | None = None):
+        super().reset(seed=seed, options=options)
+
+        # Reset the goal position
+        self.human.set_goal(0, self.hallway_width / 2)
+        self.robot.set_goal(0, self.hallway_width / 2)
+
+        # Reset the position of human
+        human_pos = self.human_start_box.sample()
+        self.human.set_position(human_pos[0], human_pos[1])
+        # self.human.set_position(self.hallway_length * 0.98, 2.5) # Debugging
+
+        # Reset the position of the robot
+        robot_pos = self.robot_start_box.sample()
+        self.robot.set_position(robot_pos[0], robot_pos[1])
+        # self.robot.set_position(self.hallway_length * 0.02, 3.0)
+
+        # Set the preferred velocity of the human and the robot
+        self.human.set_preferred_velocity()
+        self.robot.set_preferred_velocity()
+
+        self.global_time = 0
+        self.observations = []
+
+        obs = self.__get_obs()
+        self.observations.append(obs)
+        self.frame_count = 0
+        self.goal_frame = None
+        self.goal_frame_set = False
+
+        self.renderer = Renderer(self.hallway_dimensions,
+                                 self.robot_draw_params, self.human_draw_params,
+                                 self.time_step)
+        self.renderer.set_goal_params(self.d_virtual_goal, self.y_virtual_goal)
+
+        return obs, {}
+
+    def configure(self, config: Dict, save_anim: bool, render_mode: str | None = "human"):
+        super().configure(config, save_anim, render_mode)
+
+        radius = self.human.radius
+        low = np.array([self.hallway_length - 5 * radius, self.hallway_width * 0.4])
+        high = np.array([self.hallway_length - radius, self.hallway_width * 0.7])
+        self.create_agent_start_box('human', low, high)
+
+        low[1] += self.hallway_width * 0.2
+        high[1] += self.hallway_width * 0.2
+        self.create_agent_start_box('robot', low, high)

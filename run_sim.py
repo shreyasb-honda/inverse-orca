@@ -121,7 +121,11 @@ class SimulationRunner:
         self.configure_robot()
 
         # Configure the environment
-        env = gym.make('HallwayScene-v0')
+        if self.config['env']['env']['type'] == 'passing':
+            env = gym.make('HallwayScene-v0')
+        elif self.config['env']['env']['type'] == 'overtaking':
+            env = gym.make('OvertakingScene-v0')
+
         # Set these in the environment
         env.unwrapped.set_human(self.human)
         env.unwrapped.set_robot(self.robot)
