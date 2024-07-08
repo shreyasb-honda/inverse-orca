@@ -256,6 +256,7 @@ class OptimalInfluence:
             self.handle_getting_closer_to_cutoff_circle()
         else:  # This condition should not happen
             # TODO: Currently just setting it to the max goal-directed speed
+            # print("Here?!")
             self.u = -np.array([self.vr_max, 0])
 
         self.vr = -self.u

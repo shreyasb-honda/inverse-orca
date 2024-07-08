@@ -249,4 +249,4 @@ class Robot(Agent):
         """
         Returns true if the robot has reached its own goal
         """
-        return self.px + self.radius > self.gx
+        return self.px + self.radius <= self.gx

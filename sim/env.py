@@ -386,6 +386,8 @@ class Overtaking(HallwayScene):
         high = np.array([self.hallway_length - radius, self.hallway_width * 0.7])
         self.create_agent_start_box('human', low, high)
 
+        low[0] -= self.hallway_length * 0.1
+        high[0] -= self.hallway_length * 0.1
         low[1] += self.hallway_width * 0.2
         high[1] += self.hallway_width * 0.2
         self.create_agent_start_box('robot', low, high)

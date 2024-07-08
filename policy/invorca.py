@@ -80,6 +80,7 @@ class InverseOrca(Policy):
         robot_radius = observation['robot rad']
 
         if self.stopping_criterion(observation):
+            # print("ORCA started...")
             params = (self.neighbor_dist, self.max_neighbors, 
                       self.orca_time_horizon, self.orca_time_horizon_obst)
 
@@ -99,7 +100,7 @@ class InverseOrca(Policy):
                           collisionResponsibility=self.collision_responsibility)
 
             # Set the preferred velocity of the robot to be goal-directed maximum
-            self.sim.setAgentPrefVelocity(0, (self.max_speed, 0.))
+            self.sim.setAgentPrefVelocity(0, (-self.max_speed, 0.))
 
             # Set the preferred velocity of the human to be their current velocity
             self.sim.setAgentPrefVelocity(1, human_vel)
@@ -120,7 +121,6 @@ class InverseOrca(Policy):
 
         self.invorca = OptimalInfluence(self.vo, vr_max=self.max_speed,
                                         collision_responsibility=self.collision_responsibility)
-
         self.robot_vel, self.u = self.invorca.compute_velocity(human_vel, self.desired_velocity)
 
         return self.robot_vel
@@ -135,7 +135,8 @@ class InverseOrca(Policy):
         human_pos = observation['human pos']
 
         goal_reached = human_pos[1] <= self.y_virtual_goal
-        crossed_human = robot_pos[0] >= human_pos[0] - self.d_virtual_goal
+        # crossed_human = robot_pos[0] >= human_pos[0] - self.d_virtual_goal
+        crossed_human = False
 
         if goal_reached or crossed_human:
             return True

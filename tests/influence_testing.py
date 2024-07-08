@@ -231,3 +231,17 @@ def overlap_without_solution_2():
     plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_without_solution_2.png'))
 
     return ax
+
+def same_goal_direction():
+    """
+    The case where the robot and the human have the same goal direction
+    The robot still wants to push the human towards the lower half of the 
+    hallway
+    """
+    relative_position = (-1.0, 1.0)
+    v_a = (-1.0, 0)
+    v_a_d = (-0.4, -0.8)
+    ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
+    plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_with_solution_1.png'))
+
+    return ax

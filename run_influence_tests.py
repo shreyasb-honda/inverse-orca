@@ -20,6 +20,8 @@ def main(test_num: int):
         overlap_without_solution_1()
     elif test_num == 7:
         overlap_without_solution_2()
+    elif test_num == 8:
+        same_goal_direction()
 
 
 if __name__ == "__main__":
