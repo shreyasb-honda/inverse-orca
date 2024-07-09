@@ -1,6 +1,7 @@
 .VSCodeCounter/
 media/
 data/
+data-backup/
 sheets/
 
 # Byte-compiled / optimized / DLL files
