@@ -3,6 +3,7 @@ The inverse ORCA policy
 """
 
 from typing import Dict
+import numpy as np
 import rvo2
 from policy.policy import Policy
 from policy.utils.get_velocity import OptimalInfluence
@@ -70,7 +71,7 @@ class InverseOrca(Policy):
         """
         self.desired_velocity = velocity
 
-    def predict(self, observation):
+    def predict(self, observation, direction: int = 1):
         robot_pos = observation['robot pos']
         human_pos = observation['human pos']
         human_vel = tuple(observation['human vel'])
@@ -100,7 +101,7 @@ class InverseOrca(Policy):
                           collisionResponsibility=self.collision_responsibility)
 
             # Set the preferred velocity of the robot to be goal-directed maximum
-            self.sim.setAgentPrefVelocity(0, (-self.max_speed, 0.))
+            self.sim.setAgentPrefVelocity(0, (direction * self.max_speed, 0.))
 
             # Set the preferred velocity of the human to be their current velocity
             self.sim.setAgentPrefVelocity(1, human_vel)

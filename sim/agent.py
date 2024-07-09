@@ -235,18 +235,23 @@ class Robot(Agent):
 
         return False
 
-    def choose_action(self, observation):
+    def choose_action(self, observation, direction: int):
         """
         Chooses an action given the current observation
+        : param direction - the direction of the robot's goal line from 
+                            its current position
         """
         action = (0., 0.)
-        if not self.reached_goal():
-            action = self.policy.predict(observation)
+        if not self.reached_goal(direction):
+            action = self.policy.predict(observation, direction)
 
         return action
 
-    def reached_goal(self):
+    def reached_goal(self, direction: int):
         """
         Returns true if the robot has reached its own goal
         """
-        return self.px - self.radius <= self.gx
+        if direction < 0:
+            return self.px - self.radius <= self.gx
+
+        return self.px + self.radius >= self.gx

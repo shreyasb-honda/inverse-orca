@@ -257,11 +257,12 @@ class SimulationRunner:
 
         obs, _ = self.env.reset()
         self.robot.set_vh_desired(obs)
-        robot_action = self.robot.policy.predict(obs)
+        direction = np.sign(self.robot.gx - obs['robot pos'][0])
+        robot_action = self.robot.policy.predict(obs, direction)
         obs['robot vel'] = np.array(robot_action)
         human_action = self.human.get_velocity()
         acceleration_metric_human.agent_done(self.human.reached_goal())
-        acceleration_metric_robot.agent_done(self.robot.reached_goal())
+        acceleration_metric_robot.agent_done(self.robot.reached_goal(direction))
 
         for metric in self.perf_metrics:
             metric.add(obs)
@@ -276,7 +277,8 @@ class SimulationRunner:
             done = terminated or truncated
             self.robot.set_vh_desired(obs)
             # obs["human vel"] = np.array([-1.0, 0.])
-            robot_action = self.robot.choose_action(obs)
+            direction = np.sign(self.robot.gx - obs['robot pos'][0])
+            robot_action = self.robot.choose_action(obs, direction)
 
             # This seems to happen when the desired
             # velocity has been achieved by the human
@@ -285,7 +287,7 @@ class SimulationRunner:
 
             obs['robot vel'] = np.array(robot_action)
             acceleration_metric_human.agent_done(self.human.reached_goal())
-            acceleration_metric_robot.agent_done(self.robot.reached_goal())
+            acceleration_metric_robot.agent_done(self.robot.reached_goal(direction))
             for metric in self.perf_metrics:
                 metric.add(obs)
             # Update the observation to include the current velocity of the robot
