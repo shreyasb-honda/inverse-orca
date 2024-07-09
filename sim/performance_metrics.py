@@ -4,6 +4,7 @@ for the robot's influencing behavior
 """
 
 import numpy as np
+from policy.utils.overlap_detection import Point
 
 class PerformanceMetric:
     """
@@ -205,3 +206,50 @@ class PathEfficiency(PerformanceMetric):
 
     def get_metric(self):
         return self.dist_covered / self.opt_dist
+
+
+class CumulativeJerk(CumulativeAcceleration):
+    """
+    Tracks the cumulative jerk experienced by the agent during their 
+    trajectory
+    """
+
+    def __init__(self, time_step: float = 0.25, agent: str = 'human') -> None:
+        super().__init__(time_step, agent)
+        self.name = 'Cumulative jerk'
+        self.cumulative_jerk = 0
+        self.jerks = []
+
+    def add(self, observation):
+        super().add(observation)
+        if len(self.accelerations) >= 2:
+            jerk = (self.accelerations[-1] - self.accelerations[-2]) / self.time_step
+            self.jerks.append(jerk)
+            self.cumulative_jerk += np.linalg.norm(jerk)
+
+    def get_metric(self):
+        return self.cumulative_jerk
+
+class PathIrregularity(PerformanceMetric):
+    """
+    Averages the absolute angle between the agent's trajectory
+    and their goal-directed vector
+    """
+
+    def __init__(self, goal: Point, agent: str) -> None:
+        super().__init__('Path irregularity')
+        self.goal = goal
+        self.agent = agent
+        self.metric = 0
+        self.angles = []
+
+    def add(self, observation):
+        pos = observation[f'{self.agent} pos']
+        delta_x = pos[0] - self.goal[0]
+        delta_y = pos[1] - self.goal[1]
+        angle = np.arctan2(delta_y, delta_x)
+        self.angles.append(angle)
+        self.metric += abs(angle)
+
+    def get_metric(self):
+        return self.metric
