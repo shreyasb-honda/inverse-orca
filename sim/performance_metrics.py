@@ -26,6 +26,7 @@ class PerformanceMetric:
         """
         raise NotImplementedError
 
+
 class CumulativeAcceleration(PerformanceMetric):
     """
     Class to keep track of the cumulative acceleration 
@@ -108,8 +109,8 @@ class AverageAcceleration(CumulativeAcceleration):
     """
     def __init__(self, time_step: float = 0.25, agent: str = 'human') -> None:
         super().__init__(time_step, agent)
-        self.name = 'Average acceleration'
-    
+        self.name = f'Average acceleration {agent}'
+
     def get_metric(self):
         return super().get_metric() / len(self.accelerations)
 
@@ -120,11 +121,11 @@ class ClosenessToGoal(PerformanceMetric):
     line
     """
 
-    def __init__(self, y_virutal_goal) -> None:
+    def __init__(self, y_virtual_goal) -> None:
         super().__init__('Closeness to goal')
         self.min_dist = 1e5
         self.x_coordinate_at_goal = None
-        self.y_goal = y_virutal_goal
+        self.y_goal = y_virtual_goal
         self.reached = False
 
     def add(self, observation):
@@ -250,8 +251,8 @@ class AverageJerk(CumulativeJerk):
     """
     def __init__(self, time_step: float = 0.25, agent: str = 'human') -> None:
         super().__init__(time_step, agent)
-        self.name = 'Average jerk'
-    
+        self.name = f'Average jerk {agent}'
+
     def get_metric(self):
         return super().get_metric() / len(self.jerks)
 
