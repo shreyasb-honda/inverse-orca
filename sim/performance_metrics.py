@@ -102,6 +102,18 @@ class ClosestDistance(PerformanceMetric):
         return self.min_dist
 
 
+class AverageAcceleration(CumulativeAcceleration):
+    """
+    Metric to measure the average acceleration over a trajectory
+    """
+    def __init__(self, time_step: float = 0.25, agent: str = 'human') -> None:
+        super().__init__(time_step, agent)
+        self.name = 'Average acceleration'
+    
+    def get_metric(self):
+        return super().get_metric() / len(self.accelerations)
+
+
 class ClosenessToGoal(PerformanceMetric):
     """
     Measures how close the human got to the virtual goal
@@ -229,6 +241,20 @@ class CumulativeJerk(CumulativeAcceleration):
 
     def get_metric(self):
         return self.cumulative_jerk
+
+
+class AverageJerk(CumulativeJerk):
+    """
+    Computes the average jerk experienced by an agent during their
+    motion
+    """
+    def __init__(self, time_step: float = 0.25, agent: str = 'human') -> None:
+        super().__init__(time_step, agent)
+        self.name = 'Average jerk'
+    
+    def get_metric(self):
+        return super().get_metric() / len(self.jerks)
+
 
 class PathIrregularity(PerformanceMetric):
     """
