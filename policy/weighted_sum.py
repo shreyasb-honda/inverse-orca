@@ -23,7 +23,7 @@ class WeightedSum(InverseOrca):
 
     def predict(self, observation):
         v_invorca =  super().predict(observation)
-        v_goal_directed = np.array([self.max_speed, 0.])
+        v_goal_directed = np.array([-self.max_speed, 0.])
         v_sum = v_goal_directed
 
         if v_invorca is not None:
