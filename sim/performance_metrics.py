@@ -310,8 +310,11 @@ class PathIrregularity(PerformanceMetric):
             goal_heading = (self.goal[0] - pos[0], 0.)
             goal_heading /= np.linalg.norm(goal_heading)
             heading = observation[f'{self.agent} vel']
-            print(self.agent, pos, heading)
-            input()
+
+            # Only add if the speed is greater than zero
+            if np.linalg.norm(heading) == 0:
+                return
+
             heading /= np.linalg.norm(heading)
             dot = np.dot(heading, goal_heading)
             angle = np.arccos(dot)
