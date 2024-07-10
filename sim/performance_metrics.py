@@ -298,16 +298,33 @@ class PathIrregularity(PerformanceMetric):
         super().__init__(f'Path irregularity {agent}')
         self.goal = goal
         self.agent = agent
+        self.done = False
         self.metric = 0
         self.angles = []
 
     def add(self, observation):
-        pos = observation[f'{self.agent} pos']
-        delta_x = pos[0] - self.goal[0]
-        delta_y = pos[1] - self.goal[1]
-        angle = np.arctan2(delta_y, delta_x)
-        self.angles.append(angle)
-        self.metric += abs(angle)
+
+        # Only add the observation if the agent is not done
+        if not self.done:
+            pos = observation[f'{self.agent} pos']
+            goal_heading = (self.goal[0] - pos[0], 0.)
+            goal_heading /= np.linalg.norm(goal_heading)
+            heading = observation[f'{self.agent} vel']
+            print(self.agent, pos, heading)
+            input()
+            heading /= np.linalg.norm(heading)
+            dot = np.dot(heading, goal_heading)
+            angle = np.arccos(dot)
+            # print(self.agent, goal_heading, heading, dot, angle)
+            # input()
+            self.angles.append(angle)
+            self.metric += angle
+
+    def agent_done(self, done):
+        """
+        Sets whether the agent has reached their goal
+        """
+        self.done = done
 
     def get_metric(self):
         return self.metric / len(self.angles)

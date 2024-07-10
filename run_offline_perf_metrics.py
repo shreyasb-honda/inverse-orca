@@ -51,6 +51,7 @@ def main():
                         exp_dirs.append(get_exp_dir(policy_combo, effect, weight))
 
     for exp_dir in exp_dirs:
+        print(exp_dir)
         offline_metrics = OfflineMetrics(exp_dir)
         # List of metrics to run
         avg_acc_hum = pm.AverageAcceleration(agent='human')

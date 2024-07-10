@@ -76,12 +76,14 @@ class OfflineMetrics:
                         # Add it to the metric calculator
                         acc = 'Average acceleration human'
                         jerk = 'Average jerk human'
-                        if metric.name in (acc, jerk):
+                        irregularity = 'Path irregularity human'
+                        if metric.name in (acc, jerk, irregularity):
                             human_done = single_obs['human pos'][0] - single_obs['human rad'] <= 0
                             metric.agent_done(human_done)
                         acc = 'Average acceleration robot'
                         jerk = 'Average jerk robot'
-                        if metric.name in (acc, jerk):
+                        irregularity = 'Path irregularity robot'
+                        if metric.name in (acc, jerk, irregularity):
                             robot_done = single_obs['robot pos'][0] + single_obs['robot rad'] >= 15
                             metric.agent_done(robot_done)
                         metric.add(single_obs)

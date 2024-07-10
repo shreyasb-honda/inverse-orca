@@ -81,13 +81,18 @@ class DataReader:
         fig, ax = plt.subplots()
         indep_var, dep_var_mean, dep_var_std = self.get_list(metric_name)
         width = 0.8 * (indep_var[1] - indep_var[0])
-        # ax.scatter(indep_var, dep_var_mean)
-        ax.bar(indep_var, dep_var_mean, 
-               yerr=dep_var_std / np.sqrt(dep_var_mean.shape[0]),
-               width=width, capsize=5.)
+        ax.scatter(indep_var, dep_var_mean)
+        yerr = dep_var_std / np.sqrt(dep_var_std.shape[0])
+        ax.errorbar(indep_var, dep_var_mean, yerr=yerr)
+
+        # ax.bar(indep_var, dep_var_mean,
+        #        yerr=dep_var_std / np.sqrt(dep_var_mean.shape[0]),
+        #        width=width, capsize=5.)
         ax.set_title(metric_name)
         ax.set_xlabel(self.indep_var)
         ax.set_ylabel(ylabel)
+        # if "Path efficiency" in metric_name:
+        #     ax.set_ylim([0.95, 1.1])
         fig.tight_layout()
 
         return fig, ax

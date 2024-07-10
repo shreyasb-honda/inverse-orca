@@ -1,3 +1,13 @@
+"""
+The policy for the human based on the social forces model
+"""
+
+# TODO: The social forces model sometimes assumes that the human has reached its goal
+# TODO: when it is close enough to the goal, but not quite at it.
+# TODO: This messes with my goal attainment checker, which only returns true when the human has
+# TODO: indeed crossed the finish line. This messes with performance metrics like acceleration,
+# TODO: jerk, path irregularity, etc which need a done flag to stop adding new observations.
+
 import logging
 import numpy as np
 import pysocialforce as psf
@@ -46,7 +56,7 @@ class SocialForce(Policy):
         states, _ = s.get_states()
 
         vel = np.array([states[1, 0, 2], states[1, 0, 3]])
-        if vel[0] == np.nan or vel[1] == np.nan:
+        if np.nan in vel:
             vel = np.zeros_like(vel)
 
         if np.linalg.norm(vel) > 0:

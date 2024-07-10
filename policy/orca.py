@@ -1,3 +1,7 @@
+"""
+The Optimal Reciprocal Collision Avoidance Policy
+"""
+
 # TODO: currently we are assuming that the robot is agent 0 and the human is agent 1
 # TODO: the policy returns the action for agent 1
 
