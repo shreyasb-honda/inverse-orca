@@ -23,6 +23,7 @@ class DataReader:
         self.indep_var = indep_var
         self.env_config = None
         self.policy_config = None
+        self.selected_runs = []
 
     def read_data(self):
         """
@@ -57,18 +58,33 @@ class DataReader:
         Gets the dependent variable as a list
         """
         indep_var = []
-        dep_var = []
+        dep_var_mean = []
+        dep_var_std = []
         for var, perf_summary in self.data.items():
             indep_var.append(var)
             # print(perf_summary['mean'].keys())
-            dep_var.append(perf_summary['mean'][metric_name])
+            dep_var_mean.append(perf_summary['mean'][metric_name])
+            dep_var_std.append(perf_summary['std'][metric_name])
 
-        return indep_var, dep_var
+        indep_var = np.array(indep_var)
+        dep_var_mean = np.array(dep_var_mean)
+        dep_var_std = np.array(dep_var_std)
+
+        indices = np.argsort(indep_var)
+        indep_var = indep_var[indices]
+        dep_var_mean = dep_var_mean[indices]
+        dep_var_std = dep_var_std[indices]
+
+        return indep_var, dep_var_mean, dep_var_std
 
     def __plot(self, metric_name: str, ylabel: str):
         fig, ax = plt.subplots()
-        alphas, dep_var = self.get_list(metric_name)
-        ax.scatter(alphas, dep_var)
+        indep_var, dep_var_mean, dep_var_std = self.get_list(metric_name)
+        width = 0.8 * (indep_var[1] - indep_var[0])
+        # ax.scatter(indep_var, dep_var_mean)
+        ax.bar(indep_var, dep_var_mean, 
+               yerr=dep_var_std / np.sqrt(dep_var_mean.shape[0]),
+               width=width, capsize=5.)
         ax.set_title(metric_name)
         ax.set_xlabel(self.indep_var)
         ax.set_ylabel(ylabel)
@@ -76,9 +92,9 @@ class DataReader:
 
         return fig, ax
 
-    def plot_effect(self, policy_combo=None, weight=None):
+    def get_save_dir(self, policy_combo=None, weight=None):
         """
-        Plots the summary for a set of experiments
+        Gets the path to the directory where the plots need to be saved
         """
         dir_names = str(self.parent_dir).split('/')
         if policy_combo is None:
@@ -93,8 +109,15 @@ class DataReader:
         if weight is not None:
             save_dir = os.path.join(save_dir, f"weight-{weight:.1f}")
 
-        save_dir = os.path.join(save_dir, f"{self.indep_var}_effect")
+        save_dir = os.path.join(save_dir, f"{self.indep_var}_effect") 
 
+        return save_dir
+
+    def plot_effect(self, policy_combo=None, weight=None):
+        """
+        Plots the summary for a set of experiments
+        """
+        save_dir = self.get_save_dir(policy_combo, weight)
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
@@ -188,6 +211,9 @@ class DataReader:
         :param indep_var_value - the value of the independent variable for which 
                                  a random trajectory is to be plotted
         """
+        if self.selected_runs is None:
+            self.selected_runs = set()
+
         experiments = os.listdir(self.parent_dir)
         for experiment in experiments:
             env_config = toml.load(os.path.join(self.parent_dir, experiment, 'env.toml'))
@@ -199,15 +225,22 @@ class DataReader:
                 val = env_config['robot']['max_speed']
             elif self.indep_var == 'time_horizon':
                 val = policy_config['inverse_orca']['time_horizon']
-            if val == indep_var_val:
+            if round(val, 1) == indep_var_val:
                 chosen_exp = experiment
                 break
 
         # Grab a random folder from the subfolders
         runs = os.listdir(os.path.join(self.parent_dir, chosen_exp))
-        chosen_run = np.random.choice(runs)
+        chosen_run_idx = np.random.choice(len(runs))
+        # while chosen_run_idx in self.selected_runs:
+        #     chosen_run_idx = np.random.choice(len(runs))
+        # self.selected_runs.add(chosen_run_idx)
+        chosen_run = runs[chosen_run_idx]
+        while 'toml' in chosen_run or 'pkl' in chosen_run:
+            chosen_run_idx = np.random.choice(len(runs))
+            chosen_run = runs[chosen_run_idx]
+
         run_dir = os.path.join(self.parent_dir, chosen_exp, chosen_run)
-        print(run_dir)
         with open(os.path.join(run_dir, 'obs.pkl'), 'rb') as f:
             observations = pickle.load(f)
 
