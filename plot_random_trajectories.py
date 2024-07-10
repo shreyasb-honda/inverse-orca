@@ -65,10 +65,10 @@ def main():
                     fig, ax = data_reader.plot_random_trajectory(val, render_mode)
                     temp = str(exp_dir).partition('/')[-1]
                     # temp = temp.rpartition('/')[0]
-                    save_dir = path.join('media', 'effect-plots', 'bar-plots', temp, 'trajectories')
+                    save_dir = path.join('media', 'effect-plots', temp, 'trajectories')
                     if not path.exists(save_dir):
                         os.makedirs(save_dir)
-                    filepath = path.join(save_dir, f'{i+1}.png')
+                    filepath = path.join(save_dir, f'{effect}={val}({i+1}).png')
                     plt.savefig(filepath)
                     plt.close(fig)
 
