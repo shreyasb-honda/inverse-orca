@@ -26,6 +26,12 @@ class PerformanceMetric:
         """
         raise NotImplementedError
 
+    def reset(self):
+        """
+        Resets the metric to its initial state
+        """
+        raise NotImplementedError
+
 
 class CumulativeAcceleration(PerformanceMetric):
     """
@@ -73,6 +79,9 @@ class CumulativeAcceleration(PerformanceMetric):
         """
         return self.cumulative_acc
 
+    def reset(self):
+        return CumulativeAcceleration(self.time_step, self.agent)
+
 
 class ClosestDistance(PerformanceMetric):
     """
@@ -102,6 +111,9 @@ class ClosestDistance(PerformanceMetric):
         """
         return self.min_dist
 
+    def reset(self):
+        return ClosestDistance()
+
 
 class AverageAcceleration(CumulativeAcceleration):
     """
@@ -113,6 +125,9 @@ class AverageAcceleration(CumulativeAcceleration):
 
     def get_metric(self):
         return super().get_metric() / len(self.accelerations)
+
+    def reset(self):
+        return AverageAcceleration(self.time_step, self.agent)
 
 
 class ClosenessToGoal(PerformanceMetric):
@@ -149,6 +164,9 @@ class ClosenessToGoal(PerformanceMetric):
             whether the goal was reached or not
         """
         return self.min_dist, self.x_coordinate_at_goal, self.reached
+
+    def reset(self):
+        return ClosenessToGoal(self.y_goal)
 
 
 class TimeToReachGoal(PerformanceMetric):
@@ -189,6 +207,10 @@ class TimeToReachGoal(PerformanceMetric):
         """
         return self.human_time, self.robot_time
 
+    def reset(self):
+        return TimeToReachGoal(self.time_step, self.robot_goal_x,
+                               self.human_goal_x)
+
 
 class PathEfficiency(PerformanceMetric):
     """
@@ -220,6 +242,9 @@ class PathEfficiency(PerformanceMetric):
     def get_metric(self):
         return self.dist_covered / self.opt_dist
 
+    def reset(self):
+        return PathEfficiency(self.agent, self.hallway_length)
+
 
 class CumulativeJerk(CumulativeAcceleration):
     """
@@ -243,6 +268,9 @@ class CumulativeJerk(CumulativeAcceleration):
     def get_metric(self):
         return self.cumulative_jerk
 
+    def reset(self):
+        return CumulativeJerk(self.time_step, self.agent)
+
 
 class AverageJerk(CumulativeJerk):
     """
@@ -256,6 +284,9 @@ class AverageJerk(CumulativeJerk):
     def get_metric(self):
         return super().get_metric() / len(self.jerks)
 
+    def reset(self):
+        return AverageJerk(self.time_step, self.agent)
+
 
 class PathIrregularity(PerformanceMetric):
     """
@@ -264,7 +295,7 @@ class PathIrregularity(PerformanceMetric):
     """
 
     def __init__(self, goal: Point, agent: str) -> None:
-        super().__init__('Path irregularity')
+        super().__init__(f'Path irregularity {agent}')
         self.goal = goal
         self.agent = agent
         self.metric = 0
@@ -279,4 +310,7 @@ class PathIrregularity(PerformanceMetric):
         self.metric += abs(angle)
 
     def get_metric(self):
-        return self.metric
+        return self.metric / len(self.angles)
+
+    def reset(self):
+        return PathIrregularity(self.goal, self.agent)

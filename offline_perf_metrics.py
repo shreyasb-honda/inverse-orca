@@ -67,6 +67,7 @@ class OfflineMetrics:
                     obs = pickle.load(f)
                 # For each metric
                 for metric in self.metrics:
+                    metric = metric.reset()
                     # For a single observation in this run
                     for single_obs in obs:
                         # Add it to the metric calculator
@@ -82,15 +83,20 @@ class OfflineMetrics:
 
                     # Save the performance metric data for this run
                     perf_file = os.path.join(run_path, 'perf.pkl')
-                    # with open(perf_file, 'wb') as f:
-                    #     pickle.dump(self.single_sim_performance)
+                    with open(perf_file, 'wb') as f:
+                        pickle.dump(self.single_sim_performance, f)
 
             # Once all runs performance data has been added to the lists,
             # Compute the mean and average of each performance metric
             performance_summary = {}
             for metric in self.metrics:
-                mean = np.mean(self.performance_lists[metric.name])
-                std = np.std(self.performance_lists[metric.name])
+                try:
+                    mean = np.nanmean(self.performance_lists[metric.name])
+                    std = np.nanstd(self.performance_lists[metric.name])
+                except TypeError:
+                    print(metric.name)
+                    print(self.performance_lists[metric.name])
+                    input()
                 if "mean" not in performance_summary:
                     performance_summary['mean'] = {metric.name: mean}
                 else:
@@ -100,15 +106,18 @@ class OfflineMetrics:
                 else:
                     performance_summary['std'][metric.name] = std
                 print(f"{metric.name:<30}: {mean:.2f} ({std:.2f})")
-            # with open(summary_file, 'wb') as f:
-            #     pickle.dump(performance_summary, f)
+                # input()
+            with open(summary_file, 'wb') as f:
+                pickle.dump(performance_summary, f)
 
 def main():
     """
     The main function
     """
     policy_combo = ['orca', 'inverse']
-    effect = 'alpha_effect'
+    # effect = 'alpha_effect'
+    # effect = 'time_horizon_effect'
+    effect = 'max_speed_effect'
     exp_dir = os.path.join('data',
                            f'human-{policy_combo[0]}-robot-{policy_combo[1]}',
                            effect)
