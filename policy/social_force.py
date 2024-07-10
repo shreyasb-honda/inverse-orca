@@ -38,7 +38,7 @@ class SocialForce(Policy):
         robot_vel = observation['robot vel']
 
         # TODO - set the robot goal differently?
-        robot_goal = (15., robot_pos[1])
+        robot_goal = (0., robot_pos[1])
 
         initial_state = np.array(
             [
