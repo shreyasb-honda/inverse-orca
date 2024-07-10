@@ -60,25 +60,36 @@ class DataReader:
         dep_var = []
         for var, perf_summary in self.data.items():
             indep_var.append(var)
+            # print(perf_summary['mean'].keys())
             dep_var.append(perf_summary['mean'][metric_name])
 
         return indep_var, dep_var
 
-    def __plot(self, metric_name: str):
+    def __plot(self, metric_name: str, ylabel: str):
         fig, ax = plt.subplots()
         alphas, dep_var = self.get_list(metric_name)
         ax.scatter(alphas, dep_var)
         ax.set_title(metric_name)
         ax.set_xlabel(self.indep_var)
+        ax.set_ylabel(ylabel)
+        fig.tight_layout()
 
         return fig, ax
 
-    def plot(self, policy_comb=None, weight=None):
+    def plot_effect(self, policy_combo=None, weight=None):
         """
         Plots the summary for a set of experiments
         """
+        dir_names = str(self.parent_dir).split('/')
+        if policy_combo is None:
+            policy_str = dir_names[1]
+            split = policy_str.split('-')
+            policy_combo = [split[1], split[-1]]    
+            if split[-1] == "weighted":
+                weight = float(dir_names[2].split('-')[-1])
+
         save_dir = os.path.join('media', 'effect-plots',
-                                f'human-{policy_comb[0]}-robot-{policy_comb[1]}')
+                                f'human-{policy_combo[0]}-robot-{policy_combo[1]}')
         if weight is not None:
             save_dir = os.path.join(save_dir, f"weight-{weight:.1f}")
 
@@ -87,56 +98,77 @@ class DataReader:
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        fig, ax = self.__plot('Cumulative Acceleration human')
-        ax.set_ylabel(r'Acceleration $(/s^2)$')
-        fig.tight_layout()
-        filename = os.path.join(save_dir, 'human-acc.png')
+        fig, ax = self.__plot('Average acceleration human', r'Acceleration $(/s^2)$')
+        filename = os.path.join(save_dir, 'avg-acc-human.png')
         plt.savefig(filename)
+        plt.close(fig)
 
-        fig, ax = self.__plot('Cumulative Acceleration robot')
-        ax.set_ylabel(r'Acceleration $(/s^2)$')
-        fig.tight_layout()
-        filename = os.path.join(save_dir, 'robot-acc.png')
+        fig, ax = self.__plot('Average acceleration robot', r'Acceleration $(/s^2)$')
+        filename = os.path.join(save_dir, 'avg-acc-robot.png')
         plt.savefig(filename)
+        plt.close(fig)
 
-        fig, ax = self.__plot('Closest Distance')
-        ax.set_ylabel('Distance')
-        fig.tight_layout()
+        fig, ax = self.__plot('Closest Distance', 'Distance')
         filename = os.path.join(save_dir, 'closest-distance.png')
         plt.savefig(filename)
+        plt.close(fig)
 
-        fig, ax = self.__plot('Minimum y_dist')
-        ax.set_ylabel('Distance')
-        fig.tight_layout()
+        fig, ax = self.__plot('Minimum y_dist', 'Distance')
         filename = os.path.join(save_dir, 'min-y-distance.png')
         plt.savefig(filename)
+        plt.close(fig)
 
-        fig, ax = self.__plot('x-coordinate at goal')
-        ax.set_ylabel('x-coordinate')
-        fig.tight_layout()
+        fig, ax = self.__plot('x-coordinate at goal', 'x-coordinate')
         filename = os.path.join(save_dir, 'x-coord-at-goal.png')
         plt.savefig(filename)
+        plt.close(fig)
 
-
-        fig, ax = self.__plot('Virtual goal reached')
-        ax.set_ylabel('ratio')
-        fig.tight_layout()
+        fig, ax = self.__plot('Virtual goal reached', 'ratio')
         filename = os.path.join(save_dir, 'ratio-virtual-goal-reached.png')
         plt.savefig(filename)
+        plt.close(fig)
 
-        fig, ax = self.__plot('Time to goal human')
-        ax.set_ylabel(r'$s$')
-        fig.tight_layout()
+        fig, ax = self.__plot('Time to goal human', r'$s$')
         filename = os.path.join(save_dir, 'time-to-goal-human.png')
         plt.savefig(filename)
+        plt.close(fig)
 
-        fig, ax = self.__plot('Time to goal robot')
-        ax.set_ylabel(r'$s$')
-        fig.tight_layout()
+        fig, ax = self.__plot('Time to goal robot', r'$s$')
         filename = os.path.join(save_dir, 'time-to-goal-robot.png')
         plt.savefig(filename)
+        plt.close(fig)
 
-        plt.show()
+        fig, ax = self.__plot('Path efficiency human', 'ratio')
+        filename = os.path.join(save_dir, 'path-efficiency-human.png')
+        plt.savefig(filename)
+        plt.close(fig)
+
+        fig, ax = self.__plot('Path efficiency robot', 'ratio')
+        filename = os.path.join(save_dir, 'path-efficiency-robot.png')
+        plt.savefig(filename)
+        plt.close(fig)
+
+        fig, ax = self.__plot('Average jerk human', r'$/s^3$')
+        filename = os.path.join(save_dir, 'avg-jerk-human.png')
+        plt.savefig(filename)
+        plt.close(fig)
+
+        fig, ax = self.__plot('Average jerk robot', r'$/s^3$')
+        filename = os.path.join(save_dir, 'avg-jerk-robot.png')
+        plt.savefig(filename)
+        plt.close(fig)
+
+        fig, ax = self.__plot('Path irregularity human', 'rad')
+        filename = os.path.join(save_dir, 'path-irregularity-human.png')
+        plt.savefig(filename)
+        plt.close(fig)
+
+        fig, ax = self.__plot('Path irregularity robot', 'rad')
+        filename = os.path.join(save_dir, 'path-irregularity-robot.png')
+        plt.savefig(filename)
+        plt.close(fig)
+
+        # plt.show()
 
     def print(self):
         """
@@ -216,17 +248,20 @@ def main():
     """
     The main function
     """
-    policy_combination = ['sf', 'weighted']
-    # indep_var = 'alpha'
+    policy_combo = ['orca', 'inverse']
+    # policy_combo = ['orca', 'weighted']
+    # policy_combo = ['sf', 'inverse']
+    # policy_combo = ['sf', 'weighted']
+    indep_var = 'alpha'
     # indep_val = 1.0
-    indep_var = 'max_speed'
-    indep_val = 1.5
+    # indep_var = 'max_speed'
+    # indep_val = 1.5
     # indep_var = 'time_horizon'
     # indep_val = 10
-    # weight = None
-    weight = 0.5
+    weight = None
+    # weight = 0.5
     parent_dir = os.path.join('data',
-                              f'human-{policy_combination[0]}-robot-{policy_combination[1]}')
+                              f'human-{policy_combo[0]}-robot-{policy_combo[1]}')
 
     # render_mode = 'static'
     render_mode = 'human'
@@ -237,9 +272,9 @@ def main():
 
     data_explorer = DataReader(parent_dir=parent_dir, indep_var=indep_var)
     data_explorer.read_data()
-    # data_explorer.plot(policy_combination, weight)
-    out = data_explorer.plot_random_trajectory(indep_val, render_mode)
-    plt.show()
+    data_explorer.plot_effect(policy_combo, weight)
+    # out = data_explorer.plot_random_trajectory(indep_val, render_mode)
+    # plt.show()
 
 
 def time_horizon_effect():

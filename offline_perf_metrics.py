@@ -43,6 +43,8 @@ class OfflineMetrics:
         # Get the list of directories in which the variable is fixed
         fixed_val_dirs = os.listdir(self.exp_dir)
         for fixed_val_dir in fixed_val_dirs:
+            # Reset the data variable
+            self.performance_lists = {}
             dir_path = os.path.join(self.exp_dir, fixed_val_dir)
             summary_file = os.path.join(self.exp_dir, fixed_val_dir,
                                         'perf_summary.pkl')
@@ -67,10 +69,21 @@ class OfflineMetrics:
                     obs = pickle.load(f)
                 # For each metric
                 for metric in self.metrics:
+                    # Reset it
                     metric = metric.reset()
                     # For a single observation in this run
                     for single_obs in obs:
                         # Add it to the metric calculator
+                        acc = 'Average acceleration human'
+                        jerk = 'Average jerk human'
+                        if metric.name in (acc, jerk):
+                            human_done = single_obs['human pos'][0] - single_obs['human rad'] <= 0
+                            metric.agent_done(human_done)
+                        acc = 'Average acceleration robot'
+                        jerk = 'Average jerk robot'
+                        if metric.name in (acc, jerk):
+                            robot_done = single_obs['robot pos'][0] + single_obs['robot rad'] >= 15
+                            metric.agent_done(robot_done)
                         metric.add(single_obs)
                     # Once all observations are added,
                     # Set the value of the performance metric for this run
@@ -88,25 +101,34 @@ class OfflineMetrics:
 
             # Once all runs performance data has been added to the lists,
             # Compute the mean and average of each performance metric
+            metrics_avg = {}
+            metrics_std = {}
             performance_summary = {}
             for metric in self.metrics:
-                try:
-                    mean = np.nanmean(self.performance_lists[metric.name])
-                    std = np.nanstd(self.performance_lists[metric.name])
-                except TypeError:
-                    print(metric.name)
-                    print(self.performance_lists[metric.name])
-                    input()
-                if "mean" not in performance_summary:
-                    performance_summary['mean'] = {metric.name: mean}
+                metrics_array = np.array(self.performance_lists[metric.name], dtype=float)
+                key = metric.name
+                if key == 'Closeness to goal':
+                    metrics_avg['Minimum y_dist'] = np.average(metrics_array[:, 0])
+                    metrics_avg['x-coordinate at goal'] = np.nanmean(metrics_array[:, 1])
+                    metrics_avg['Virtual goal reached'] = np.average(metrics_array[:, 2])
+
+                    metrics_std['Minimum y_dist'] = np.std(metrics_array[:, 0])
+                    metrics_std['x-coordinate at goal'] = np.nanstd(metrics_array[:, 1])
+                    metrics_std['Virtual goal reached'] = np.std(metrics_array[:, 2])
+                elif key == 'Time to reach goal':
+                    metrics_avg['Time to goal human'] = np.average(metrics_array[:, 0])
+                    metrics_avg['Time to goal robot'] = np.average(metrics_array[:, 1])
+
+                    metrics_std['Time to goal human'] = np.std(metrics_array[:, 0])
+                    metrics_std['Time to goal robot'] = np.std(metrics_array[:, 1])
                 else:
-                    performance_summary["mean"][metric.name] = mean
-                if "std" not in performance_summary:
-                    performance_summary['std'] = {metric.name: std}
-                else:
-                    performance_summary['std'][metric.name] = std
-                print(f"{metric.name:<30}: {mean:.2f} ({std:.2f})")
-                # input()
+                    metrics_avg[key] = np.average(metrics_array)
+                    metrics_std[key] = np.std(metrics_array)
+
+            performance_summary['mean'] = metrics_avg
+            performance_summary['std'] = metrics_std
+            for k, v in performance_summary['mean'].items():
+                print(f"{k:<30} {v:.2f} {performance_summary['std'][k]:.2f}")
             with open(summary_file, 'wb') as f:
                 pickle.dump(performance_summary, f)
 
@@ -114,13 +136,22 @@ def main():
     """
     The main function
     """
-    policy_combo = ['orca', 'inverse']
+    # policy_combo = ['orca', 'inverse']
+    # policy_combo = ['orca', 'weighted']
+    # policy_combo = ['sf', 'inverse']
+    policy_combo = ['sf', 'weighted']
     # effect = 'alpha_effect'
     # effect = 'time_horizon_effect'
     effect = 'max_speed_effect'
+
+    weight = 0.8
     exp_dir = os.path.join('data',
-                           f'human-{policy_combo[0]}-robot-{policy_combo[1]}',
-                           effect)
+                           f'human-{policy_combo[0]}-robot-{policy_combo[1]}')
+
+    if weight is not None:
+        exp_dir = os.path.join(exp_dir, f"weight-{weight:.1f}")
+
+    exp_dir = os.path.join(exp_dir, effect)
 
     offline_metrics = OfflineMetrics(exp_dir)
 
@@ -129,6 +160,8 @@ def main():
     offline_metrics.add(avg_acc_hum)
     avg_acc_rob = pm.AverageAcceleration(agent='robot')
     offline_metrics.add(avg_acc_rob)
+    closest_distance = pm.ClosestDistance()
+    offline_metrics.add(closest_distance)
     y_virtual_goal = 1.0
     close_to_goal = pm.ClosenessToGoal(y_virtual_goal)
     offline_metrics.add(close_to_goal)
