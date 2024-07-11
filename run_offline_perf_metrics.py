@@ -2,33 +2,24 @@
 Runs the performance metrics on the saved simulation data
 """
 
-from os import path
 from offline_perf_metrics import OfflineMetrics
 import sim.performance_metrics as pm
+from run_effect_plotter import get_exp_dir
 
-def get_exp_dir(policy_combo, effect, weight=None):
-    """
-    Returns the experiment directory
-    """
-    exp_dir = path.join('data',
-                        f'human-{policy_combo[0]}-robot-{policy_combo[1]}')
-    if weight is not None:
-        exp_dir = path.join(exp_dir, f"weight-{weight:.1f}")
-
-    exp_dir = path.join(exp_dir, f"{effect}_effect")
-
-    return exp_dir
 
 def main():
     """
     The main function
     """
-    # policy_combos = [['orca', 'inverse'],
-    #                  ['orca', 'weighted'],
-    #                  ['sf', 'inverse'],
-    #                  ['sf', 'weighted']]
-    policy_combos = [['sf', 'inverse'],
+
+    sim_type = "overtaking"
+
+    policy_combos = [['orca', 'inverse'],
+                     ['orca', 'weighted'],
+                     ['sf', 'inverse'],
                      ['sf', 'weighted']]
+    # policy_combos = [['sf', 'inverse'],
+    #                  ['sf', 'weighted']]
 
     weights = [0.2, 0.5, 0.8]
 
@@ -38,19 +29,21 @@ def main():
         if policy_combo[0] == 'orca':
             if policy_combo[1] == 'inverse':
                 for effect in effects:
-                    exp_dirs.append(get_exp_dir(policy_combo, effect))
+                    exp_dirs.append(get_exp_dir(policy_combo, effect, sim_type=sim_type))
             else:
                 for weight in weights:
                     for effect in effects:
-                        exp_dirs.append(get_exp_dir(policy_combo, effect, weight))
+                        exp_dirs.append(get_exp_dir(policy_combo, effect,
+                                                    weight, sim_type=sim_type))
         else:
             if policy_combo[1] == 'inverse':
                 for effect in effects[1:]:
-                    exp_dirs.append(get_exp_dir(policy_combo, effect))
+                    exp_dirs.append(get_exp_dir(policy_combo, effect, sim_type=sim_type))
             else:
                 for weight in weights:
                     for effect in effects[1:]:
-                        exp_dirs.append(get_exp_dir(policy_combo, effect, weight))
+                        exp_dirs.append(get_exp_dir(policy_combo,
+                                                    effect, weight, sim_type=sim_type))
 
     for exp_dir in exp_dirs:
         print(exp_dir)

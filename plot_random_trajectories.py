@@ -13,15 +13,16 @@ def main():
     """
     The main function
     """
+    sim_type = 'overtaking'
     render_mode = 'static'
     num_trajectories = 10
-    # policy_combos = [['orca', 'inverse'],
-    #                  ['orca', 'weighted'],
-    #                  ['sf', 'inverse'],
-    #                  ['sf', 'weighted']]
-
-    policy_combos = [['sf', 'inverse'],
+    policy_combos = [['orca', 'inverse'],
+                     ['orca', 'weighted'],
+                     ['sf', 'inverse'],
                      ['sf', 'weighted']]
+
+    # policy_combos = [['sf', 'inverse'],
+    #                  ['sf', 'weighted']]
 
     weights = [0.2, 0.5, 0.8]
     effects = ['alpha', 'time_horizon', 'max_speed']
@@ -30,19 +31,21 @@ def main():
         if policy_combo[0] == 'orca':
             if policy_combo[1] == 'inverse':
                 for effect in effects:
-                    exp_dirs.append(get_exp_dir(policy_combo, effect))
+                    exp_dirs.append(get_exp_dir(policy_combo, effect, sim_type=sim_type))
             else:
                 for weight in weights:
                     for effect in effects:
-                        exp_dirs.append(get_exp_dir(policy_combo, effect, weight))
+                        exp_dirs.append(get_exp_dir(policy_combo, effect,
+                                                    weight, sim_type=sim_type))
         else:
             if policy_combo[1] == 'inverse':
                 for effect in effects[1:]:
-                    exp_dirs.append(get_exp_dir(policy_combo, effect))
+                    exp_dirs.append(get_exp_dir(policy_combo, effect, sim_type=sim_type))
             else:
                 for weight in weights:
                     for effect in effects[1:]:
-                        exp_dirs.append(get_exp_dir(policy_combo, effect, weight))
+                        exp_dirs.append(get_exp_dir(policy_combo, effect,
+                                                    weight, sim_type=sim_type))
     alpha_values = [round(0.1 * i, 1) for i in range(1, 11)]
     tau_values = [i+1 for i in range(10)]
     max_speed_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,
@@ -67,9 +70,8 @@ def main():
             if render_mode == 'static':
                 for i in range(num_trajectories):
                     fig, ax = data_reader.plot_random_trajectory(val, render_mode)
-                    temp = str(exp_dir).partition('/')[-1]
-                    # temp = temp.rpartition('/')[0]
-                    save_dir = path.join('media', 'effect-plots', temp, 'trajectories')
+                    save_dir = data_reader.get_save_dir(sim_type=sim_type)
+                    save_dir = path.join(save_dir, 'trajectories')
                     if not path.exists(save_dir):
                         os.makedirs(save_dir)
                     filepath = path.join(save_dir, f'{effect}={val}({i+1}).png')

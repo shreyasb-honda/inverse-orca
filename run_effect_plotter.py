@@ -6,11 +6,12 @@ on the various performance metrics considered
 from os import path
 from data_explorer import DataReader
 
-def get_exp_dir(policy_combo, effect, weight=None):
+
+def get_exp_dir(policy_combo, effect, weight=None, sim_type='passing'):
     """
     Returns the experiment directory
     """
-    exp_dir = path.join('data',
+    exp_dir = path.join('data', sim_type,
                         f'human-{policy_combo[0]}-robot-{policy_combo[1]}')
     if weight is not None:
         exp_dir = path.join(exp_dir, f"weight-{weight:.1f}")
@@ -19,16 +20,18 @@ def get_exp_dir(policy_combo, effect, weight=None):
 
     return exp_dir
 
+
 def main():
     """
     The main function
     """
-    # policy_combos = [['orca', 'inverse'],
-    #                  ['orca', 'weighted'],
-    #                  ['sf', 'inverse'],
-    #                  ['sf', 'weighted']]
-    policy_combos = [['sf', 'inverse'],
+    sim_type = 'overtaking'
+    policy_combos = [['orca', 'inverse'],
+                     ['orca', 'weighted'],
+                     ['sf', 'inverse'],
                      ['sf', 'weighted']]
+    # policy_combos = [['sf', 'inverse'],
+    #                  ['sf', 'weighted']]
 
     weights = [0.2, 0.5, 0.8]
 
@@ -38,19 +41,21 @@ def main():
         if policy_combo[0] == 'orca':
             if policy_combo[1] == 'inverse':
                 for effect in effects:
-                    exp_dirs.append(get_exp_dir(policy_combo, effect))
+                    exp_dirs.append(get_exp_dir(policy_combo, effect, sim_type=sim_type))
             else:
                 for weight in weights:
                     for effect in effects:
-                        exp_dirs.append(get_exp_dir(policy_combo, effect, weight))
+                        exp_dirs.append(get_exp_dir(policy_combo, effect,
+                                                    weight, sim_type=sim_type))
         else:
             if policy_combo[1] == 'inverse':
                 for effect in effects[1:]:
-                    exp_dirs.append(get_exp_dir(policy_combo, effect))
+                    exp_dirs.append(get_exp_dir(policy_combo, effect, sim_type=sim_type))
             else:
                 for weight in weights:
                     for effect in effects[1:]:
-                        exp_dirs.append(get_exp_dir(policy_combo, effect, weight))
+                        exp_dirs.append(get_exp_dir(policy_combo, effect,
+                                                    weight, sim_type=sim_type))
 
     for exp_dir in exp_dirs:
         effect = str(exp_dir).rsplit('/', maxsplit=1)[-1].split('_')
@@ -60,7 +65,8 @@ def main():
             effect = f'{effect[0]}_{effect[1]}'
         data_reader = DataReader(exp_dir, effect)
         data_reader.read_data()
-        data_reader.plot_effect()
+        data_reader.plot_effect(sim_type=sim_type)
+
 
 if __name__ == '__main__':
     main()

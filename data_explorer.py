@@ -97,32 +97,36 @@ class DataReader:
 
         return fig, ax
 
-    def get_save_dir(self, policy_combo=None, weight=None):
+    def get_save_dir(self, policy_combo=None, weight=None, sim_type=None):
         """
         Gets the path to the directory where the plots need to be saved
         """
         dir_names = str(self.parent_dir).split('/')
         if policy_combo is None:
-            policy_str = dir_names[1]
+            policy_str = dir_names[2]
             split = policy_str.split('-')
-            policy_combo = [split[1], split[-1]]    
+            policy_combo = [split[1], split[-1]]
             if split[-1] == "weighted":
-                weight = float(dir_names[2].split('-')[-1])
+                weight = float(dir_names[3].split('-')[-1])
 
-        save_dir = os.path.join('media', 'effect-plots',
-                                f'human-{policy_combo[0]}-robot-{policy_combo[1]}')
+        save_dir = os.path.join('media', 'effect-plots')
+
+        if sim_type is not None:
+            save_dir = os.path.join(save_dir, sim_type)
+
+        save_dir = os.path.join(save_dir, f'human-{policy_combo[0]}-robot-{policy_combo[1]}')
         if weight is not None:
             save_dir = os.path.join(save_dir, f"weight-{weight:.1f}")
 
-        save_dir = os.path.join(save_dir, f"{self.indep_var}_effect") 
+        save_dir = os.path.join(save_dir, f"{self.indep_var}_effect")
 
         return save_dir
 
-    def plot_effect(self, policy_combo=None, weight=None):
+    def plot_effect(self, policy_combo=None, weight=None, sim_type=None):
         """
         Plots the summary for a set of experiments
         """
-        save_dir = self.get_save_dir(policy_combo, weight)
+        save_dir = self.get_save_dir(policy_combo, weight, sim_type)
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
