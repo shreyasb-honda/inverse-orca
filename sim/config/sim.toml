@@ -1,8 +1,8 @@
 title = "Configuration file for simulation settings"
 
 # Simumlation settings
-num_runs = 1
-save_anim = true
+num_runs = 50
+save_anim = false
 render_mode = 'human'
 robot_policy = 'weighted_sum'
 human_policy = 'social_force'
