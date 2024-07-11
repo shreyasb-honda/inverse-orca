@@ -265,7 +265,7 @@ class HallwayScene(gym.Env):
                     plt.close(fig)
 
         else:
-            fig, (ax1, ax2) = plt.subplots(figsize=(9, 9), nrows=2, ncols=1, 
+            fig, (ax1, ax2) = plt.subplots(figsize=(9, 9), nrows=2, ncols=1,
                                            height_ratios=[0.7, 0.3])
             ax1.set_aspect('equal')
             ax2.set_aspect('equal')

@@ -216,7 +216,10 @@ class Robot(Agent):
         human_speed = norm(obs['human vel'])
         human_vel_y = obs['human vel'][1]
 
-        x = -self.d_virtual_goal
+        if self.d_virtual_goal is not None:
+            x = -self.d_virtual_goal
+        else:
+            raise TypeError("Please set virtual goal parameters before calling set_vh_desired")
         y = self.y_virtual_goal - human_pos[1]
         vh_direction = np.array([x, y]) + self.time_step * np.array([0., obs['human vel'][1]])
         vh_desired = vh_direction / norm(vh_direction) * human_speed

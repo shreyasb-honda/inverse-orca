@@ -79,7 +79,10 @@ class Orca(Policy):
         self.sim.setAgentPrefVelocity(0, robot_vel)
 
         # Set the preferred velocity to be the goal-directed velocity for the human
-        self.sim.setAgentPrefVelocity(1, (-self.max_speed, 0))
+        if self.max_speed is not None:
+            self.sim.setAgentPrefVelocity(1, (-self.max_speed, 0))
+        else:
+            raise TypeError("Please set max_speed before calling predict")
 
         self.sim.doStep()
         action = self.sim.getAgentVelocity(1)

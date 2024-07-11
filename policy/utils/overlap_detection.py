@@ -144,7 +144,7 @@ class Circle:
         if color is None:
             self.circ = plt.Circle(self.center, self.radius, fill=fill, edgecolor=edgecolor)
         else:
-            self.circ = plt.Circle(self.center, self.radius, fill=fill, color=color)        
+            self.circ = plt.Circle(self.center, self.radius, fill=fill, color=color)
         # ax.scatter(self.center[0], self.center[1], s=9, color=edgecolor)
         ax.add_patch(self.circ)
 
