@@ -135,7 +135,7 @@ def overlap_with_solution_1():
     relative_position = (-1., -1.)
     v_a = (0.1, 0.2)
     v_a_d = (0.3, 0.4)  # Possible to get there completely
-    # vA_d = (0.8, 0.9)  # Not possible to get there in one step
+    # v_a_d = (0.8, 0.9)  # Not possible to get there in one step
     ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_with_solution_1.png'))
 
@@ -151,12 +151,12 @@ def overlap_with_solution_2():
     # Constants
     relative_position = (-1., 1.)
     v_a = (-2.3, 0.5)
+    v_a_d = (-2.5, 0.3)  # Not along the normal
     # cutoff_center = tuple(np.array(relative_position) / TAU)
     # cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     # cutoff_circle = Circle(cutoff_center, cutoff_radius)
     # vo = VelocityObstacle(cutoff_circle)
     # left_normal = np.array(vo.left_tangent.normal)
-    v_a_d = (-2.5, 0.3)  # Not along the normal
     # vA_d = np.array(vA) - 0.3 * left_normal  # Along the normal
 
     ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
@@ -174,13 +174,13 @@ def overlap_with_solution_3():
     # Constants
     relative_position = (1., 1.)
     v_a = (2.3, 0.5)
+    v_a_d = (2.5, 0.3)  # Not along the normal
     # cutoff_center = tuple(np.array(relative_position) / TAU)
     # cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     # cutoff_circle = Circle(cutoff_center, cutoff_radius)
     # vo = VelocityObstacle(cutoff_circle)
     # right_normal = np.array(vo.right_tangent.normal)
-    v_a_d = (2.5, 0.3)  # Not along the normal
-    # vA_d = np.array(vA) + 0.3 * right_normal  # Along the normal
+    # v_a_d = np.array(vA) + 0.3 * right_normal  # Along the normal
 
     ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_with_solution_3.png'))
@@ -197,13 +197,13 @@ def overlap_without_solution_1():
     # Constants
     relative_position = (1., 1.)
     v_a = (2.3, -0.1)
+    v_a_d = (2.5, -0.5)  # Not along the normal
     # cutoff_center = tuple(np.array(relative_position) / TAU)
     # cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     # cutoff_circle = Circle(cutoff_center, cutoff_radius)
     # vo = VelocityObstacle(cutoff_circle)
     # right_normal = np.array(vo.right_tangent.normal)
-    v_a_d = (2.5, -0.5)  # Not along the normal
-    # vA_d = np.array(vA) + 0.3 * right_normal  # Along the normal
+    # v_a_d = np.array(vA) + 0.3 * right_normal  # Along the normal
 
     ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_without_solution_1.png'))
@@ -220,13 +220,13 @@ def overlap_without_solution_2():
     # Constants
     relative_position = (1., 1.)
     v_a = (0., 1.5)
-    cutoff_center = tuple(np.array(relative_position) / TAU)
-    cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
-    cutoff_circle = Circle(cutoff_center, cutoff_radius)
-    vo = VelocityObstacle(cutoff_circle)
-    # right_normal = np.array(vo.right_tangent.normal)
     v_a_d = (-0.5, 1.9)  # Not along the normal
-    # vA_d = np.array(vA) + 0.3 * right_normal  # Along the normal
+    # cutoff_center = tuple(np.array(relative_position) / TAU)
+    # cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
+    # cutoff_circle = Circle(cutoff_center, cutoff_radius)
+    # vo = VelocityObstacle(cutoff_circle)
+    # right_normal = np.array(vo.right_tangent.normal)
+    # v_a_d = np.array(vA) + 0.3 * right_normal  # Along the normal
     ax = test(relative_position, v_a, v_a_d, COLLISION_RESPONSIBILITY)
     plt.savefig(os.path.join(OUT_DIRECTORY, 'overlap_without_solution_2.png'))
 

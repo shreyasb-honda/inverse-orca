@@ -30,6 +30,9 @@ class CollisionChecker:
 
 
 def check_collision(obs):
+    """
+    Checks for collision between the human and the robot
+    """
     human_pos = obs['human pos']
     human_radius = obs['human rad']
     robot_pos = obs['robot pos']

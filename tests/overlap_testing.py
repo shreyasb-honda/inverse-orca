@@ -4,7 +4,6 @@ Tests the overlap detection algorithm
 
 import os
 from os.path import expanduser
-from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
