@@ -135,8 +135,8 @@ class InverseOrca(Policy):
         human_pos = observation['human pos']
 
         goal_reached = human_pos[1] <= self.y_virtual_goal
-        crossed_human = robot_pos[0] >= human_pos[0] - self.d_virtual_goal
-        # crossed_human = False
+        # crossed_human = robot_pos[0] >= human_pos[0] - self.d_virtual_goal
+        crossed_human = False
 
         if goal_reached or crossed_human:
             return True
