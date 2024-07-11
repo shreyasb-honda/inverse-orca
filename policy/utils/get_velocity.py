@@ -51,7 +51,7 @@ class OptimalInfluence:
         self.u_hat = np.array(self.vo.right_tangent.normal)
         d = abs(self.u_hat.dot(current_to_desired))
         dmax = self.vo.find_dmax(self.velocity_circle, 'right')
-        print(dmax, d)
+        # print(dmax, d)
         d = min(dmax, d)
         self.u = d * self.u_hat
 

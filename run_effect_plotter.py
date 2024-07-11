@@ -23,9 +23,11 @@ def main():
     """
     The main function
     """
-    policy_combos = [['orca', 'inverse'],
-                     ['orca', 'weighted'],
-                     ['sf', 'inverse'],
+    # policy_combos = [['orca', 'inverse'],
+    #                  ['orca', 'weighted'],
+    #                  ['sf', 'inverse'],
+    #                  ['sf', 'weighted']]
+    policy_combos = [['sf', 'inverse'],
                      ['sf', 'weighted']]
 
     weights = [0.2, 0.5, 0.8]

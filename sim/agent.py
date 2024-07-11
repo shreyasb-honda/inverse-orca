@@ -75,8 +75,9 @@ class Agent:
         """
         Set the current velocity of this agent as a tuple (vx, vy)
         """
-        error_msg = "Setting a speed higher than the max allowed speed"
-        assert norm(np.array([vx, vy])) <= self.max_speed, error_msg
+        speed = round(norm(np.array([vx, vy])), 6)
+        error_msg = f"Setting a speed ({speed}) higher than the max speed {self.max_speed}"
+        assert speed <= self.max_speed, error_msg
         self.vx = vx
         self.vy = vy
 

@@ -6,7 +6,6 @@ and the velocity output of the Inverse ORCA algorithm
 from typing import Dict
 import numpy as np
 from policy.invorca import InverseOrca
-from policy.utils.overlap_detection import Point
 
 class WeightedSum(InverseOrca):
     """
