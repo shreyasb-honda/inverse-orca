@@ -89,7 +89,7 @@ class OptimalInfluence:
             # dist_from_proj_line = proj_line.dist(self.vA)
             # dist_along_line = np.sqrt(self.vB_max ** 2 - dist_from_proj_line ** 2)
             # u_hat_perp = np.array([-self.u_hat[1], self.u_hat[0]])
-            # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat + 
+            # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat +
             # dist_along_line * u_hat_perp
             # self.vB = tuple(np.array(self.vA) - relative_velocity)
             # self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
@@ -162,7 +162,7 @@ class OptimalInfluence:
             # dist_from_proj_line = proj_line.dist(self.vA)
             # dist_along_line = np.sqrt(self.vB_max ** 2 - dist_from_proj_line ** 2)
             # u_hat_perp = np.array([self.u_hat[1], -self.u_hat[0]])
-            # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat + 
+            # relative_velocity = np.array(self.vA) - dist_from_proj_line * self.u_hat +
             # dist_along_line * u_hat_perp
             # self.vB = tuple(np.array(self.vA) - relative_velocity)
             # self.vA_new = tuple(np.array(self.vA) + self.collision_responsibility * self.u)
@@ -225,7 +225,7 @@ class OptimalInfluence:
         self.u_hat /= l
         # d = min(self.vB_max, l - self.epsilon)
         # We need to subtract the radius to ensure that we do not end up inside the VO
-        d = min(self.vr_max, l - self.epsilon - self.vo.cutoff_circle.radius)  
+        d = min(self.vr_max, l - self.epsilon - self.vo.cutoff_circle.radius)
         self.u = d * self.u_hat
 
     def handle_getting_closer_to_vo(self):
@@ -237,7 +237,7 @@ class OptimalInfluence:
         the point as close as possible to the VO
         """
 
-        cutoff_center_to_current = tuple(-np.array(self.vo.cutoff_circle.center) 
+        cutoff_center_to_current = tuple(-np.array(self.vo.cutoff_circle.center)
                                          + np.array(self.vh))
         angle_right = get_angle(self.vo.right_tangent.normal, cutoff_center_to_current)
         angle_left = get_angle(self.vo.left_tangent.normal, cutoff_center_to_current)
