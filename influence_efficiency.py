@@ -12,17 +12,18 @@ from policy.utils.get_velocity import OptimalInfluence, VelocityObstacle, Circle
 logging.disable(logging.ERROR)
 
 HUMAN_POS = (0., 0.)
-HUMAN_HEADING = (1., 0.)
-DESIRED_HEADING = np.array([1., -1.])
+HUMAN_HEADING = (-1., 0.)
+DESIRED_HEADING = np.array([-2., 1.])
 DESIRED_HEADING = tuple(DESIRED_HEADING / norm(DESIRED_HEADING))
 AGENT_RADIUS = 0.3
-MAX_RADIUS = 5
-NUM_SAMPLES = int(1e5)
+MAX_RADIUS = 3
+TIME_HORIZON = 6
+NUM_SAMPLES = int(1e4)
 MAX_SPEED = 1.5
 HUMAN_CIRCLE = Circle(HUMAN_POS, AGENT_RADIUS)
 
-# HUMAN_POLICY = 'orca'
-HUMAN_POLICY = 'social_force'
+HUMAN_POLICY = 'orca'
+# HUMAN_POLICY = 'social_force'
 
 
 def main():
@@ -32,7 +33,7 @@ def main():
     rng = np.random.default_rng(seed=123)
     i = 0
 
-    data = np.zeros((NUM_SAMPLES, 5))
+    data = np.zeros((NUM_SAMPLES, 10))
     while i < NUM_SAMPLES:
         theta = 2 * np.pi * rng.random()
         radius = MAX_RADIUS * rng.random()
@@ -40,12 +41,14 @@ def main():
         robot_circle = Circle(robot_pos, AGENT_RADIUS)
 
         if robot_circle.circle_overlap(HUMAN_CIRCLE):
-            i -= 1
+            # i -= 1
             continue
 
         # Get the robot's velocity using inverse ORCA
-        center = (robot_pos[0] / 6, robot_pos[1] / 6)
-        cutoff_circle = Circle(center, MAX_SPEED)
+        center = ((robot_pos[0] - HUMAN_POS[0]) / TIME_HORIZON,
+                  (robot_pos[1]- HUMAN_POS[1]) / TIME_HORIZON)
+
+        cutoff_circle = Circle(center, 2 * AGENT_RADIUS / TIME_HORIZON)
         vo = VelocityObstacle(cutoff_circle)
         opt = OptimalInfluence(vo, vr_max=MAX_SPEED, collision_responsibility=1.0)
         vr, u = opt.compute_velocity(HUMAN_HEADING, DESIRED_HEADING)
@@ -106,19 +109,67 @@ def main():
         data[i, 1] = radius
         data[i, 2] = robot_pos[0]
         data[i, 3] = robot_pos[1]
-        data[i, 4] = dot
+        data[i, 4] = dot / norm(vh)
+        data[i, 5] = vr[0]
+        data[i, 6] = vr[1]
+        data[i, 7] = vh[0]
+        data[i, 8] = vh[1]
+        data[i, 9] = dot
 
         i += 1
 
     print(data[:, 4].max())
     fig, ax = plt.subplots()
-    scatter = ax.scatter(x=data[:, 2], y=data[:, 3], c=data[:, 4], cmap='viridis')
+    scatter = ax.scatter(x=data[:, 2], y=data[:, 3], c=data[:, 4], cmap='viridis', vmin=0.0, vmax=1.0)
 
-    ax.arrow(0, 0, HUMAN_HEADING[0], HUMAN_HEADING[1], color='red', lw=1.5, label=r'$v_h$')
-    ax.arrow(0, 0, DESIRED_HEADING[0], DESIRED_HEADING[1], color='blue', lw=1.5, label=r'$v_h^d$')
+    ax.arrow(HUMAN_POS[0], HUMAN_POS[1],
+             HUMAN_HEADING[0], HUMAN_HEADING[1],
+             color='red', lw=1.5, label=r'$v_h$')
+    ax.arrow(HUMAN_POS[0], HUMAN_POS[1],
+             DESIRED_HEADING[0], DESIRED_HEADING[1],
+             color='blue', lw=1.5, label=r'$v_h^d$')
+    ax.set_title('Cos of angle between new velocity and desired velocity')
     ax.set_aspect('equal')
-    ax.legend()
+    ax.legend(loc='upper right')
     plt.colorbar(scatter)
+
+    fig, ax = plt.subplots()
+    scatter = ax.scatter(x=data[:, 2], y=data[:, 3], c=data[:, 9], cmap='viridis', vmin=0.0, vmax=1.0)
+    ax.arrow(HUMAN_POS[0], HUMAN_POS[1],
+             HUMAN_HEADING[0], HUMAN_HEADING[1],
+             color='red', lw=1.5, label=r'$v_h$')
+    ax.arrow(HUMAN_POS[0], HUMAN_POS[1],
+             DESIRED_HEADING[0], DESIRED_HEADING[1],
+             color='blue', lw=1.5, label=r'$v_h^d$')
+    ax.set_title('Dot product between new velocity and desired velocity')
+    ax.set_aspect('equal')
+    ax.legend(loc='upper right')
+    plt.colorbar(scatter)
+
+    fig, ax = plt.subplots()
+    ax.quiver(data[:,2], data[:,3], data[:,5], data[:,6])
+    ax.arrow(HUMAN_POS[0], HUMAN_POS[1],
+             HUMAN_HEADING[0], HUMAN_HEADING[1],
+             color='red', lw=1.5, label=r'$v_h$')
+    ax.arrow(HUMAN_POS[0], HUMAN_POS[1],
+             DESIRED_HEADING[0], DESIRED_HEADING[1],
+             color='blue', lw=1.5, label=r'$v_h^d$')
+    ax.set_aspect('equal')
+    ax.set_title('Field of robot velocities')
+    ax.legend(loc='upper right')
+
+    fig, ax = plt.subplots()
+    ax.quiver(data[:,2], data[:,3], data[:,7], data[:,8])
+    ax.arrow(HUMAN_POS[0], HUMAN_POS[1],
+             HUMAN_HEADING[0], HUMAN_HEADING[1],
+             color='red', lw=1.5, label=r'$v_h$')
+    ax.arrow(HUMAN_POS[0], HUMAN_POS[1],
+             DESIRED_HEADING[0], DESIRED_HEADING[1],
+             color='blue', lw=1.5, label=r'$v_h^d$')
+    ax.set_aspect('equal')
+    ax.set_title('Field of human velocities')
+    ax.legend(loc='upper right')
+
     plt.show()
 
 

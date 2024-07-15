@@ -62,7 +62,7 @@ class OptimalInfluence:
         # There is no overlap between the relative velocity circle and
         # the line at a distance d from the tangent
         if not self.velocity_circle.line_overlap(proj_line):
-            print("No overlap of right projection line and velocity circle")
+            # print("No overlap of right projection line and velocity circle")
             self.solution_exists = False
 
         if self.solution_exists:
