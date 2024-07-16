@@ -293,27 +293,42 @@ class OptimalInfluence:
             self.solution_exists = True
             current_to_desired = tuple(np.array(vh_d) - np.array(vh))
 
-            # Angle with the left tangent's normal
-            angle_left = get_angle(self.vo.left_tangent.normal, current_to_desired)
+            dot_left = -np.dot(self.vo.left_tangent.normal, current_to_desired)
+            dot_right = np.dot(self.vo.right_tangent.normal, current_to_desired)
 
-            # Angle with the right tangent's normal
-            angle_right = get_angle(self.vo.right_tangent.normal, current_to_desired)
-
-            if 0 < angle_right < np.pi / 2:
-                print("Projecting on right leg")
+            if dot_left < dot_right:
+                # print("Projecting on right leg")
                 self.vr, self.u = self.handle_right_leg(current_to_desired)
                 if self.solution_exists:
                     return self.vr, self.u
-
-            if np.pi/2 < angle_left < np.pi:
-                print("Projecting on left leg")
+            else:
+                # print("Projecting on left leg")
                 self.vr, self.u = self.handle_left_leg(current_to_desired)
                 if self.solution_exists:
                     return self.vr, self.u
 
-            if angle_right < 0 and angle_left < 0:
-                print("Projecting on cutoff circle")
-                return self.handle_cutoff_circle(current_to_desired)
+
+            # # Angle with the left tangent's normal
+            # angle_left = get_angle(self.vo.left_tangent.normal, current_to_desired)
+
+            # # Angle with the right tangent's normal
+            # angle_right = get_angle(self.vo.right_tangent.normal, current_to_desired)
+
+            # if 0 < angle_right < np.pi / 2:
+            #     print("Projecting on right leg")
+            #     self.vr, self.u = self.handle_right_leg(current_to_desired)
+            #     if self.solution_exists:
+            #         return self.vr, self.u
+
+            # if np.pi/2 < angle_left < np.pi:
+            #     print("Projecting on left leg")
+            #     self.vr, self.u = self.handle_left_leg(current_to_desired)
+            #     if self.solution_exists:
+            #         return self.vr, self.u
+
+            # if angle_right < 0 and angle_left < 0:
+            #     print("Projecting on cutoff circle")
+            #     return self.handle_cutoff_circle(current_to_desired)
 
             if self.solution_exists:
                 self.solution_exists = False
