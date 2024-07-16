@@ -22,15 +22,15 @@ MAX_SPEED = 1.5
 
 # Original inputs
 HUMAN_POS = (0., 0.)
-HUMAN_HEADING = (-1., 0.)
-DESIRED_HEADING = np.array([-1., -1.])
+HUMAN_HEADING = (1., 0.)
+DESIRED_HEADING = np.array([1., 1.])
 DESIRED_HEADING = tuple(DESIRED_HEADING / norm(DESIRED_HEADING))
 HUMAN_CIRCLE = Circle(HUMAN_POS, AGENT_RADIUS)
 
 # Mirrored inputs
 HUMAN_POS_MIRRORED = (0., 0.)
-HUMAN_HEADING_MIRRORED = (-1., 0.)
-DESIRED_HEADING_MIRRORED = np.array([-1., 1.])
+HUMAN_HEADING_MIRRORED = (1., 0.)
+DESIRED_HEADING_MIRRORED = np.array([1., -1.])
 DESIRED_HEADING_MIRRORED = tuple(DESIRED_HEADING_MIRRORED / norm(DESIRED_HEADING_MIRRORED))
 HUMAN_CIRCLE_MIRRORED = Circle(HUMAN_POS_MIRRORED, AGENT_RADIUS)
 
@@ -167,7 +167,10 @@ def main():
     #     i += 1
 
     # robot_pos = (-0.617, 0.361)
-    robot_pos = (-0.686, 0.442)
+    # robot_pos = (-0.686, 0.442)
+
+    # robot_pos = (0.665, -1.183)
+    robot_pos = (0.667, -1.790)
 
     # print("Original: ")
     vh, vr = get_velocities(robot_pos, HUMAN_POS,
