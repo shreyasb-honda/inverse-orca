@@ -8,10 +8,10 @@ import logging
 import numpy as np
 from numpy.linalg import norm
 import rvo2
+logging.disable(logging.ERROR)
 import pysocialforce as psf
 import matplotlib.pyplot as plt
 from policy.utils.get_velocity import OptimalInfluence, VelocityObstacle, Circle
-logging.disable(logging.ERROR)
 
 
 AGENT_RADIUS = 0.3
@@ -53,9 +53,24 @@ def get_velocities(robot_pos, human_pos, heading, desired_heading):
     vo.plot(ax)
     opt = OptimalInfluence(vo, vr_max=MAX_SPEED, collision_responsibility=1.0)
     vr, u = opt.compute_velocity(heading, desired_heading)
+    print("Projection magnitude:", norm(u))
 
     velocity_circle = Circle(heading, MAX_SPEED)
     velocity_circle.plot(ax)
+
+    # More to plot
+    #   - The normal(s)
+    #   - The vector from vh to vh_d
+
+    current_to_desired = np.array(desired_heading) - np.array(heading)
+    current_to_desired /= norm(current_to_desired)
+
+    ax.arrow(*vo.left_tangent.point, *current_to_desired, color='blue', lw=2)
+    ax.arrow(*vo.right_tangent.point, *current_to_desired, color='blue', lw=2)
+
+    ax.arrow(*vo.left_tangent.point, *vo.left_tangent.normal, color='orange', lw=2)
+
+    ax.arrow(*vo.right_tangent.point, *vo.right_tangent.normal, color='orange', lw=2)
 
     ax.set_aspect('equal')
 
@@ -154,28 +169,29 @@ def main():
     # robot_pos = (-0.617, 0.361)
     robot_pos = (-0.686, 0.442)
 
-    print("Original: ")
+    # print("Original: ")
     vh, vr = get_velocities(robot_pos, HUMAN_POS,
                             HUMAN_HEADING,
                             DESIRED_HEADING)
-    print(vh)
-    print(vr)
+    print("Robot velocity:", vr)
+    print("Human velocity:", vh)
+    print("Human speed:", norm(vh))
     dot = np.dot(vh, DESIRED_HEADING) / norm(vh)
-    print(dot)
+    print("Cos of angle:", dot)
 
-    print()
-    print()
-    print("Mirrored")
+    # print()
+    # print()
+    # print("Mirrored")
 
-    robot_pos_mirrored = (robot_pos[0], -robot_pos[1])
-    vh_mirrored, vr_mirrored = get_velocities(robot_pos_mirrored,
-                                                HUMAN_POS_MIRRORED,
-                                                HUMAN_HEADING_MIRRORED,
-                                                DESIRED_HEADING_MIRRORED)
-    print(vh_mirrored)
-    print(vr_mirrored)
-    dot = np.dot(vh_mirrored, DESIRED_HEADING) / norm(vh_mirrored)
-    print(dot)
+    # robot_pos_mirrored = (robot_pos[0], -robot_pos[1])
+    # vh_mirrored, vr_mirrored = get_velocities(robot_pos_mirrored,
+    #                                             HUMAN_POS_MIRRORED,
+    #                                             HUMAN_HEADING_MIRRORED,
+    #                                             DESIRED_HEADING_MIRRORED)
+    # print(vh_mirrored)
+    # print(vr_mirrored)
+    # dot = np.dot(vh_mirrored, DESIRED_HEADING) / norm(vh_mirrored)
+    # print(dot)
 
     plt.show()
 
