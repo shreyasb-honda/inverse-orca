@@ -64,12 +64,14 @@ def main():
             vals = tau_values
         elif effect == 'max_speed':
             vals = max_speed_values
+        else:
+            raise ValueError(f"choose effect from (alpha, time_horizon, max_speed), not {effect}")
 
         for val in vals:
             # print(val)
             if render_mode == 'static':
                 for i in range(num_trajectories):
-                    fig, ax = data_reader.plot_random_trajectory(val, render_mode)
+                    fig, _ = data_reader.plot_random_trajectory(val, render_mode)
                     save_dir = data_reader.get_save_dir(sim_type=sim_type)
                     save_dir = path.join(save_dir, 'trajectories')
                     if not path.exists(save_dir):

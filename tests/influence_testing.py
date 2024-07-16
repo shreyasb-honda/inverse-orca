@@ -22,7 +22,7 @@ COLLISION_RESPONSIBILITY = 0.5
 HOME = expanduser('~')
 OUT_DIRECTORY = os.path.join(HOME, 'OneDrive', 'Documents', 'Notes', 'Plots', 'influence-testing')
 
-def test(relative_position: Point, v_a: Point, v_a_d: Point, 
+def test(relative_position: Point, v_a: Point, v_a_d: Point,
          alpha: float = 0.5):
     """
     Generates and plots the optimal velocity for the robot to influence the human's velocity
@@ -39,7 +39,7 @@ def test(relative_position: Point, v_a: Point, v_a_d: Point,
                                collision_responsibility=alpha)
     invorca.compute_velocity(v_a, v_a_d)
 
-    fig, ax = plt.subplots(layout='tight', figsize=(9,9))
+    _, ax = plt.subplots(layout='tight', figsize=(9,9))
     ax.set_aspect('equal')
     ax.axhline(color='black')
     ax.axvline(color='black')

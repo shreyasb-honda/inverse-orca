@@ -286,7 +286,7 @@ class Renderer:
             self.debug_vel_ax.scatter(vr[frame_id][0], vr[frame_id][1],
                                       color='tab:orange', label=r'$v_r$')
             self.debug_vel_ax.scatter(vh_expected[frame_id][0], vh_expected[frame_id][1],
-                                      color='black', alpha=0.7, 
+                                      color='black', alpha=0.7,
                                       label=r'$\hat{v}_h^{new}$', marker='*')
             self.debug_vel_ax.scatter(vh_new[frame_id][0], vh_new[frame_id][1],
                                       color='tab:blue', alpha=0.7, label=r'$v_h^{new}$', marker='^')
@@ -329,6 +329,6 @@ class Renderer:
                                   color='tab:blue', alpha=0.9, label=r'$v_h^{new}$', marker='^')
         self.debug_vel_ax.legend(loc='center left', bbox_to_anchor=(1.05, 0.5))
 
-        cid = fig.canvas.mpl_connect('key_press_event', onkey)
+        _ = fig.canvas.mpl_connect('key_press_event', onkey)
 
         plt.show()

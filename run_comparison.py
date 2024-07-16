@@ -1,3 +1,8 @@
+"""
+Runs a comparison between the official orca implementation
+and the expectation by inverse ORCA
+"""
+
 import argparse
 import matplotlib.pyplot as plt
 from tests.compare_official import *
@@ -10,7 +15,7 @@ def main():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test-num', type=int, 
+    parser.add_argument('--test-num', type=int,
                         help='Index of the test to run 0-2 (default: 0)', default=0)
 
     args = parser.parse_args()

@@ -81,7 +81,7 @@ class InverseOrca(Policy):
 
         if self.stopping_criterion(observation):
             # print("ORCA started...")
-            params = (self.neighbor_dist, self.max_neighbors, 
+            params = (self.neighbor_dist, self.max_neighbors,
                       self.orca_time_horizon, self.orca_time_horizon_obst)
 
             # Create a simulator instance

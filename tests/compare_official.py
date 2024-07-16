@@ -16,7 +16,7 @@ EPSILON = 1e-3
 COLLISION_RESPONSIBILITY = 0.5
 
 
-def test(relative_position: Point, va: Point, va_d: Point, 
+def test(relative_position: Point, va: Point, va_d: Point,
          collision_responsibility: float = 0.5):
     """
     Generates and plots the optimal velocity for the robot to influence the human's velocity
@@ -29,11 +29,11 @@ def test(relative_position: Point, va: Point, va_d: Point,
     cutoff_radius = (RADIUS_A + RADIUS_B) / TAU
     cutoff_circle = Circle(cutoff_center, cutoff_radius)
     vo = VelocityObstacle(cutoff_circle)
-    invorca = OptimalInfluence(vo, vr_max=VB_MAX, epsilon=EPSILON, 
+    invorca = OptimalInfluence(vo, vr_max=VB_MAX, epsilon=EPSILON,
                                collision_responsibility=collision_responsibility)
     invorca.compute_velocity(va, va_d)
 
-    fig, ax = plt.subplots(layout='tight', figsize=(9, 9))
+    _, ax = plt.subplots(layout='tight', figsize=(9, 9))
     ax.set_aspect('equal')
     ax.axhline(color='black')
     ax.axvline(color='black')
@@ -244,7 +244,7 @@ def test_random(num_runs: int = 100, seed: int | None = None):
         # something in the interval of [-5, 5] x [-5, 5]
         relative_position = 10 * rng.random(2) - 5
         while np.linalg.norm(relative_position) < RADIUS_A + RADIUS_B + 0.5:
-            relative_position = 10 * rng.random(2) - 5   
+            relative_position = 10 * rng.random(2) - 5
             # To ensure that there is no collision to begin with
 
         # something in the interval of [-1, 1] x [-1, 1]
@@ -283,7 +283,7 @@ def test_random(num_runs: int = 100, seed: int | None = None):
         params = (20., 10, time_horizon, 2.0)
         sim = rvo2.PyRVOSimulator(1.0, *params, RADIUS_B, VB_MAX, 
                                   collisionResponsibility=collision_responsibility)
-        sim.addAgent(tuple(relative_position), *params, RADIUS_B, VB_MAX, invorca.vr, 
+        sim.addAgent(tuple(relative_position), *params, RADIUS_B, VB_MAX, invorca.vr,
                      collision_responsibility)
         sim.addAgent((0., 0.), *params, RADIUS_A, VB_MAX, invorca.vh, collision_responsibility)
 
