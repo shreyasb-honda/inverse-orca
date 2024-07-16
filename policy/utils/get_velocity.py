@@ -50,11 +50,11 @@ class OptimalInfluence:
 
         self.u_hat = np.array(self.vo.right_tangent.normal)
         d = abs(self.u_hat.dot(current_to_desired))
-        # print(d)
+        # print("d:", d)
         dmax = self.vo.find_dmax(self.velocity_circle, 'right')
         # print(dmax, d)
         d = min(dmax, d)
-        # print(dmax)
+        # print("dmax:", dmax)
         self.u = d * self.u_hat
 
         tangent = self.vo.right_tangent
@@ -84,7 +84,7 @@ class OptimalInfluence:
                 # print("right")
                 relative_velocity = np.array(tangent.point) - d * self.u_hat
                 self.vr = self.vh - relative_velocity
-                self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
+                # self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
                 self.vr = tuple(self.vr)
                 return self.vr, self.u
 
@@ -108,10 +108,19 @@ class OptimalInfluence:
                 relative_velocity = np.array(inter_point) + self.epsilon * u_perp
                 self.vr = np.array(self.vh) - relative_velocity
                 self.vr = tuple(self.vr)
-                self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
                 return self.vr, self.u
 
         return None, None
+
+    def compute_vh(self, u):
+        """
+        Computes the new human velocity given the projection
+        """
+        vh_new = np.array(self.vh) + self.collision_responsibility * u
+        if norm(vh_new) > 1.0:
+            vh_new /= norm(vh_new)
+        return tuple(vh_new)
+
 
     def handle_left_leg(self, current_to_desired):
         """
@@ -121,10 +130,10 @@ class OptimalInfluence:
 
         self.u_hat = -np.array(self.vo.left_tangent.normal)
         d = abs(self.u_hat.dot(current_to_desired))
-        # print(d)
+        # print("d:", d)
         dmax = self.vo.find_dmax(self.velocity_circle, 'left')
         d = min(dmax, d)
-        # print(dmax)
+        # print("dmax:", dmax)
         self.u = d * self.u_hat
 
         tangent = self.vo.left_tangent
@@ -149,7 +158,7 @@ class OptimalInfluence:
                 # print("right")
                 relative_velocity = np.array(tangent.point) - d * self.u_hat
                 self.vr = self.vh - relative_velocity
-                self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
+                # self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
                 self.vr = tuple(self.vr)
                 return self.vr, self.u
 
@@ -160,7 +169,7 @@ class OptimalInfluence:
                 relative_velocity = np.array(inter_point) - self.epsilon * u_perp
                 self.vr = np.array(self.vh) - relative_velocity
                 self.vr = tuple(self.vr)
-                self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
+                # self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
                 return self.vr, self.u
 
             # dist_from_proj_line = proj_line.dist(self.vA)
@@ -293,17 +302,57 @@ class OptimalInfluence:
             self.solution_exists = True
             current_to_desired = tuple(np.array(vh_d) - np.array(vh))
 
+            # vr_r, u_r = self.handle_right_leg(current_to_desired)
+            # vh_r = self.compute_vh(u_r)
+            # dist_r = 1e5
+            # right_sol_exists = self.solution_exists
+            # if self.solution_exists:
+            #     dist_r = norm(np.array(vh_r) - np.array(self.vh_d))
+
+            # vr_l, u_l = self.handle_left_leg(current_to_desired)
+            # vh_l = self.compute_vh(u_l)
+            # dist_l = 1e5
+            # left_sol_exits = self.solution_exists
+            # if self.solution_exists:
+            #     dist_l = norm(np.array(vh_l) - np.array(self.vh_d))
+
+            # if left_sol_exits and right_sol_exists:
+            #     if dist_r < dist_l:
+            #         print("Selecting right leg")
+            #         self.vr, self.u, self.vh_new = vr_r, u_r, vh_r
+            #     else:
+            #         print("Selecting left leg")
+            #         self.vr, self.u, self.vh_new = vr_l, u_l, vh_l
+            #     return self.vr, self.u
+
+            # if left_sol_exits:
+            #     print("Selecting left leg. right no exist")
+            #     self.vr, self.u, self.vh_new = vr_l, u_l, vh_l
+            #     return self.vr, self.u
+
+            # if right_sol_exists:
+            #     print("Selecting right leg. left no exist")
+            #     self.vr, self.u, self.vh_new = vr_r, u_r, vh_r
+            #     return self.vr, self.u
+
             dot_left = -np.dot(self.vo.left_tangent.normal, current_to_desired)
             dot_right = np.dot(self.vo.right_tangent.normal, current_to_desired)
+
+            # print("dot_left:", dot_left)
+            # print("dot_right:", dot_right)
 
             if dot_left < dot_right:
                 # print("Projecting on right leg")
                 self.vr, self.u = self.handle_right_leg(current_to_desired)
+                # self.vr, self.u = self.handle_left_leg(current_to_desired)
+                self.vh_new = self.compute_vh(self.u)
                 if self.solution_exists:
                     return self.vr, self.u
             else:
                 # print("Projecting on left leg")
+                # self.vr, self.u = self.handle_right_leg(current_to_desired)
                 self.vr, self.u = self.handle_left_leg(current_to_desired)
+                self.vh_new = self.compute_vh(self.u)
                 if self.solution_exists:
                     return self.vr, self.u
 
@@ -330,8 +379,8 @@ class OptimalInfluence:
             #     print("Projecting on cutoff circle")
             #     return self.handle_cutoff_circle(current_to_desired)
 
-            if self.solution_exists:
-                self.solution_exists = False
+            # if not right_sol_exists and not left_sol_exits:
+            #     self.solution_exists = False
                 # This means that there is an overlap between the velocity obstacle and the velocity
                 # circle. However, the current conditions dictate that nudging the human towards
                 # the desired velocity is not possible

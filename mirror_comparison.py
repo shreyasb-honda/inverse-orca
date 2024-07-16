@@ -39,6 +39,69 @@ HUMAN_POLICY = 'orca'
 
 VMIN = np.dot(HUMAN_HEADING, DESIRED_HEADING)
 
+
+def get_velocity_orca(robot_pos, human_pos, heading, vr):
+    """
+    Returns the human velocity according to ORCA
+    """
+    params = (20, 10, 6, 10)
+
+    # Create a simulator instance
+    sim = rvo2.PyRVOSimulator(0.25, *params, AGENT_RADIUS,
+                                MAX_SPEED, collisionResponsibility=1.0)
+
+
+    # Add the human
+    sim.addAgent(human_pos, *params, AGENT_RADIUS,
+                1.0, heading,
+                collisionResponsibility=1.0)
+
+    # Add the robot
+    sim.addAgent(robot_pos, *params, AGENT_RADIUS,
+                    MAX_SPEED, vr,
+                    collisionResponsibility=1.0)
+
+    # Set the preferred velocity of the human to be their current velocity
+    sim.setAgentPrefVelocity(0, heading)
+
+    # Set the preferred velocity of the robot to be goal-directed maximum
+    sim.setAgentPrefVelocity(1, (-MAX_SPEED, 0.))
+
+    # Perform a step
+    sim.doStep()
+    vh = sim.getAgentVelocity(0)
+
+    return vh
+
+
+def get_velocity_sf(robot_pos, human_pos, heading, vr):
+    """
+    Returns the human velocity according to social force model
+    """
+    human_goal = heading
+    robot_goal = (0., robot_pos[1])
+
+    initial_state = np.array(
+        [
+            [*human_pos, *heading, *human_goal],
+            [*robot_pos, *vr, *robot_goal]
+        ]
+    )
+
+    config_file = os.path.join('sim', 'config', 'policy.toml')
+    s = psf.Simulator(
+        initial_state,
+        config_file=config_file
+    )
+
+    s.step(1)
+    states, _ = s.get_states()
+
+    vh = np.array([states[1, 0, 2], states[1, 0, 3]])
+
+    return vh
+
+
 def get_velocities(robot_pos, human_pos, heading, desired_heading):
     """
     Returns the human's and the robot's velocities
@@ -54,6 +117,7 @@ def get_velocities(robot_pos, human_pos, heading, desired_heading):
     opt = OptimalInfluence(vo, vr_max=MAX_SPEED, collision_responsibility=1.0)
     vr, u = opt.compute_velocity(heading, desired_heading)
     print("Projection magnitude:", norm(u))
+    print("Projection:", u)
 
     velocity_circle = Circle(heading, MAX_SPEED)
     velocity_circle.plot(ax)
@@ -76,53 +140,10 @@ def get_velocities(robot_pos, human_pos, heading, desired_heading):
 
     # Compute the human' velocity according to its policy
     if HUMAN_POLICY == 'orca':
-        params = (20, 10, 6, 10)
-
-        # Create a simulator instance
-        sim = rvo2.PyRVOSimulator(0.25, *params, AGENT_RADIUS,
-                                  MAX_SPEED, collisionResponsibility=1.0)
-
-        # Add the robot
-        sim.addAgent(robot_pos, *params, AGENT_RADIUS,
-                     MAX_SPEED, vr,
-                     collisionResponsibility=1.0)
-
-        # Add the human
-        sim.addAgent(human_pos, *params, AGENT_RADIUS,
-                    1.0, heading,
-                    collisionResponsibility=1.0)
-
-        # Set the preferred velocity of the robot to be goal-directed maximum
-        sim.setAgentPrefVelocity(0, (MAX_SPEED, 0.))
-
-        # Set the preferred velocity of the human to be their current velocity
-        sim.setAgentPrefVelocity(1, heading)
-
-        # Perform a step
-        sim.doStep()
-        vh = sim.getAgentVelocity(1)
+        vh = get_velocity_orca(robot_pos, human_pos, heading, vr)
 
     elif HUMAN_POLICY == 'social_force':
-        human_goal = heading
-        robot_goal = (0., robot_pos[1])
-
-        initial_state = np.array(
-            [
-                [*human_pos, *heading, *human_goal],
-                [*robot_pos, *vr, *robot_goal]
-            ]
-        )
-
-        config_file = os.path.join('sim', 'config', 'policy.toml')
-        s = psf.Simulator(
-            initial_state,
-            config_file=config_file
-        )
-
-        s.step(1)
-        states, _ = s.get_states()
-
-        vh = np.array([states[1, 0, 2], states[1, 0, 3]])
+        vh = get_velocity_sf(robot_pos, human_pos, heading, vr)
 
     return vh, vr
 
@@ -166,11 +187,24 @@ def main():
 
     #     i += 1
 
+    # The boundary cases when the cutoff circle was included in potential projections
     # robot_pos = (-0.617, 0.361)
     # robot_pos = (-0.686, 0.442)
 
+    # The boundary cases when the cutoff circle was not included in potential projections
     # robot_pos = (0.665, -1.183)
-    robot_pos = (0.667, -1.790)
+    # robot_pos = (0.667, -1.790)
+
+    # Robot positions around the boundary
+    eps = 1e-1
+    boundary = -np.array(DESIRED_HEADING) + np.array(HUMAN_HEADING)
+    boundary /= norm(boundary)
+    boundary_perp = np.array([-boundary[1], boundary[0]])
+    _lambda = 1.5
+    robot_pos = boundary * _lambda + eps * boundary_perp
+    robot_pos = boundary * _lambda - eps * boundary_perp
+
+    robot_pos = tuple(robot_pos)
 
     # print("Original: ")
     vh, vr = get_velocities(robot_pos, HUMAN_POS,

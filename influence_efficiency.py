@@ -13,7 +13,7 @@ logging.disable(logging.ERROR)
 
 HUMAN_POS = (0., 0.)
 HUMAN_HEADING = (1., 0.)
-DESIRED_HEADING = np.array([2., 1.])
+DESIRED_HEADING = np.array([1., 1.])
 DESIRED_HEADING = tuple(DESIRED_HEADING / norm(DESIRED_HEADING))
 AGENT_RADIUS = 0.3
 MAX_RADIUS = 3
@@ -22,8 +22,8 @@ NUM_SAMPLES = int(1e4)
 MAX_SPEED = 2.0
 HUMAN_CIRCLE = Circle(HUMAN_POS, AGENT_RADIUS)
 
-# HUMAN_POLICY = 'orca'
-HUMAN_POLICY = 'social_force'
+HUMAN_POLICY = 'orca'
+# HUMAN_POLICY = 'social_force'
 
 VMIN = np.dot(HUMAN_HEADING, DESIRED_HEADING)
 
@@ -241,8 +241,8 @@ def main():
     plot_influence(data)
     # plot_dot(data)
     # plot_cos_expected(data)
-    # plot_vel_field(data, 'robot')
-    # plot_vel_field(data, 'human')
+    plot_vel_field(data, 'robot')
+    plot_vel_field(data, 'human')
 
     plt.show()
 
