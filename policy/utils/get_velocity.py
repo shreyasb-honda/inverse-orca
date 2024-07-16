@@ -50,14 +50,16 @@ class OptimalInfluence:
 
         self.u_hat = np.array(self.vo.right_tangent.normal)
         d = abs(self.u_hat.dot(current_to_desired))
+        # print(d)
         dmax = self.vo.find_dmax(self.velocity_circle, 'right')
         # print(dmax, d)
         d = min(dmax, d)
+        # print(dmax)
         self.u = d * self.u_hat
 
-        point = (self.vo.right_tangent.point[0] - self.u[0],
-                 self.vo.right_tangent.point[1] - self.u[1])
-        normal = self.vo.right_tangent.normal
+        tangent = self.vo.right_tangent
+        point = (tangent.point[0] - self.u[0], tangent.point[1] - self.u[1])
+        normal = tangent.normal
         proj_line = Tangent(point, normal)
         # There is no overlap between the relative velocity circle and
         # the line at a distance d from the tangent
@@ -77,10 +79,10 @@ class OptimalInfluence:
             # # If the intersection point is to the left of the normal,
             # # the minimum vB would be such that the relative velocity
             # # is at vA - dist_from_proj_line * u
-            side = self.vo.right_tangent.side(inter_point)
+            side = tangent.side(inter_point)
             if side < 0:
                 # print("right")
-                relative_velocity = np.array(self.vo.right_tangent.point) - d * self.u_hat
+                relative_velocity = np.array(tangent.point) - d * self.u_hat
                 self.vr = self.vh - relative_velocity
                 self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
                 self.vr = tuple(self.vr)
@@ -119,13 +121,15 @@ class OptimalInfluence:
 
         self.u_hat = -np.array(self.vo.left_tangent.normal)
         d = abs(self.u_hat.dot(current_to_desired))
+        # print(d)
         dmax = self.vo.find_dmax(self.velocity_circle, 'left')
         d = min(dmax, d)
+        # print(dmax)
         self.u = d * self.u_hat
 
         tangent = self.vo.left_tangent
         point = (tangent.point[0] - self.u[0], tangent.point[1] - self.u[1])
-        normal = self.vo.left_tangent.normal
+        normal = tangent.normal
         proj_line = Tangent(point, normal)
         if not self.velocity_circle.line_overlap(proj_line):
             # print("No overlap of left projection line and velocity circle")
@@ -140,10 +144,10 @@ class OptimalInfluence:
             inter_point = center_line.intersect(proj_line)
             # dist_from_proj_line = proj_line.dist(self.vA)
 
-            side = self.vo.left_tangent.side(inter_point)
+            side = tangent.side(inter_point)
             if side < 0:
                 # print("right")
-                relative_velocity = np.array(self.vo.left_tangent.point) - d * self.u_hat
+                relative_velocity = np.array(tangent.point) - d * self.u_hat
                 self.vr = self.vh - relative_velocity
                 self.vh_new = tuple(np.array(self.vh) + self.collision_responsibility * self.u)
                 self.vr = tuple(self.vr)
@@ -296,19 +300,19 @@ class OptimalInfluence:
             angle_right = get_angle(self.vo.right_tangent.normal, current_to_desired)
 
             if 0 < angle_right < np.pi / 2:
-                # print("Projecting on right leg")
+                print("Projecting on right leg")
                 self.vr, self.u = self.handle_right_leg(current_to_desired)
                 if self.solution_exists:
                     return self.vr, self.u
 
             if np.pi/2 < angle_left < np.pi:
-                # print("Projecting on left leg")
+                print("Projecting on left leg")
                 self.vr, self.u = self.handle_left_leg(current_to_desired)
                 if self.solution_exists:
                     return self.vr, self.u
 
             if angle_right < 0 and angle_left < 0:
-                # print("Projecting on cutoff circle")
+                print("Projecting on cutoff circle")
                 return self.handle_cutoff_circle(current_to_desired)
 
             if self.solution_exists:

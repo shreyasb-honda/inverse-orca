@@ -251,18 +251,6 @@ class VelocityObstacle:
         point = self.cutoff_circle.center
         normal = np.array([m, -1.])
         normal /= norm(normal)
-
-        line = Tangent(point, normal)
-
-        if not velocity_circle.line_overlap(line):
-            # If there is no overlap between the center line and the velocity circle,
-            # dmax is the radius of the velocity circle - distance of center from tangent
-            return velocity_circle.radius - abs(np.dot(chosen_normal, velocity_circle.center))
-
-        point = self.cutoff_circle.center
-        normal = np.array([m, -1.])
-        normal /= norm(normal)
-
         line = Tangent(point, normal)
 
         if not velocity_circle.line_overlap(line):
@@ -287,9 +275,10 @@ class VelocityObstacle:
         point2 = (x2, y2)
 
         cross1 = chosen_normal[0] * y1 - chosen_normal[1] * x1
-        cross2 = chosen_normal[0] * y2 - chosen_normal[0] * x2
+        cross2 = chosen_normal[0] * y2 - chosen_normal[1] * x2
 
         if cross1 > 0 and cross2 > 0:
+            # print("Both chosen")
             # Both points to the left of the normal at origin
             if norm(point1) > norm(point2):
                 return abs(np.dot(chosen_normal, point1))
@@ -297,9 +286,11 @@ class VelocityObstacle:
             return abs(np.dot(chosen_normal, point2))
 
         if cross1 > 0:
+            # print("1 chosen")
             return abs(np.dot(chosen_normal, point1))
 
         if cross2 > 0:
+            # print("2 chosen")
             return abs(np.dot(chosen_normal, point2))
 
         # print("Both intersection points are to the right of the normal. Impossibe case...")
