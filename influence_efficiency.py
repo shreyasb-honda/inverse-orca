@@ -22,8 +22,8 @@ NUM_SAMPLES = int(1e4)
 MAX_SPEED = 2.0
 HUMAN_CIRCLE = Circle(HUMAN_POS, AGENT_RADIUS)
 
-HUMAN_POLICY = 'orca'
-# HUMAN_POLICY = 'social_force'
+# HUMAN_POLICY = 'orca'
+HUMAN_POLICY = 'social_force'
 
 VMIN = np.dot(HUMAN_HEADING, DESIRED_HEADING)
 
@@ -174,6 +174,9 @@ def plot_vel_field(data, agent = 'robot'):
     elif agent == 'human':
         ax.quiver(data[:,2], data[:,3], data[:,7], data[:,8])
         ax.set_title('Field of human velocities')
+    elif agent == 'relative':
+        ax.quiver(data[:,2], data[:,3], data[:,5] - data[:,7], data[:,6] - data[:,8])
+        ax.set_title('Field of relative velocities')
 
     ax.set_aspect('equal')
     ax.legend(loc='upper right')
@@ -185,7 +188,8 @@ def plot_boundary(ax: plt.Axes):
     """
     current_to_desired = np.array(DESIRED_HEADING) - np.array(HUMAN_HEADING)
     current_to_desired /= norm(current_to_desired)
-    ax.arrow(0, 0, *(-3 * current_to_desired), color='black', lw=2)
+    # ax.arrow(0, 0, *(-3 * current_to_desired), color='black', lw=2)
+    ax.arrow(*(3 * current_to_desired), *(-6 * current_to_desired), color='black', lw=2)
 
 
 def main():
@@ -243,6 +247,7 @@ def main():
     # plot_cos_expected(data)
     plot_vel_field(data, 'robot')
     plot_vel_field(data, 'human')
+    plot_vel_field(data, 'relative')
 
     plt.show()
 

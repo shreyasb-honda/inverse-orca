@@ -30,7 +30,7 @@ HUMAN_CIRCLE = Circle(HUMAN_POS, AGENT_RADIUS)
 # Mirrored inputs
 HUMAN_POS_MIRRORED = (0., 0.)
 HUMAN_HEADING_MIRRORED = (1., 0.)
-DESIRED_HEADING_MIRRORED = np.array([1., -1.])
+DESIRED_HEADING_MIRRORED = np.array([1., 1.])
 DESIRED_HEADING_MIRRORED = tuple(DESIRED_HEADING_MIRRORED / norm(DESIRED_HEADING_MIRRORED))
 HUMAN_CIRCLE_MIRRORED = Circle(HUMAN_POS_MIRRORED, AGENT_RADIUS)
 
@@ -199,6 +199,7 @@ def main():
     eps = 1e-1
     boundary = -np.array(DESIRED_HEADING) + np.array(HUMAN_HEADING)
     boundary /= norm(boundary)
+    boundary = -boundary    # To test the other side
     boundary_perp = np.array([-boundary[1], boundary[0]])
     _lambda = 1.5
     robot_pos = boundary * _lambda + eps * boundary_perp
