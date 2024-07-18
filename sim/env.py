@@ -143,12 +143,16 @@ class HallwayScene(gym.Env):
         radius = self.human.radius
         low = np.array([self.hallway_length - 5 * radius, self.hallway_width * 0.4])
         high = np.array([self.hallway_length - radius, self.hallway_width * 0.7])
+        # low = np.array([self.hallway_length - 5 * radius, self.hallway_width * 0.5])
+        # high = np.array([self.hallway_length - radius, self.hallway_width * 0.7])
         self.create_agent_start_box('human', low, high)
 
         # Set the box for robot start positions
         radius = self.robot.radius
         low = np.array([self.robot.radius, self.hallway_width * 0.6])
         high = np.array([5 * radius, self.hallway_width - radius])
+        # low = np.array([self.robot.radius, self.hallway_width * 0.2])
+        # high = np.array([5 * radius, self.hallway_width * 0.5])
         self.create_agent_start_box('robot', low, high)
 
         self.render_mode = render_mode
@@ -383,12 +387,29 @@ class Overtaking(HallwayScene):
         super().configure(config, save_anim, render_mode)
 
         radius = self.human.radius
-        low = np.array([0.88 * self.hallway_length - 5 * radius, self.hallway_width * 0.3])
-        high = np.array([0.88 * self.hallway_length - radius, self.hallway_width * 0.6])
-        self.create_agent_start_box('human', low, high)
 
-        low[0] -= self.hallway_length * 0.12
-        high[0] -= self.hallway_length * 0.12
-        low[1] += self.hallway_width * 0.3
-        high[1] += self.hallway_width * 0.3
-        self.create_agent_start_box('robot', low, high)
+        # Case 1: Human above robot, human ahead of robot
+        # human_low = np.array([0.88 * self.hallway_length - 5 * radius, self.hallway_width * 0.5])
+        # human_high = np.array([0.88 * self.hallway_length - radius, self.hallway_width * 0.7])
+        # delta = np.array([0.12 * self.hallway_length, -0.3 * self.hallway_width])
+
+        # # Case 2: Human above robot, human behind robot
+        # human_low = np.array([self.hallway_length - 5 * radius, self.hallway_width * 0.5])
+        # human_high = np.array([self.hallway_length - radius, self.hallway_width * 0.7])
+        # delta = np.array([-0.12 * self.hallway_length, -0.3 * self.hallway_width])
+
+        # # Case 3: Human below robot, human ahead of robot
+        # human_low = np.array([0.88 * self.hallway_length - 5 * radius, self.hallway_width * 0.2])
+        # human_high = np.array([0.88 * self.hallway_length - radius, self.hallway_width * 0.5])
+        # delta = np.array([0.12 * self.hallway_length, 0.3 * self.hallway_width])
+
+        # Case 4: Human below robot, human behind robot
+        human_low = np.array([self.hallway_length - 5 * radius, self.hallway_width * 0.2])
+        human_high = np.array([self.hallway_length - radius, self.hallway_width * 0.5])
+        delta = np.array([-0.12 * self.hallway_length, 0.3 * self.hallway_width])
+
+        robot_low = human_low + delta
+        robot_high = human_high + delta
+ 
+        self.create_agent_start_box('human', human_low, human_high)
+        self.create_agent_start_box('robot', robot_low, robot_high)
