@@ -383,8 +383,8 @@ class Overtaking(HallwayScene):
         super().configure(config, save_anim, render_mode)
 
         radius = self.human.radius
-        low = np.array([self.hallway_length - 5 * radius, self.hallway_width * 0.3])
-        high = np.array([self.hallway_length - radius, self.hallway_width * 0.6])
+        low = np.array([0.88 * self.hallway_length - 5 * radius, self.hallway_width * 0.3])
+        high = np.array([0.88 * self.hallway_length - radius, self.hallway_width * 0.6])
         self.create_agent_start_box('human', low, high)
 
         low[0] -= self.hallway_length * 0.12

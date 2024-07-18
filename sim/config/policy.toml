@@ -22,6 +22,12 @@ orca_time_horizon_obst = 10
 [weighted_sum]
 goal_weight = 0.8
 
+# Efficient nudging policy
+[efficient_nudge]
+radius = 3
+dist_along = 2
+dist_perp = 1
+
 # The configuration for the social force model
 [scene]
 enable_group = false

@@ -16,6 +16,7 @@ from policy.orca import Orca
 from policy.invorca import InverseOrca
 from policy.social_force import SocialForce
 from policy.weighted_sum import WeightedSum
+from policy.efficient_nudging import EfficientNudge
 # from policy.utils.estimate_alpha import estimate_alpha
 
 
@@ -100,8 +101,10 @@ class SimulationRunner:
             robot_policy = InverseOrca(robot.time_step)
         elif self.config['sim']['robot_policy'] == 'weighted_sum':
             robot_policy = WeightedSum(robot.time_step)
+        elif self.config['sim']['robot_policy'] == 'efficient_nudge':
+            robot_policy = EfficientNudge(robot.time_step)
         else:
-            raise ValueError(f"Unknown policy {self.config['sim']['robot_policy']} for the robot.",
+            raise ValueError(f"Unknown policy '{self.config['sim']['robot_policy']}' for the robot.",
                             "Use one of 'inverse_orca' or 'weighted_sum'.")
 
         robot_policy.configure(self.config['policy'])
@@ -331,7 +334,7 @@ def main():
                         help='The human policy (default: orca)')
 
     parser.add_argument('--robot-policy', type=str, default='inverse_orca',
-                        choices=['inverse_orca', 'weighted_sum'],
+                        choices=['inverse_orca', 'weighted_sum', 'efficient_nudge'],
                         help='The robot policy (default: inverse_orca)')
 
     args = parser.parse_args()

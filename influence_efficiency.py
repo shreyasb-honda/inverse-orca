@@ -13,7 +13,7 @@ logging.disable(logging.ERROR)
 
 HUMAN_POS = (0., 0.)
 HUMAN_HEADING = (1., 0.)
-DESIRED_HEADING = np.array([1., 1.])
+DESIRED_HEADING = np.array([1., 2.])
 DESIRED_HEADING = tuple(DESIRED_HEADING / norm(DESIRED_HEADING))
 AGENT_RADIUS = 0.3
 MAX_RADIUS = 3
@@ -22,8 +22,8 @@ NUM_SAMPLES = int(1e4)
 MAX_SPEED = 2.0
 HUMAN_CIRCLE = Circle(HUMAN_POS, AGENT_RADIUS)
 
-# HUMAN_POLICY = 'orca'
-HUMAN_POLICY = 'social_force'
+HUMAN_POLICY = 'orca'
+# HUMAN_POLICY = 'social_force'
 
 VMIN = np.dot(HUMAN_HEADING, DESIRED_HEADING)
 
@@ -178,6 +178,7 @@ def plot_vel_field(data, agent = 'robot'):
         ax.quiver(data[:,2], data[:,3], data[:,5] - data[:,7], data[:,6] - data[:,8])
         ax.set_title('Field of relative velocities')
 
+    plot_boundary(ax)
     ax.set_aspect('equal')
     ax.legend(loc='upper right')
 

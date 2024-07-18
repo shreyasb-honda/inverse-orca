@@ -152,6 +152,11 @@ class Renderer:
             x = self.human_circ.center[0] - self.goal_dist
             self.virtual_goal.set_xdata([x, x])
 
+        self.ax.set_xlim(-self.hallway_dimensions['length'] * 0.05,
+                         self.hallway_dimensions["length"] * 1.05)
+        self.ax.set_ylim(-self.hallway_dimensions['width'] * 0.05,
+                         self.hallway_dimensions['width'] * 1.05)
+
         return self.robot_circ, self.human_circ, self.virtual_goal
 
     def static_plot(self, fig: plt.Figure, ax: plt.Axes):
@@ -277,6 +282,13 @@ class Renderer:
             self.debug_vel_ax.clear()
             self.ax.clear()
             self.update(frame_id, show_velocities=True)
+            _vh_d = vh_d[frame_id]
+            self.ax.arrow(*self.human_circ.get_center(), *_vh_d, color='tab:olive')
+            boundary = -np.array(_vh_d) + np.array(self.observations[frame_id]['human vel'])
+            if np.linalg.norm(boundary) > 1e-4:
+                boundary /= np.linalg.norm(boundary)
+                self.ax.arrow(*self.human_circ.get_center(), *(2*boundary))
+
             vc[frame_id].plot(self.debug_vel_ax)
             vo[frame_id].plot(self.debug_vel_ax)
             self.debug_vel_ax.scatter(vc[frame_id].center[0], vc[frame_id].center[1],
@@ -314,6 +326,12 @@ class Renderer:
             fig.canvas.draw_idle()
 
         self.update(frame_id, show_velocities=True)
+        _vh_d = vh_d[frame_id]
+        boundary = -np.array(_vh_d) + np.array(self.observations[frame_id]['human vel'])
+        if np.linalg.norm(boundary) > 1e-4:
+            boundary /= np.linalg.norm(boundary)
+            self.ax.arrow(*self.human_circ.get_center(), *(2*boundary))
+        self.ax.arrow(*self.human_circ.get_center(), *_vh_d, color='tab:olive')
         # self.ax.grid(True)
 
         vc[frame_id].plot(self.debug_vel_ax)

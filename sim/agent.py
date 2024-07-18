@@ -22,15 +22,13 @@ class Agent:
         self.vy = None   # the y-velocity of the agent
         self.gx = None   # the x-coordinate of the goal of the agent
         self.gy = None   # the y-coordinate of the goal of the agent
-
         self.max_speed = max_speed
         self.preferred_speed = preferred_speed
         self.preferred_velocity_x = None
         self.preferred_velocity_y = None
-
         self.time_step = time_step
-
         self.policy = None
+        self.reached = False
 
     def get_position(self):
         """
@@ -149,7 +147,11 @@ class Human(Agent):
         """
         Returns true if the human has crossed its finish line
         """
-        return self.px - self.radius < self.gx
+        self.reached = self.reached or (self.px - self.radius < self.gx)
+        if self.reached:
+            self.set_position(1e2, 1e2)
+
+        return self.reached
 
 
 class Robot(Agent):
@@ -255,7 +257,12 @@ class Robot(Agent):
         """
         Returns true if the robot has reached its own goal
         """
-        if direction < 0:
-            return self.px - self.radius <= self.gx
+        if direction >= 0:
+            self.reached = self.reached or (self.px + self.radius >= self.gx)
+        else:
+            self.reached = self.reached or (self.px - self.radius <= self.gx)
 
-        return self.px + self.radius >= self.gx
+        if self.reached:
+            self.set_position(-1e2, 1e2)
+
+        return self.reached
