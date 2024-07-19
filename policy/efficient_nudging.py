@@ -170,5 +170,6 @@ class EfficientNudge(NaiveEfficientNudge):
         # Distance between the robot position and the human position is less than the nudge radius
         dist_sq = (human_pos - robot_pos).T @ (human_pos - robot_pos)
         circle_condition = dist_sq - self.nudge_radius ** 2 < 0
+        y_condition = robot_pos[1] >= human_pos[1] + 0.3
 
-        self.inverse_started = boundary_condition and circle_condition
+        self.inverse_started = boundary_condition and circle_condition and y_condition
