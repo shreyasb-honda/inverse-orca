@@ -158,12 +158,14 @@ class EfficientNudge(NaiveEfficientNudge):
             boundary_condition = False
         else:
             self.boundary /= boundary_length
-            normal = (-self.boundary[1], self.boundary[0])
             point = tuple(observation['human pos'])
-            boundary_line = Tangent(point, normal)
-            side1 = boundary_line.side(tuple(robot_pos))
-            side2 = boundary_line.side(tuple(human_pos + human_vel))
+            boundary_normal = Tangent(point, tuple(self.boundary))
+            # tangent.side checks which side the point lies to the normal to the line
+            side1 = boundary_normal.side(tuple(robot_pos))
+            side2 = boundary_normal.side(tuple(human_pos + human_vel))
             boundary_condition = side1 == side2
+            # if boundary_condition:
+            #     print(side1)
 
         # Distance between the robot position and the human position is less than the nudge radius
         dist_sq = (human_pos - robot_pos).T @ (human_pos - robot_pos)

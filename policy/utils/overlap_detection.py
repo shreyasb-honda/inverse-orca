@@ -68,9 +68,9 @@ class Tangent:
     def side(self, point: Point):
         """
         Returns 
-            -1 if the point is on the right side of the line
-            0 if the point is on the line
-            1 if the point is on the left side of the line
+            -1 if the point is on the right side of the normal
+            0 if the point is on the normal
+            1 if the point is on the left side of the normal
         """
         _point_to_point = np.array(point) - np.array(self.point)
         det = self.normal[0] * _point_to_point[1] - self.normal[1] * _point_to_point[0]
