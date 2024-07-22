@@ -16,7 +16,7 @@ from policy.orca import Orca
 from policy.invorca import InverseOrca
 from policy.social_force import SocialForce
 from policy.weighted_sum import WeightedSum
-from policy.efficient_nudging import NaiveEfficientNudge, EfficientNudge
+from policy.efficient_nudging import NaiveEfficientNudge, EfficientNudge, SmoothEfficientNudge
 # from policy.utils.estimate_alpha import estimate_alpha
 
 
@@ -104,6 +104,7 @@ class SimulationRunner:
         elif self.config['sim']['robot_policy'] == 'efficient_nudge':
             # robot_policy = NaiveEfficientNudge(robot.time_step)
             robot_policy = EfficientNudge(robot.time_step)
+            # robot_policy = SmoothEfficientNudge(robot.time_step)
         else:
             raise ValueError(f"Unknown policy {self.config['sim']['robot_policy']} for the robot.",
                             "Use one of 'inverse_orca', 'weighted_sum', or 'efficient_nudge.")

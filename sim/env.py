@@ -388,15 +388,15 @@ class Overtaking(HallwayScene):
 
         radius = self.human.radius
 
-        # # Case 1: Human above robot, human ahead of robot
-        # human_low = np.array([0.88 * self.hallway_length - 5 * radius, self.hallway_width * 0.5])
-        # human_high = np.array([0.88 * self.hallway_length - radius, self.hallway_width * 0.7])
-        # delta = np.array([0.12 * self.hallway_length, -0.3 * self.hallway_width])
+        # Case 1: Human above robot, human ahead of robot
+        human_low = np.array([0.88 * self.hallway_length - 5 * radius, self.hallway_width * 0.5])
+        human_high = np.array([0.88 * self.hallway_length - radius, self.hallway_width * 0.7])
+        delta = np.array([0.12 * self.hallway_length, -0.3 * self.hallway_width])
 
         # Case 2: Human above robot, human behind robot
-        human_low = np.array([self.hallway_length - 5 * radius, self.hallway_width * 0.5])
-        human_high = np.array([self.hallway_length - radius, self.hallway_width * 0.7])
-        delta = np.array([-0.12 * self.hallway_length, -0.3 * self.hallway_width])
+        # human_low = np.array([self.hallway_length - 5 * radius, self.hallway_width * 0.5])
+        # human_high = np.array([self.hallway_length - radius, self.hallway_width * 0.7])
+        # delta = np.array([-0.12 * self.hallway_length, -0.3 * self.hallway_width])
 
         # # Case 3: Human below robot, human ahead of robot
         # human_low = np.array([0.88 * self.hallway_length - 5 * radius, self.hallway_width * 0.4])

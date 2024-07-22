@@ -28,6 +28,10 @@ radius = 3
 dist_along = 1.5
 dist_perp = 0.5
 
+# Smooth nudging policy
+[smooth_nudge]
+exp_factor = 0.015
+
 # The configuration for the social force model
 [scene]
 enable_group = false
