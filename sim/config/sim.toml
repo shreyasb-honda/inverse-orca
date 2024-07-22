@@ -7,5 +7,5 @@ render_mode = 'human'
 robot_policy = 'inverse_orca'
 human_policy = 'orca'
 out_fname = 'temp'
-save_data = true
+save_data = false
 print_summary = false

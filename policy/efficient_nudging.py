@@ -196,6 +196,10 @@ class SmoothEfficientNudge(InverseOrca):
         self.dist_along = None
         self.dist_perp = None
         self.exp_factor = None
+        self.smoothing_radius = None
+        self.smoothing_radius_sq = None
+        self.time_count = 0
+        self.first_step_close = False
 
     def configure(self, config: Dict):
         super().configure(config)
@@ -205,6 +209,8 @@ class SmoothEfficientNudge(InverseOrca):
         self.dist_perp = config['efficient_nudge']['dist_perp']
         self.inverse_started = False
         self.exp_factor = config['smooth_nudge']['exp_factor']
+        self.smoothing_radius = config['smooth_nudge']['smoothing_radius']
+        self.smoothing_radius_sq = self.smoothing_radius ** 2
 
     def choose_point(self, observation, direction):
         """
@@ -212,7 +218,7 @@ class SmoothEfficientNudge(InverseOrca):
         """
         human_vel = observation['human vel']
         human_pos = observation['human pos']
-        robot_pos = observation['robot pos']
+        # robot_pos = observation['robot pos']
         # Boundary will have been computed before this call is made
         # Travel some along the boundary
         chosen_point = human_pos + self.boundary * self.dist_along
@@ -231,7 +237,7 @@ class SmoothEfficientNudge(InverseOrca):
         elif side_2 == side_3:
             chosen_point = point_2
 
-        chosen_point[0] = robot_pos[0] + direction * self.max_speed
+        # chosen_point[0] = robot_pos[0] + direction * self.max_speed
 
         return chosen_point
 
@@ -241,8 +247,10 @@ class SmoothEfficientNudge(InverseOrca):
         """
         # Steps : 1. Choose a point near in the nudge-efficient region
         #         2. Compute velocity towards it
+        robot_pos = observation['robot pos']
         chosen_point = self.choose_point(observation, direction)
-        vr_pref = chosen_point - observation['robot pos']
+        chosen_point[0] = robot_pos[0] + direction * self.max_speed
+        vr_pref = chosen_point - robot_pos
         factor = min(1., self.max_speed/ np.linalg.norm(vr_pref))
         vr_pref = tuple(factor * vr_pref)
         return vr_pref
@@ -299,11 +307,13 @@ class SmoothEfficientNudge(InverseOrca):
         orca_vel = self.sim.getAgentVelocity(0)
 
         weight = self.compute_invorca_weight(observation, direction)
-        print(weight)
+        # print(weight)
         if invorca_vel[0] is not None:
             action = (1 - weight) * np.array(orca_vel) + weight * np.array(invorca_vel)
         else:
             action = np.array(orca_vel)
+
+        self.time_count += 1
 
         return tuple(action)
 
@@ -311,14 +321,20 @@ class SmoothEfficientNudge(InverseOrca):
         """
         Computes the exponentially decreasing weight for the ORCA velocity
         """
-
-        # chosen_point = self.choose_point(observation, direction)
+        chosen_point = self.choose_point(observation, direction)
         robot_pos = observation['robot pos']
-        human_pos = observation['human pos']
-        # dist_sq = (chosen_point - robot_pos).T @ (chosen_point - robot_pos)
-        dist_sq = (human_pos - robot_pos).T @ (human_pos - robot_pos)
+        dist_sq = (chosen_point - robot_pos).T @ (chosen_point - robot_pos)
 
-        return np.exp(-1 * self.exp_factor * dist_sq)
+        # If outside the smoothing circle, then only use ORCA
+        if dist_sq > self.smoothing_radius_sq:
+            return 0.0
+
+        if self.first_step_close or self.time_count == 0:
+            self.first_step_close = True
+            return 0.0
+
+        # return np.exp(-1 * self.exp_factor * dist_sq)
+        return 1.0 - dist_sq / self.smoothing_radius_sq
 
     def check_conditions(self, observation):
         """

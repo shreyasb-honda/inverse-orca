@@ -24,13 +24,14 @@ goal_weight = 0.8
 
 # Efficient nudging policy
 [efficient_nudge]
-radius = 3
+radius = 3.0
 dist_along = 1.5
 dist_perp = 0.5
 
 # Smooth nudging policy
 [smooth_nudge]
-exp_factor = 0.015
+exp_factor = 0.5
+smoothing_radius = 4.0
 
 # The configuration for the social force model
 [scene]

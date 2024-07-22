@@ -103,8 +103,8 @@ class SimulationRunner:
             robot_policy = WeightedSum(robot.time_step)
         elif self.config['sim']['robot_policy'] == 'efficient_nudge':
             # robot_policy = NaiveEfficientNudge(robot.time_step)
-            robot_policy = EfficientNudge(robot.time_step)
-            # robot_policy = SmoothEfficientNudge(robot.time_step)
+            # robot_policy = EfficientNudge(robot.time_step)
+            robot_policy = SmoothEfficientNudge(robot.time_step)
         else:
             raise ValueError(f"Unknown policy {self.config['sim']['robot_policy']} for the robot.",
                             "Use one of 'inverse_orca', 'weighted_sum', or 'efficient_nudge.")
