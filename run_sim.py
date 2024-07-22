@@ -103,8 +103,8 @@ class SimulationRunner:
             robot_policy = WeightedSum(robot.time_step)
         elif self.config['sim']['robot_policy'] == 'efficient_nudge':
             # robot_policy = NaiveEfficientNudge(robot.time_step)
-            # robot_policy = EfficientNudge(robot.time_step)
-            robot_policy = SmoothEfficientNudge(robot.time_step)
+            robot_policy = EfficientNudge(robot.time_step)
+            # robot_policy = SmoothEfficientNudge(robot.time_step)
         else:
             raise ValueError(f"Unknown policy {self.config['sim']['robot_policy']} for the robot.",
                             "Use one of 'inverse_orca', 'weighted_sum', or 'efficient_nudge.")
@@ -114,7 +114,7 @@ class SimulationRunner:
         robot.set_policy(robot_policy)
         self.robot = robot
 
-    def setup_environment(self, seed: int | None = 100):
+    def setup_environment(self, seed: int | None = 100, case: int = 0):
         """
         Sets up the simulation environment. 
         Only call once
@@ -136,7 +136,8 @@ class SimulationRunner:
         env.unwrapped.set_robot(self.robot)
         env.unwrapped.configure(self.config['env'],
                                 self.config['sim']['save_anim'],
-                                self.config['sim']['render_mode'])
+                                self.config['sim']['render_mode'],
+                                case)
         self.env = env
 
         if self.config['sim']['out_fname'] != 'temp':
