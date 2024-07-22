@@ -389,13 +389,13 @@ class Overtaking(HallwayScene):
 
         return obs, {}
 
-    def configure(self, config: Dict, save_anim: bool, 
-                  render_mode: str | None = "human", case_num: int = 0):
+    def configure(self, config: Dict, save_anim: bool,
+                  render_mode: str | None = "human", case: int = 0):
         super().configure(config, save_anim, render_mode)
 
         radius = self.human.radius
         # Case 1: Human above robot, human ahead of robot
-        if case_num == 0:
+        if case == 0:
             human_low = np.array([0.88 * self.hallway_length - 5 * radius,
                                   self.hallway_width * 0.5])
             human_high = np.array([0.88 * self.hallway_length - radius,
@@ -404,7 +404,7 @@ class Overtaking(HallwayScene):
                               -0.3 * self.hallway_width])
 
         # Case 2: Human above robot, human behind robot
-        elif case_num == 1:
+        elif case == 1:
             human_low = np.array([self.hallway_length - 5 * radius,
                                   self.hallway_width * 0.5])
             human_high = np.array([self.hallway_length - radius,
@@ -413,7 +413,7 @@ class Overtaking(HallwayScene):
                               -0.3 * self.hallway_width])
 
         # Case 3: Human below robot, human ahead of robot
-        elif case_num == 2:
+        elif case == 2:
             human_low = np.array([0.88 * self.hallway_length - 5 * radius,
                                   self.hallway_width * 0.4])
             human_high = np.array([0.88 * self.hallway_length - radius,
@@ -422,7 +422,7 @@ class Overtaking(HallwayScene):
                               0.3 * self.hallway_width])
 
         # Case 4: Human below robot, human behind robot
-        elif case_num == 3:
+        elif case == 3:
             human_low = np.array([self.hallway_length - 5 * radius,
                                   self.hallway_width * 0.4])
             human_high = np.array([self.hallway_length - radius,
@@ -434,4 +434,92 @@ class Overtaking(HallwayScene):
         robot_high = human_high + delta
 
         self.create_agent_start_box('human', human_low, human_high)
+        self.create_agent_start_box('robot', robot_low, robot_high)
+
+
+class FixedHumanRandomRobot(HallwayScene):
+    """
+    Class that fixes the human's starting position in the hallway and varies
+    1. The human's goal
+    2. The robot's goal
+    3. The robot's starting position
+    """
+
+    def __get_obs(self):
+        obs = {
+            "robot pos": np.array(self.robot.get_position(), dtype=float),
+            "robot vel": np.array(self.robot.get_velocity(), dtype=float),
+            "robot rad": np.array([self.robot.get_radius()], dtype=float),
+            "human pos": np.array(self.human.get_position(), dtype=float),
+            "human vel": np.array(self.human.get_velocity(),  dtype=float),
+            "human rad": np.array([self.human.get_radius()], dtype=float)
+        }
+
+        return obs
+
+    def reset(self, seed: int | None = None, options: Dict[str, Any] | None = None):
+        super().reset(seed=seed, options=options)
+
+        rng = self.np_random
+        p = rng.random()
+        # Reset the goal position
+        if p < 0.5:
+            self.human.set_goal(0, self.hallway_width / 2)
+        else:
+            self.human.set_goal(self.hallway_length, self.hallway_width / 2)
+
+        p = rng.random()
+        # Reset the goal position
+        if p < 0.5:
+            self.robot.set_goal(0, self.hallway_width / 2)
+        else:
+            self.robot.set_goal(self.hallway_length, self.hallway_width / 2)
+
+        # Reset the position of human
+        # human_pos = self.human_start_box.sample()
+        # self.human.set_position(human_pos[0], human_pos[1])
+        self.human.set_position(self.hallway_length / 2, self.hallway_width / 2) # Debugging
+        human_pos = np.array(self.human.get_position())
+
+        # Reset the position of the robot
+        robot_pos = self.robot_start_box.sample()
+        dist_sq = (human_pos - robot_pos).T @ (human_pos - robot_pos)
+        combined_rad_sq = (self.human.radius + self.robot.radius) ** 2
+        collision = dist_sq < combined_rad_sq
+        while collision:
+            robot_pos = self.robot_start_box.sample()
+            dist_sq = (human_pos - robot_pos).T @ (human_pos - robot_pos)
+            combined_rad_sq = (self.human.radius + self.robot.radius) ** 2
+            collision = dist_sq < combined_rad_sq
+
+        self.robot.set_position(robot_pos[0], robot_pos[1])
+
+        # Set the preferred velocity of the human and the robot
+        self.human.set_preferred_velocity()
+        self.robot.set_preferred_velocity()
+
+        self.global_time = 0
+        self.observations = []
+
+        obs = self.__get_obs()
+        self.observations.append(obs)
+        self.frame_count = 0
+        self.goal_frame = None
+        self.goal_frame_set = False
+
+        self.renderer = Renderer(self.hallway_dimensions,
+                                 self.robot_draw_params, self.human_draw_params,
+                                 self.time_step)
+        self.renderer.set_goal_params(self.d_virtual_goal, self.y_virtual_goal)
+
+        return obs, {}
+
+    def configure(self, config: Dict, save_anim: bool,
+                  render_mode: str | None = "human", case: int = 0):
+        super().configure(config, save_anim, render_mode)
+
+        robot_low = np.array([self.robot.radius, self.robot.radius])
+        robot_high = np.array([self.hallway_length - self.robot.radius,
+                               self.hallway_width - self.robot.radius])
+
         self.create_agent_start_box('robot', robot_low, robot_high)
