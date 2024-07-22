@@ -308,7 +308,7 @@ class SmoothEfficientNudge(InverseOrca):
 
         weight = self.compute_invorca_weight(observation, direction)
         # print(weight)
-        if invorca_vel[0] is not None:
+        if invorca_vel is not None:
             action = (1 - weight) * np.array(orca_vel) + weight * np.array(invorca_vel)
         else:
             action = np.array(orca_vel)

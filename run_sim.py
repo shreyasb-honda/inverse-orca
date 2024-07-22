@@ -103,8 +103,8 @@ class SimulationRunner:
             robot_policy = WeightedSum(robot.time_step)
         elif self.config['sim']['robot_policy'] == 'efficient_nudge':
             # robot_policy = NaiveEfficientNudge(robot.time_step)
-            robot_policy = EfficientNudge(robot.time_step)
-            # robot_policy = SmoothEfficientNudge(robot.time_step)
+            # robot_policy = EfficientNudge(robot.time_step)
+            robot_policy = SmoothEfficientNudge(robot.time_step)
         else:
             raise ValueError(f"Unknown policy {self.config['sim']['robot_policy']} for the robot.",
                             "Use one of 'inverse_orca', 'weighted_sum', or 'efficient_nudge.")
@@ -130,6 +130,8 @@ class SimulationRunner:
             env = gym.make('HallwayScene-v0')
         elif self.config['env']['env']['type'] == 'overtaking':
             env = gym.make('OvertakingScene-v0')
+        elif self.config['env']['env']['type'] == 'fixed_human':
+            env = gym.make('FixedHumanScene-v0')
 
         # Set these in the environment
         env.unwrapped.set_human(self.human)
@@ -142,7 +144,8 @@ class SimulationRunner:
 
         if self.config['sim']['out_fname'] != 'temp':
             env.unwrapped.set_output_filename(self.config['sim']['out_fname'])
-        self.env.reset(seed=seed)
+        # self.env.reset(seed=seed)
+        self.env.reset()
 
     def save_configs(self, experiment_directory: str):
         """
@@ -263,12 +266,12 @@ class SimulationRunner:
 
         obs, _ = self.env.reset()
         self.robot.set_vh_desired(obs)
-        direction = np.sign(self.robot.gx - obs['robot pos'][0])
-        robot_action = self.robot.policy.predict(obs, direction)
+        direction_robot = np.sign(self.robot.gx - obs['robot pos'][0])
+        robot_action = self.robot.policy.predict(obs, direction_robot)
         obs['robot vel'] = np.array(robot_action)
         human_action = self.human.get_velocity()
         acceleration_metric_human.agent_done(self.human.reached_goal())
-        acceleration_metric_robot.agent_done(self.robot.reached_goal(direction))
+        acceleration_metric_robot.agent_done(self.robot.reached_goal(direction_robot))
 
         for metric in self.perf_metrics:
             metric.add(obs)
@@ -283,8 +286,9 @@ class SimulationRunner:
             done = terminated or truncated
             self.robot.set_vh_desired(obs)
             # obs["human vel"] = np.array([-1.0, 0.])
-            direction = np.sign(self.robot.gx - obs['robot pos'][0])
-            robot_action = self.robot.choose_action(obs, direction)
+            direction_robot = np.sign(self.robot.gx - obs['robot pos'][0])
+            direction_human = np.sign(self.human.gx - obs['human pos'][0])
+            robot_action = self.robot.choose_action(obs, direction_robot)
 
             # This seems to happen when the desired
             # velocity has been achieved by the human
@@ -292,8 +296,8 @@ class SimulationRunner:
                 robot_action = tuple(action['robot vel'])
 
             obs['robot vel'] = np.array(robot_action)
-            acceleration_metric_human.agent_done(self.human.reached_goal())
-            acceleration_metric_robot.agent_done(self.robot.reached_goal(direction))
+            acceleration_metric_human.agent_done(self.human.reached_goal(direction_human))
+            acceleration_metric_robot.agent_done(self.robot.reached_goal(direction_robot))
             for metric in self.perf_metrics:
                 metric.add(obs)
             # Update the observation to include the current velocity of the robot

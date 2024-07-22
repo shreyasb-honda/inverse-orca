@@ -345,14 +345,16 @@ class OptimalInfluence:
                 # print("Projecting on right leg")
                 self.vr, self.u = self.handle_right_leg(current_to_desired)
                 # self.vr, self.u = self.handle_left_leg(current_to_desired)
-                self.vh_new = self.compute_vh(self.u)
+                if self.u is not None:
+                    self.vh_new = self.compute_vh(self.u)
                 if self.solution_exists:
                     return self.vr, self.u
             else:
                 # print("Projecting on left leg")
                 # self.vr, self.u = self.handle_right_leg(current_to_desired)
                 self.vr, self.u = self.handle_left_leg(current_to_desired)
-                self.vh_new = self.compute_vh(self.u)
+                if self.u is not None:
+                    self.vh_new = self.compute_vh(self.u)
                 if self.solution_exists:
                     return self.vr, self.u
 

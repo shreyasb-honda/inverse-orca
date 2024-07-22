@@ -225,8 +225,11 @@ class HallwayScene(gym.Env):
         reward = 0
         truncated = self.global_time > self.time_limit
         # terminated = self.robot.reached_goal() or self.human.reached_goal()
-        direction = np.sign(self.robot.gx - self.robot.px)
-        terminated = self.robot.reached_goal(direction) and self.human.reached_goal()
+        direction_robot = np.sign(self.robot.gx - self.robot.px)
+        direction_human = np.sign(self.human.gx - self.human.px)
+        robot_reached = self.robot.reached_goal(direction_robot)
+        human_reached = self.human.reached_goal(direction_human)
+        terminated = robot_reached and human_reached
         info = {}
         return obs, reward, terminated, truncated, info
 
@@ -437,7 +440,7 @@ class Overtaking(HallwayScene):
         self.create_agent_start_box('robot', robot_low, robot_high)
 
 
-class FixedHumanRandomRobot(HallwayScene):
+class FixedHuman(HallwayScene):
     """
     Class that fixes the human's starting position in the hallway and varies
     1. The human's goal
@@ -462,13 +465,15 @@ class FixedHumanRandomRobot(HallwayScene):
 
         rng = self.np_random
         p = rng.random()
+        print(p)
         # Reset the goal position
-        if p < 0.5:
+        if p < 0.1:
             self.human.set_goal(0, self.hallway_width / 2)
         else:
             self.human.set_goal(self.hallway_length, self.hallway_width / 2)
 
         p = rng.random()
+        print(p)
         # Reset the goal position
         if p < 0.5:
             self.robot.set_goal(0, self.hallway_width / 2)

@@ -13,3 +13,8 @@ register(
     id='OvertakingScene-v0',
     entry_point='sim.env:Overtaking'
 )
+
+register(
+    id='FixedHumanScene-v0',
+    entry_point='sim.env:FixedHuman'
+)

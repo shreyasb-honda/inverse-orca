@@ -143,11 +143,15 @@ class Human(Agent):
 
         return action
 
-    def reached_goal(self):
+    def reached_goal(self, direction: int = -1):
         """
         Returns true if the human has crossed its finish line
         """
-        self.reached = self.reached or (self.px - self.radius < self.gx)
+        if direction >= 0:
+            self.reached = self.reached or (self.px + self.radius >= self.gx)
+        else:
+            self.reached = self.reached or (self.px - self.radius <= self.gx)
+
         if self.reached:
             self.set_position(1e2, 1e2)
 
