@@ -50,7 +50,7 @@ class Orca(Policy):
         """
         self.collision_responsibility = collision_responsibility
 
-    def predict(self, observation):
+    def predict(self, observation, direction):
 
         params = self.neighbor_dist, self.max_neighbors, self.time_horizon, self.time_horizon_obst
         self.sim = rvo2.PyRVOSimulator(self.time_step, *params, self.radius,
@@ -80,7 +80,7 @@ class Orca(Policy):
 
         # Set the preferred velocity to be the goal-directed velocity for the human
         if self.max_speed is not None:
-            self.sim.setAgentPrefVelocity(1, (-self.max_speed, 0))
+            self.sim.setAgentPrefVelocity(1, (direction * self.max_speed, 0))
         else:
             raise TypeError("Please set max_speed before calling predict")
 

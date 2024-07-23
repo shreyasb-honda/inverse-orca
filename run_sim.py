@@ -111,6 +111,8 @@ class SimulationRunner:
 
         robot_policy.configure(self.config['policy'])
         robot_policy.set_virtual_goal_params(*robot.get_virtual_goal_params())
+        robot_policy.set_hallway_dimensions(self.config['env']['env']['hallway_length'], 
+                                           self.config['env']['env']['hallway_width'])
         robot.set_policy(robot_policy)
         self.robot = robot
 
@@ -267,10 +269,11 @@ class SimulationRunner:
         obs, _ = self.env.reset()
         self.robot.set_vh_desired(obs)
         direction_robot = np.sign(self.robot.gx - obs['robot pos'][0])
+        direction_human = np.sign(self.human.gx - obs['human pos'][0])
         robot_action = self.robot.policy.predict(obs, direction_robot)
         obs['robot vel'] = np.array(robot_action)
         human_action = self.human.get_velocity()
-        acceleration_metric_human.agent_done(self.human.reached_goal())
+        acceleration_metric_human.agent_done(self.human.reached_goal(direction_human))
         acceleration_metric_robot.agent_done(self.robot.reached_goal(direction_robot))
 
         for metric in self.perf_metrics:
@@ -301,7 +304,7 @@ class SimulationRunner:
             for metric in self.perf_metrics:
                 metric.add(obs)
             # Update the observation to include the current velocity of the robot
-            human_action = self.human.choose_action(obs)
+            human_action = self.human.choose_action(obs, direction_human)
 
             # Estimate the value of alpha
             # alpha_hat = estimate_alpha((-1.0, 0), human_action,

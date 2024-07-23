@@ -212,7 +212,7 @@ class SmoothEfficientNudge(InverseOrca):
         self.smoothing_radius = config['smooth_nudge']['smoothing_radius']
         self.smoothing_radius_sq = self.smoothing_radius ** 2
 
-    def choose_point(self, observation, direction):
+    def choose_point(self, observation):
         """
         Return a point in the efficient nudge region
         """
@@ -241,15 +241,17 @@ class SmoothEfficientNudge(InverseOrca):
 
         return chosen_point
 
-    def get_robot_v_pref(self, observation, direction):
+    def get_robot_v_pref(self, observation, human_direction):
         """
         Returns the robot's preferred velocity
+        :param observation - the current observation
+        :param human_direction - the sign of x-velocity of the human
         """
         # Steps : 1. Choose a point near in the nudge-efficient region
         #         2. Compute velocity towards it
         robot_pos = observation['robot pos']
-        chosen_point = self.choose_point(observation, direction)
-        chosen_point[0] = robot_pos[0] + direction * self.max_speed
+        chosen_point = self.choose_point(observation)
+        chosen_point[0] = robot_pos[0] + human_direction * self.max_speed
         vr_pref = chosen_point - robot_pos
         factor = min(1., self.max_speed/ np.linalg.norm(vr_pref))
         vr_pref = tuple(factor * vr_pref)
@@ -295,7 +297,8 @@ class SmoothEfficientNudge(InverseOrca):
                         collisionResponsibility=self.collision_responsibility)
 
         # Set the preferred velocity of the robot to be goal-directed maximum
-        self.sim.setAgentPrefVelocity(0, self.get_robot_v_pref(observation, direction))
+        human_direction = np.sign(human_vel[0])
+        self.sim.setAgentPrefVelocity(0, self.get_robot_v_pref(observation, human_direction))
 
         # Set the preferred velocity of the human to be their current velocity
         self.sim.setAgentPrefVelocity(1, human_vel)
@@ -306,7 +309,7 @@ class SmoothEfficientNudge(InverseOrca):
         # Get the action for the robot
         orca_vel = self.sim.getAgentVelocity(0)
 
-        weight = self.compute_invorca_weight(observation, direction)
+        weight = self.compute_invorca_weight(observation)
         # print(weight)
         if invorca_vel is not None:
             action = (1 - weight) * np.array(orca_vel) + weight * np.array(invorca_vel)
@@ -317,11 +320,11 @@ class SmoothEfficientNudge(InverseOrca):
 
         return tuple(action)
 
-    def compute_invorca_weight(self, observation, direction):
+    def compute_invorca_weight(self, observation):
         """
         Computes the exponentially decreasing weight for the ORCA velocity
         """
-        chosen_point = self.choose_point(observation, direction)
+        chosen_point = self.choose_point(observation)
         robot_pos = observation['robot pos']
         dist_sq = (chosen_point - robot_pos).T @ (chosen_point - robot_pos)
 
@@ -341,6 +344,7 @@ class SmoothEfficientNudge(InverseOrca):
         Checks whether the robot has entered the efficient nudge 
         region
         """
+        stop_inverse = self.stopping_criterion(observation)
         boundary_condition = False
         human_vel = observation['human vel']
         human_pos = observation['human pos']
@@ -368,3 +372,8 @@ class SmoothEfficientNudge(InverseOrca):
         y_condition = robot_pos[1] >= human_pos[1] + 0.3
 
         self.inverse_started = boundary_condition and circle_condition and y_condition
+
+        # Revert to inverse ORCA if the stopping criterion is satisfied 
+        # (which will fall back to ORCA)
+        # This will essentially give a goal-directed ORCA velocity
+        self.inverse_started = self.inverse_started or stop_inverse

@@ -46,7 +46,7 @@ class Renderer:
         self.debug_vel_ax = None
 
     def generate_background(self, ax: plt.Axes, robot_pos: Tuple[float, float],
-                            human_pos: Tuple[float, float]):
+                            human_pos: Tuple[float, float], human_direction: int):
         """
         Creates the hallway background (walls, initial positions of the human and the robot)
         """
@@ -75,10 +75,9 @@ class Renderer:
         ax.add_patch(self.human_circ)
 
         # Add the robot's virtual goal for the human
-        x = self.human_circ.center[0] - self.goal_dist
-        ymax = self.goal_height #/ self.hallway_dimensions['width']
+        x = self.human_circ.center[0] + human_direction * self.goal_dist
+        ymax = self.goal_height
         ymin = 0
-        # self.virtual_goal = ax.axvline(x=x, ymax=ymax, lw=1, ls='--', c='gold')
         self.virtual_goal, = ax.plot([x, x], [ymin, ymax], lw=1, ls='--', color='gold')
 
         return ax
@@ -110,9 +109,11 @@ class Renderer:
         :param show_velocities - whether to plot the velocity vectors
         """
         observation = self.observations[frame_num]
+        human_direction = np.sign(observation['human vel'][0])
         if self.robot_circ is None or self.human_circ is None:
             self.generate_background(self.ax, tuple(observation['robot pos']),
-                                     tuple(observation['human pos']))
+                                     tuple(observation['human pos']),
+                                     human_direction)
 
         self.robot_circ.set_center(tuple(observation['robot pos']))
         self.human_circ.set_center(tuple(observation['human pos']))
@@ -149,7 +150,7 @@ class Renderer:
         # print(f"goal frame: {self.goal_frame}, total frames: {self.num_frames}")
         if frame_num < self.goal_frame:
             # print(f"frame_num: {frame_num}, goal_frame: {self.goal_frame}")
-            x = self.human_circ.center[0] - self.goal_dist
+            x = self.human_circ.center[0] + human_direction * self.goal_dist
             self.virtual_goal.set_xdata([x, x])
 
         self.ax.set_xlim(-self.hallway_dimensions['length'] * 0.05,
@@ -167,8 +168,10 @@ class Renderer:
         assert self.observations is not None, "Please set observations first"
         self.ax = ax
         obs = self.observations[0]
+        human_direction = np.sign(obs['human vel'][0])
         self.generate_background(self.ax, tuple(obs['robot pos']),
-                                 tuple(obs['human pos']))
+                                 tuple(obs['human pos']),
+                                 human_direction)
         self.ax.annotate('0', tuple(obs['robot pos']), ha='center')
         self.ax.annotate('0', tuple(obs['human pos']), ha='center')
 

@@ -34,11 +34,12 @@ class Policy:
         """
         self.env = env
 
-    def predict(self, observation):
+    def predict(self, observation, direction: int):
         """
         The action choice function for the policy
         This function takes in the observation at the current time step and
         selects and returns an action for the agent that is using this policy
-        :param observation - the observation returned by the environment 
+        :param observation - the observation returned by the environment
+        :param direction - the sign of the x-velocity of the agent using this policy
         """
         raise NotImplementedError

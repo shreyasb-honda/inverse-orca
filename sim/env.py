@@ -465,15 +465,13 @@ class FixedHuman(HallwayScene):
 
         rng = self.np_random
         p = rng.random()
-        print(p)
         # Reset the goal position
-        if p < 0.1:
+        if p < 0.5:
             self.human.set_goal(0, self.hallway_width / 2)
         else:
             self.human.set_goal(self.hallway_length, self.hallway_width / 2)
 
         p = rng.random()
-        print(p)
         # Reset the goal position
         if p < 0.5:
             self.robot.set_goal(0, self.hallway_width / 2)
@@ -481,8 +479,6 @@ class FixedHuman(HallwayScene):
             self.robot.set_goal(self.hallway_length, self.hallway_width / 2)
 
         # Reset the position of human
-        # human_pos = self.human_start_box.sample()
-        # self.human.set_position(human_pos[0], human_pos[1])
         self.human.set_position(self.hallway_length / 2, self.hallway_width / 2) # Debugging
         human_pos = np.array(self.human.get_position())
 

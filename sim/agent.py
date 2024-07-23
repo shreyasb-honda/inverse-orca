@@ -133,13 +133,13 @@ class Human(Agent):
         except AttributeError:
             pass
 
-    def choose_action(self, observation):
+    def choose_action(self, observation, direction: int):
         """
         Chooses an action given the current observation
         """
         action = (0., 0.)
-        if not self.reached_goal():
-            action = self.policy.predict(observation)
+        if not self.reached_goal(direction):
+            action = self.policy.predict(observation, direction)
 
         return action
 
@@ -221,13 +221,14 @@ class Robot(Agent):
         human_pos = obs['human pos']
         human_speed = norm(obs['human vel'])
         human_vel_y = obs['human vel'][1]
+        human_direction = np.sign(obs['human vel'][0])
 
         if self.d_virtual_goal is not None:
-            x = -self.d_virtual_goal
+            x = human_direction * self.d_virtual_goal
         else:
             raise TypeError("Please set virtual goal parameters before calling set_vh_desired")
         y = self.y_virtual_goal - human_pos[1]
-        vh_direction = np.array([x, y]) + self.time_step * np.array([0., obs['human vel'][1]])
+        vh_direction = np.array([x, y]) + self.time_step * np.array([0., human_vel_y])
         vh_desired = vh_direction / norm(vh_direction) * human_speed
         vh_desired[1] = min(human_vel_y, vh_desired[1])
         # vh_desired[1] = -1.0

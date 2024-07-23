@@ -24,6 +24,10 @@ class InverseOrca(Policy):
         self.d_virtual_goal = None
         self.y_virtual_goal = None
 
+        # hallway dimension
+        self.hallway_length = None
+        self.hallway_width = None
+
         self.vo = None
         self.robot_vel = None
         self.u = None
@@ -62,6 +66,15 @@ class InverseOrca(Policy):
         """
         self.d_virtual_goal = d_virtual_goal
         self.y_virtual_goal = y_virtual_goal
+
+    def set_hallway_dimensions(self, hallway_length: float, hallway_width: float):
+        """
+        Sets the parameters for the virtual goal line
+        :param hallway_length - the length of the hallway
+        :param hallway_width - the width of the hallway
+        """
+        self.hallway_length = hallway_length
+        self.hallway_width = hallway_width
 
     def set_desired_velocity(self, velocity: Point):
         """
@@ -135,10 +148,14 @@ class InverseOrca(Policy):
         human_pos = observation['human pos']
 
         goal_reached = human_pos[1] <= self.y_virtual_goal
-        crossed_human = robot_pos[0] >= human_pos[0] - self.d_virtual_goal
-        crossed_human = False
+        # crossed_human = robot_pos[0] >= human_pos[0] - self.d_virtual_goal
+        # crossed_human = False
 
-        if goal_reached or crossed_human:
+        crossed_goal = robot_pos[0] <= 0 or robot_pos[0] >= self.hallway_length
+        crossed_goal = crossed_goal or (human_pos[0] <= 0 or human_pos[0] >= self.hallway_length)
+
+        # if goal_reached or crossed_human:
+        if goal_reached or crossed_goal:
             return True
 
         return False
