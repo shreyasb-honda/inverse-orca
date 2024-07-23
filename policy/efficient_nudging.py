@@ -125,7 +125,7 @@ class EfficientNudge(NaiveEfficientNudge):
         # Travel some along the boundary
         chosen_point = human_pos + self.boundary * self.dist_along
         # Travel some perpendicular to the boundary
-        normal = np.array([-self.boundary[1], self.boundary[1]])
+        normal = np.array([-self.boundary[1], self.boundary[0]])
         point_1 = chosen_point + self.dist_perp * normal
         point_2 = chosen_point - self.dist_perp * normal
         point = tuple(human_pos)
@@ -157,7 +157,6 @@ class EfficientNudge(NaiveEfficientNudge):
         human_vel = observation['human vel']
         human_pos = observation['human pos']
         robot_pos = observation['robot pos']
-        boundary_condition = robot_pos[0] <= human_pos[0]
         self.boundary = human_vel - np.array(self.desired_velocity)
         boundary_length = np.linalg.norm(self.boundary)
         if boundary_length < 1e-4:
@@ -349,7 +348,6 @@ class SmoothEfficientNudge(InverseOrca):
         human_vel = observation['human vel']
         human_pos = observation['human pos']
         robot_pos = observation['robot pos']
-        boundary_condition = robot_pos[0] <= human_pos[0]
         self.boundary = human_vel - np.array(self.desired_velocity)
         boundary_length = np.linalg.norm(self.boundary)
         if boundary_length < 1e-4:
@@ -373,7 +371,7 @@ class SmoothEfficientNudge(InverseOrca):
 
         self.inverse_started = boundary_condition and circle_condition and y_condition
 
-        # Revert to inverse ORCA if the stopping criterion is satisfied 
+        # Revert to inverse ORCA if the stopping criterion is satisfied
         # (which will fall back to ORCA)
         # This will essentially give a goal-directed ORCA velocity
         self.inverse_started = self.inverse_started or stop_inverse
