@@ -184,17 +184,28 @@ class Renderer:
 
         human_rad = self.observations[0]['human rad']
         robot_rad = self.observations[0]['robot rad']
-        human_goal_frame = np.nonzero(human_pos_array - human_rad <= 0)[0]
-        if len(human_goal_frame) == 0:
+
+        # TODO: Change this check to include the other goal condition as well
+        human_goal_frame_1 = np.nonzero(human_pos_array - human_rad <= 0)[0]
+        human_goal_frame_2 = np.nonzero(human_pos_array + human_rad >=
+                                        self.hallway_dimensions['length'])[0]
+        if len(human_goal_frame_1) == 0 and len(human_goal_frame_2) == 0:
             human_goal_frame = self.num_frames - 1
+        elif len(human_goal_frame_1) > 0:
+            human_goal_frame = human_goal_frame_1[0]
         else:
-            human_goal_frame = human_goal_frame[0]
-        condition = robot_pos_array + robot_rad >= self.hallway_dimensions['length']
-        robot_goal_frame = np.nonzero(condition)[0]
-        if len(robot_goal_frame) == 0:
+            human_goal_frame = human_goal_frame_2[0]
+
+        condition_1 = robot_pos_array + robot_rad >= self.hallway_dimensions['length']
+        condition_2 = robot_pos_array - robot_rad <= 0
+        robot_goal_frame_1 = np.nonzero(condition_1)[0]
+        robot_goal_frame_2 = np.nonzero(condition_2)[0]
+        if len(robot_goal_frame_1) == 0 and len(robot_goal_frame_2) == 0:
             robot_goal_frame = self.num_frames - 1
+        elif len(robot_goal_frame_1) >= 0:
+            robot_goal_frame = robot_goal_frame_1[0]
         else:
-            robot_goal_frame = robot_goal_frame[0]
+            robot_goal_frame = robot_goal_frame_2[0]
 
         self.ax.plot(human_pos_array[:, 0], human_pos_array[:, 1],
                      c=self.human_params['color'], ls='-.', lw=2)
@@ -234,6 +245,11 @@ class Renderer:
         obs = self.observations[-1]
         self.ax.annotate(f'{robot_goal_frame}', tuple(obs['robot pos']), ha='center')
         self.ax.annotate(f'{human_goal_frame}', tuple(obs['human pos']), ha='center')
+
+        self.ax.set_xlim(-self.hallway_dimensions['length'] * 0.05,
+                         self.hallway_dimensions["length"] * 1.05)
+        self.ax.set_ylim(-self.hallway_dimensions['width'] * 0.05,
+                         self.hallway_dimensions['width'] * 1.05)
 
         return fig, ax
 
