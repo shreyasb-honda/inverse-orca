@@ -223,7 +223,7 @@ class SmoothEfficientNudge(InverseOrca):
         # Travel some along the boundary
         chosen_point = human_pos + self.boundary * self.dist_along
         # Travel some perpendicular to the boundary
-        normal = np.array([-self.boundary[1], self.boundary[1]])
+        normal = np.array([-self.boundary[1], self.boundary[0]])
         point_1 = chosen_point + self.dist_perp * normal
         point_2 = chosen_point - self.dist_perp * normal
         point = tuple(human_pos)
