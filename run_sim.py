@@ -147,7 +147,7 @@ class SimulationRunner:
         if self.config['sim']['out_fname'] != 'temp':
             env.unwrapped.set_output_filename(self.config['sim']['out_fname'])
         # self.env.reset(seed=seed)
-        self.env.reset()
+        self.env.reset(seed=seed)
 
     def save_configs(self, experiment_directory: str):
         """
@@ -270,7 +270,7 @@ class SimulationRunner:
         self.robot.set_vh_desired(obs)
         direction_robot = np.sign(self.robot.gx - obs['robot pos'][0])
         direction_human = np.sign(self.human.gx - obs['human pos'][0])
-        robot_action = self.robot.policy.predict(obs, direction_robot)
+        robot_action = self.robot.choose_action(obs, direction_robot)
         obs['robot vel'] = np.array(robot_action)
         human_action = self.human.get_velocity()
         acceleration_metric_human.agent_done(self.human.reached_goal(direction_human))
